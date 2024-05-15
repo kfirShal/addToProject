@@ -8,7 +8,7 @@ import java.util.List;
 public interface MarketController {
     List<Product> searchProducts(GlobalSearchRequest request);
 
-    void getShoppingCartDetails(User user);
+    void getShoppingCartDetails(User user, String token);
 
-    void makePurchase(User user);
+    void makePurchase(User user, String token);
 }

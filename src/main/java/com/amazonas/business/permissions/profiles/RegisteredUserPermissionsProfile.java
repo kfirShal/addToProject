@@ -3,24 +3,26 @@ package com.amazonas.business.permissions.profiles;
 import com.amazonas.business.market.MarketActions;
 import com.amazonas.business.userProfiles.UserActions;
 import com.amazonas.business.stores.StoreActions;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class PermissionsProfileImpl implements PermissionsProfile {
-
-    private static final DefaultRegisteredUserPermissionsProfile defaultProfile = DefaultRegisteredUserPermissionsProfile.getInstance();
+public class RegisteredUserPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
-
+    private final PermissionsProfile defaultProfile;
     private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
     private boolean updated;
 
-    public PermissionsProfileImpl(String userId) {
+    public RegisteredUserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
+        this.defaultProfile = defaultProfile;
         this.userId = userId;
         storeIdToAllowedStoreActions = new HashMap<>();
         allowedUserActions = new HashSet<>();

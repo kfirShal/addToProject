@@ -2,7 +2,9 @@ package com.amazonas.business.permissions;
 
 import com.amazonas.business.userProfiles.UserActions;
 import com.amazonas.business.userProfiles.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PermissionsController {
     public boolean addPermission(User user, UserActions action) {
         return false;

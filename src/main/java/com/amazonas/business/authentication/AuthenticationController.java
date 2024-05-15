@@ -1,12 +1,23 @@
 package com.amazonas.business.authentication;
 
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class AuthenticationController {
 
     private Map<String,String> userIdToToken;
 
-    public AuthenticationResponse Authenticate (AuthenticationRequest request) {
+    public AuthenticationController() {
+        userIdToToken = new HashMap<>();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        String userId = request.username();
+        String password = request.password();
+
         return null;
     }
 

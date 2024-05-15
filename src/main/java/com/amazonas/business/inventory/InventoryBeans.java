@@ -1,7 +1,7 @@
-package com.amazonas.business.permissions;
+package com.amazonas.business.inventory;
 
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class permissionsBeans {
+public class InventoryBeans {
 }

@@ -7,14 +7,14 @@ import com.amazonas.business.userProfiles.UserActions;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class DefaultPermissionsProfile implements PermissionsProfile {
+public class DefaultPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
     private boolean updated;
 
-    protected DefaultPermissionsProfile(String userId) {
+    public DefaultPermissionsProfile(String userId) {
         this.userId = userId;
         allowedUserActions = new HashSet<>();
         allowedMarketActions = new HashSet<>();
