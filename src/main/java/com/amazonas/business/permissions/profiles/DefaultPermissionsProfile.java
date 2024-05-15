@@ -4,9 +4,21 @@ import com.amazonas.business.market.MarketActions;
 import com.amazonas.business.stores.StoreActions;
 import com.amazonas.business.userProfiles.UserActions;
 
-public class AdminPermissionsProfile implements PermissionsProfile {
+import java.util.HashSet;
+import java.util.Set;
 
-    private static final String USER_ID = "admin";
+public abstract class DefaultPermissionsProfile implements PermissionsProfile {
+
+    private final String userId;
+    private final Set<UserActions> allowedUserActions;
+    private final Set<MarketActions> allowedMarketActions;
+    private boolean updated;
+
+    protected DefaultPermissionsProfile(String userId) {
+        this.userId = userId;
+        allowedUserActions = new HashSet<>();
+        allowedMarketActions = new HashSet<>();
+    }
 
     @Override
     public boolean addStorePermission(String storeId, StoreActions action) {
@@ -20,50 +32,49 @@ public class AdminPermissionsProfile implements PermissionsProfile {
 
     @Override
     public boolean addUserActionPermission(UserActions action) {
-        return false;
+        return allowedUserActions.add(action);
     }
 
     @Override
     public boolean removeUserActionPermission(UserActions action) {
-        return false;
+        return allowedUserActions.remove(action);
     }
 
     @Override
     public boolean addMarketActionPermission(MarketActions action) {
-        return false;
+        return allowedMarketActions.add(action);
     }
 
     @Override
     public boolean removeMarketActionPermission(MarketActions action) {
-        return false;
+        return allowedMarketActions.remove(action);
     }
 
-    @Override
     public boolean hasPermission(UserActions action) {
-        return true;
+        return allowedUserActions.contains(action);
     }
 
-    @Override
     public boolean hasPermission(MarketActions action) {
-        return true;
+        return allowedMarketActions.contains(action);
     }
 
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
-        return true;
-    }
-
-    @Override
-    public boolean updated() {
         return false;
     }
 
     @Override
-    public void setUpdated() {
+    public boolean updated() {
+        return updated;
     }
 
     @Override
-    public String getUserId() {
-        return USER_ID;
+    public void setUpdated() {
+        updated = true;
+    }
+
+    @Override
+    public String getUserId(){
+        return userId;
     }
 }
