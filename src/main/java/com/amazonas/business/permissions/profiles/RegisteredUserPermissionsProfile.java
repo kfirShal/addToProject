@@ -1,11 +1,8 @@
 package com.amazonas.business.permissions.profiles;
 
 import com.amazonas.business.market.MarketActions;
-import com.amazonas.business.userProfiles.UserActions;
 import com.amazonas.business.stores.StoreActions;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import com.amazonas.business.userProfiles.UserActions;
 
 import java.util.HashMap;
 import java.util.HashSet;

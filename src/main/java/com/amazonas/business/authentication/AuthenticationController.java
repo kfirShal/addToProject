@@ -1,5 +1,6 @@
 package com.amazonas.business.authentication;
 
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
