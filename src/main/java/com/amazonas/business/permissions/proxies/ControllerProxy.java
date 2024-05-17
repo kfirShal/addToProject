@@ -14,8 +14,8 @@ public abstract class ControllerProxy {
     }
 
     protected void validateToken(String userId,String token) {
-        if (!auth.isTokenValid(userId,token)) {
-            throw new RuntimeException("Invalid token");
+        if (! auth.validateToken(userId,token)) {
+            throw new RuntimeException("Failed to validate authenticity of the user");
         }
     }
 

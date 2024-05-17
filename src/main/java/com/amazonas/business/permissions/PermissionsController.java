@@ -117,4 +117,7 @@ public class PermissionsController {
     public void registerGuest(String userId) {
         userIdToPermissionsProfile.put(userId, guestProfile);
     }
+    public void removeGuest(String userId) {
+        userIdToPermissionsProfile.remove(userId);
+    }
 }
