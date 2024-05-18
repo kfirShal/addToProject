@@ -2,6 +2,8 @@ package com.amazonas.business.authentication;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,8 @@ import java.util.concurrent.Semaphore;
 
 @Component
 public class AuthenticationController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
     //=================================================================
     //TODO: replace this with a database
@@ -41,6 +45,7 @@ public class AuthenticationController {
     }
 
     public AuthenticationResponse authenticate(String userId, String password) {
+        log.debug("Authenticating user: {}", userId);
 
         //get the hashed password and UUID for the user
         lockAcquire();
@@ -50,45 +55,55 @@ public class AuthenticationController {
 
         // check if the user exists
         if(hashedPassword == null) {
+            log.debug("User {} does not exist", userId);
             return new AuthenticationResponse(false, null);
         }
+        log.trace("User {} exists", userId);
 
         // check if the password is correct
         boolean passwordsMatch = encoder.matches(
                 passwordStorageFormat+password,
                 hashedPassword); //TODO: get hashed password from database
         if(!passwordsMatch) {
+            log.debug("Incorrect password for user {}", userId);
             return new AuthenticationResponse(false, null);
         }
 
         lockAcquire();
         //remove the old UUID if it exists
         if(uuid != null) {
+            log.trace("Removing old UUID for user {}", userId);
             uuids.remove(uuid);
         }
 
         //generate a unique UUID
+        log.trace("Generating new UUID for user {}", userId);
         do{
             uuid = UUID.randomUUID().toString();
         } while (uuids.contains(uuid));
 
         //store the UUID and associate it with the user
+        log.trace("Storing new UUID for user {}", userId);
         userIdToUUID.put(userId, uuid);
         uuids.add(uuid);
         lock.release();
 
         String token = generateToken(uuid);
+        log.debug("User {} authenticated successfully", userId);
         return new AuthenticationResponse(true,token);
     }
 
-    public void revokeAuthentication(String userId) {
+    public boolean revokeAuthentication(String userId) {
         lockAcquire();
+        log.debug("Revoking authentication for user {}", userId);
         String uuid = userIdToUUID.remove(userId);
         uuids.remove(uuid);
         lock.release();
+        return uuid != null;
     }
 
     public boolean validateToken(String userId, String token) {
+        log.debug("Validating token for user {}", userId);
         boolean answer;
         try{
             String uuidFromToken = new String(Jwts.parser()
@@ -98,12 +113,14 @@ public class AuthenticationController {
                     .getPayload());
 
             lockAcquire();
+            log.trace("Checking if the UUID from the token matches the stored UUID for user {}", userId);
             String uuid = userIdToUUID.get(userId);
             answer = uuid != null && uuid.equals(uuidFromToken);
             lock.release();
         } catch (Exception ignored) {
             answer = false;
         }
+        log.debug("Token validation for user {} was {}", userId, answer ? "successful" : "unsuccessful");
         return answer;
     }
 
@@ -112,6 +129,7 @@ public class AuthenticationController {
      */
     public void resetSecretKey() {
         lockAcquire();
+        log.debug("Resetting secret key");
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID.clear();
         uuids.clear();
@@ -125,6 +143,7 @@ public class AuthenticationController {
     }
 
     private String generateToken(String userId) {
+        log.debug("Generating token for user {}", userId);
         return Jwts.builder()
                 .content(userId, "text/plain")
                 .signWith(key,alg)
@@ -135,6 +154,7 @@ public class AuthenticationController {
      * Temporary method to add user credentials until we have a database
      */
     public void addUserCredentials(String userId, String password) {
+        log.debug("Adding user credentials for user {}", userId);
         //TODO: store hashed password in database
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
         lockAcquire();
