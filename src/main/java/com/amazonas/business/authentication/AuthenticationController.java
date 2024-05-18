@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class AuthenticationController {
@@ -21,36 +23,80 @@ public class AuthenticationController {
 
     private static final MacAlgorithm alg = Jwts.SIG.HS512;
     private static final String passwordStorageFormat = "{bcrypt}";
+
+    private final Map<String, String> userIdToUUID;
+    private final HashSet<String> uuids;
     private final PasswordEncoder encoder;
     private SecretKey key;
 
     public AuthenticationController() {
         key = Jwts.SIG.HS512.key().build();
+        userIdToUUID = new HashMap<>();
+        uuids = new HashSet<>();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
-
-    /**
-     * Temporary method to add user credentials until we have a database
-     */
-    public void addUserCredentials(String userId, String password) {
-        //TODO: store hashed password in database
-        String encodedPassword = encoder.encode(passwordStorageFormat+password);
-        userIdToHashedPassword.put(userId, encodedPassword);
     }
 
     public AuthenticationResponse authenticate(String userId, String password) {
 
+        // check if the user exists
+        if(! userIdToHashedPassword.containsKey(userId)) {
+            return new AuthenticationResponse(false, null);
+        }
+
+        // check if the password is correct
         boolean passwordsMatch = encoder.matches(
                 passwordStorageFormat+password,
                 userIdToHashedPassword.get(userId)); //TODO: get hashed password from database
-
         if(!passwordsMatch) {
             return new AuthenticationResponse(false, null);
         }
 
-        //password is valid
-        String token = generateToken(userId);
+        //revoke any existing authentication for this user if it exists
+        //this is to prevent multiple logins
+        if(userIdToUUID.containsKey(userId)) {
+            revokeAuthentication(userId);
+        }
+
+        //generate a unique UUID
+        String uuid;
+        do{
+            uuid = UUID.randomUUID().toString();
+        } while (uuids.contains(uuid));
+
+        //store the UUID and associate it with the user
+        uuids.add(uuid);
+        userIdToUUID.put(userId, uuid);
+        String token = generateToken(uuid);
+
         return new AuthenticationResponse(true,token);
+    }
+
+    public void revokeAuthentication(String userId) {
+        String uuid = userIdToUUID.remove(userId);
+        uuids.remove(uuid);
+    }
+
+    public boolean validateToken(String userId, String token) {
+        try{
+            String uuidFromToken = new String(Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedContent(token)
+                    .getPayload());
+
+            return userIdToUUID.get(userId).equals(uuidFromToken);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * This operation logs out all users by resetting the secret key
+     */
+    public void resetSecretKey() {
+        key = Jwts.SIG.HS512.key().build();
+        userIdToUUID.clear();
+        uuids.clear();
     }
 
     private String generateToken(String userId) {
@@ -60,22 +106,12 @@ public class AuthenticationController {
                 .compact();
     }
 
-    public boolean validateToken(String userId, String token) {
-        try{
-            byte[] userIdBytes = Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedContent(token)
-                    .getPayload();
-            String userIdFromToken = new String(userIdBytes);
-
-            return userId.equals(userIdFromToken);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public void resetSecretKey() {
-        key = Jwts.SIG.HS512.key().build();
+    /**
+     * Temporary method to add user credentials until we have a database
+     */
+    public void addUserCredentials(String userId, String password) {
+        //TODO: store hashed password in database
+        String encodedPassword = encoder.encode(passwordStorageFormat+password);
+        userIdToHashedPassword.put(userId, encodedPassword);
     }
 }
