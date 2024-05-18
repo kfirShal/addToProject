@@ -24,9 +24,5 @@ public interface PermissionsProfile {
 
     boolean hasPermission(String storeId, StoreActions action);
 
-    boolean updated();
-
-    void setUpdated();
-
     String getUserId();
 }

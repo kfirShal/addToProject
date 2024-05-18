@@ -7,12 +7,12 @@ import com.amazonas.business.userProfiles.UserActions;
 import java.util.HashSet;
 import java.util.Set;
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class DefaultPermissionsProfile implements PermissionsProfile {
 
-    private final String userId;
     private final Set<UserActions> allowedUserActions;
+    private final String userId;
     private final Set<MarketActions> allowedMarketActions;
-    private boolean updated;
 
     public DefaultPermissionsProfile(String userId) {
         this.userId = userId;
@@ -32,28 +32,30 @@ public class DefaultPermissionsProfile implements PermissionsProfile {
 
     @Override
     public boolean addUserActionPermission(UserActions action) {
-        return allowedUserActions.add(action);
+        return false;
     }
 
     @Override
     public boolean removeUserActionPermission(UserActions action) {
-        return allowedUserActions.remove(action);
+        return false;
     }
 
     @Override
     public boolean addMarketActionPermission(MarketActions action) {
-        return allowedMarketActions.add(action);
+        return false;
     }
 
     @Override
     public boolean removeMarketActionPermission(MarketActions action) {
-        return allowedMarketActions.remove(action);
+        return false;
     }
 
+    @Override
     public boolean hasPermission(UserActions action) {
         return allowedUserActions.contains(action);
     }
 
+    @Override
     public boolean hasPermission(MarketActions action) {
         return allowedMarketActions.contains(action);
     }
@@ -61,16 +63,6 @@ public class DefaultPermissionsProfile implements PermissionsProfile {
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
         return false;
-    }
-
-    @Override
-    public boolean updated() {
-        return updated;
-    }
-
-    @Override
-    public void setUpdated() {
-        updated = true;
     }
 
     @Override

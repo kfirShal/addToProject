@@ -2,6 +2,7 @@ package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.exceptions.AuthenticationFailedException;
 
 public abstract class ControllerProxy {
 
@@ -13,9 +14,9 @@ public abstract class ControllerProxy {
         this.auth = auth;
     }
 
-    protected void validateToken(String userId,String token) {
+    protected void authenticateToken(String userId, String token) throws AuthenticationFailedException {
         if (! auth.validateToken(userId,token)) {
-            throw new RuntimeException("Failed to validate authenticity of the user");
+            throw new AuthenticationFailedException("Failed to validate authenticity of the user");
         }
     }
 

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
 
 @Component
 public class AuthenticationController {
@@ -26,6 +27,8 @@ public class AuthenticationController {
 
     private final Map<String, String> userIdToUUID;
     private final HashSet<String> uuids;
+    private final Semaphore lock;
+
     private final PasswordEncoder encoder;
     private SecretKey key;
 
@@ -34,49 +37,59 @@ public class AuthenticationController {
         userIdToUUID = new HashMap<>();
         uuids = new HashSet<>();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        lock = new Semaphore(1,true);
     }
 
     public AuthenticationResponse authenticate(String userId, String password) {
 
+        //get the hashed password and UUID for the user
+        lockAcquire();
+        String hashedPassword = userIdToHashedPassword.get(userId);
+        String uuid = userIdToUUID.get(userId);
+        lock.release();
+
         // check if the user exists
-        if(! userIdToHashedPassword.containsKey(userId)) {
+        if(hashedPassword == null) {
             return new AuthenticationResponse(false, null);
         }
 
         // check if the password is correct
         boolean passwordsMatch = encoder.matches(
                 passwordStorageFormat+password,
-                userIdToHashedPassword.get(userId)); //TODO: get hashed password from database
+                hashedPassword); //TODO: get hashed password from database
         if(!passwordsMatch) {
             return new AuthenticationResponse(false, null);
         }
 
-        //revoke any existing authentication for this user if it exists
-        //this is to prevent multiple logins
-        if(userIdToUUID.containsKey(userId)) {
-            revokeAuthentication(userId);
+        lockAcquire();
+        //remove the old UUID if it exists
+        if(uuid != null) {
+            uuids.remove(uuid);
         }
 
         //generate a unique UUID
-        String uuid;
         do{
             uuid = UUID.randomUUID().toString();
         } while (uuids.contains(uuid));
 
         //store the UUID and associate it with the user
-        uuids.add(uuid);
         userIdToUUID.put(userId, uuid);
-        String token = generateToken(uuid);
+        uuids.add(uuid);
+        lock.release();
 
+        String token = generateToken(uuid);
         return new AuthenticationResponse(true,token);
     }
 
     public void revokeAuthentication(String userId) {
+        lockAcquire();
         String uuid = userIdToUUID.remove(userId);
         uuids.remove(uuid);
+        lock.release();
     }
 
     public boolean validateToken(String userId, String token) {
+        boolean answer;
         try{
             String uuidFromToken = new String(Jwts.parser()
                     .verifyWith(key)
@@ -84,19 +97,31 @@ public class AuthenticationController {
                     .parseSignedContent(token)
                     .getPayload());
 
-            return userIdToUUID.get(userId).equals(uuidFromToken);
-        } catch (Exception e) {
-            return false;
+            lockAcquire();
+            String uuid = userIdToUUID.get(userId);
+            answer = uuid != null && uuid.equals(uuidFromToken);
+            lock.release();
+        } catch (Exception ignored) {
+            answer = false;
         }
+        return answer;
     }
 
     /**
      * This operation logs out all users by resetting the secret key
      */
     public void resetSecretKey() {
+        lockAcquire();
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID.clear();
         uuids.clear();
+        lock.release();
+    }
+
+    private void lockAcquire() {
+        try {
+            lock.acquire();
+        } catch (InterruptedException ignored) {}
     }
 
     private String generateToken(String userId) {
@@ -112,6 +137,8 @@ public class AuthenticationController {
     public void addUserCredentials(String userId, String password) {
         //TODO: store hashed password in database
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
+        lockAcquire();
         userIdToHashedPassword.put(userId, encodedPassword);
+        lock.release();
     }
 }

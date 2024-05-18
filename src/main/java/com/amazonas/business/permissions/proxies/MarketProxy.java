@@ -7,6 +7,7 @@ import com.amazonas.business.market.MarketActions;
 import com.amazonas.business.market.MarketController;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.userProfiles.User;
+import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
@@ -28,8 +29,8 @@ public class MarketProxy extends ControllerProxy implements MarketController {
     }
 
     @Override
-    public void getShoppingCartDetails(User user, String token) throws NoPermissionException {
-        validateToken(user.getUserId() ,token);
+    public void getShoppingCartDetails(User user, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(user.getUserId() ,token);
         if(! perm.checkPermission(user.getUserId(), MarketActions.VIEW_SHOPPING_CART)) {
             throw new NoPermissionException("User does not have permission to view shopping cart");
         }
@@ -38,8 +39,8 @@ public class MarketProxy extends ControllerProxy implements MarketController {
     }
 
     @Override
-    public void makePurchase(User user, String token) throws NoPermissionException {
-        validateToken(user.getUserId() ,token);
+    public void makePurchase(User user, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(user.getUserId() ,token);
         if(! perm.checkPermission(user.getUserId(), MarketActions.MAKE_PURCHASE)) {
             throw new NoPermissionException("User does not have permission to make a purchase");
         }

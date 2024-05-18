@@ -54,15 +54,6 @@ public class AdminPermissionsProfile implements PermissionsProfile {
     }
 
     @Override
-    public boolean updated() {
-        return false;
-    }
-
-    @Override
-    public void setUpdated() {
-    }
-
-    @Override
     public String getUserId() {
         return USER_ID;
     }

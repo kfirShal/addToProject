@@ -3,12 +3,12 @@ package com.amazonas.business.stores;
 import java.util.List;
 
 public class SearchRequest {
-    private String productName;
-    private List<String> keyWords;
-    private Integer minPrice;
-    private Integer maxPrice;
-    private String productCategory;
-    private Rating productRating;
+    private final String productName;
+    private final List<String> keyWords;
+    private final Integer minPrice;
+    private final Integer maxPrice;
+    private final String productCategory;
+    private final Rating productRating;
 
     public SearchRequest(String productName, List<String> keyWords, Integer minPrice, Integer maxPrice, String productCategory, Rating productRating) {
         this.productName = productName;

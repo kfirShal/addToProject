@@ -16,7 +16,6 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
     private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
-    private boolean updated;
 
     public RegisteredUserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
@@ -87,16 +86,6 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
     public boolean hasPermission(String storeId, StoreActions action) {
         Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
         return allowedActions != null && allowedActions.contains(action);
-    }
-
-    @Override
-    public boolean updated() {
-        return updated;
-    }
-
-    @Override
-    public void setUpdated() {
-        updated = true;
     }
 
     @Override
