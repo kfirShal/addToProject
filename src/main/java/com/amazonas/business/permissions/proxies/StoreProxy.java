@@ -5,7 +5,7 @@ import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.stores.StoresController;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("storeProxy")
 public class StoreProxy extends ControllerProxy implements StoresController {
 
     private final StoresController real;

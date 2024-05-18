@@ -5,7 +5,7 @@ import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.userProfiles.UsersController;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("userProxy")
 public class UserProxy extends ControllerProxy implements UsersController {
 
     private final UsersController real;

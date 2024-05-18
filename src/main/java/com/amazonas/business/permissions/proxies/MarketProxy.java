@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Component("marketProxy")
 public class MarketProxy extends ControllerProxy implements MarketController {
 
     private final MarketController real;
