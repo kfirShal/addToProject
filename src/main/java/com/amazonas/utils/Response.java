@@ -1,7 +1,7 @@
 package com.amazonas.utils;
 
 
-import com.amazonas.exceptions.ErrorOccurredException;
+import com.amazonas.exceptions.NegativeResponseException;
 
 import java.lang.reflect.Type;
 
@@ -99,12 +99,12 @@ public class Response {
         return JsonUtils.deserialize(json, Response.class);
     }
     
-    public static Response fromJsonWithValidation(String json) throws ErrorOccurredException {
+    public static Response fromJsonWithValidation(String json) throws NegativeResponseException {
         Response response = JsonUtils.deserialize(json, Response.class);
         if (! response.success){
             String causeMessage = response.data == null ? "" : response.data;
             String message = response.message == null ? "" : response.message;
-            throw new ErrorOccurredException(message, new Throwable(causeMessage));
+            throw new NegativeResponseException(message, new Throwable(causeMessage));
         }
         return response;
     }

@@ -5,13 +5,13 @@ import java.security.PrivilegedActionException;
 /**
  * @apiNote  This exception does not create a stack trace.
  */
-public class ErrorOccurredException extends Exception{
+public class NegativeResponseException extends Exception{
     /**
      * Constructs a new exception with {@code null} as its detail message.
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      */
-    public ErrorOccurredException() {
+    public NegativeResponseException() {
         super(null, null, true, false);
     }
 
@@ -23,7 +23,7 @@ public class ErrorOccurredException extends Exception{
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public ErrorOccurredException(String message) {
+    public NegativeResponseException(String message) {
         super(message,null,true,false);
     }
 
@@ -41,7 +41,7 @@ public class ErrorOccurredException extends Exception{
      *                unknown.)
      * @since 1.4
      */
-    public ErrorOccurredException(String message, Throwable cause) {
+    public NegativeResponseException(String message, Throwable cause) {
         super(message, cause, true, false);
     }
 
@@ -59,7 +59,7 @@ public class ErrorOccurredException extends Exception{
      *              unknown.)
      * @since 1.4
      */
-    public ErrorOccurredException(Throwable cause) {
+    public NegativeResponseException(Throwable cause) {
         super(null,cause,true,false);
     }
 }
