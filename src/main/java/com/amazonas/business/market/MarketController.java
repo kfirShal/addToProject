@@ -1,7 +1,9 @@
 package com.amazonas.business.market;
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.stores.SearchRequest;
+import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
@@ -12,9 +14,7 @@ public interface MarketController {
 
     List<Product> searchProducts(GlobalSearchRequest request);
 
-    List<Product> searchStoreProducts(SearchRequest searchRequest);
+    ShoppingCart getShoppingCartDetails(User user, String token) throws NoPermissionException, AuthenticationFailedException;
 
-    void getShoppingCartDetails(User user, String token) throws NoPermissionException, AuthenticationFailedException;
-
-    void makePurchase(User user, String token) throws NoPermissionException, AuthenticationFailedException;
+    void makePurchase(User user, String token, PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException;
 }
