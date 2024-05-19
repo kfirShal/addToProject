@@ -6,6 +6,7 @@ import com.amazonas.business.market.GlobalSearchRequest;
 import com.amazonas.business.market.MarketActions;
 import com.amazonas.business.market.MarketController;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.stores.SearchRequest;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
@@ -26,6 +27,11 @@ public class MarketProxy extends ControllerProxy implements MarketController {
     @Override
     public List<Product> searchProducts(GlobalSearchRequest request) {
         return real.searchProducts(request);
+    }
+
+    @Override
+    public List<Product> searchStoreProducts(SearchRequest searchRequest) {
+        return real.searchStoreProducts(searchRequest);
     }
 
     @Override
