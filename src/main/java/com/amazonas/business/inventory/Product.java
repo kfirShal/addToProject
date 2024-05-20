@@ -26,6 +26,7 @@ public class Product {
         this.category = category;
         this.description = description;
         this.rate = rate;
+        this.description = description;
     }
 
     public String productID() {
@@ -42,10 +43,6 @@ public class Product {
 
     public String category() {
         return category;
-    }
-
-    public String description() {
-        return description;
     }
 
     public int rate() {
@@ -112,4 +109,7 @@ public class Product {
     }
 
 
+    public String description() {
+        return description;
+    }
 }
