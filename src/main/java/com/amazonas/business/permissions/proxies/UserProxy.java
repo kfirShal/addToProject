@@ -1,6 +1,7 @@
 package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
+import com.amazonas.business.inventory.Product;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.StoreBasket;
@@ -21,7 +22,7 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public void register(String email, String userName, String password) {
+    public void register(String id, String email, String userName, String password) {
 
     }
 
@@ -31,37 +32,39 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public void login(String userName) {
-        //add user to logged in users
-    }
-
-    @Override
-    public void logout() {
+    public void loginToRegistered(String id) {
 
     }
 
+
+
     @Override
-    public void logoutAsGuest() {
+    public void logout(String id) {
 
     }
 
     @Override
-    public ShoppingCart getCart() {
+    public void logoutAsGuest(String id) {
+
+    }
+
+    @Override
+    public ShoppingCart getCart(String id) {
         return null;
     }
 
     @Override
-    public void addProductToCart() {
+    public void addProductToCart(String id, String storeName, Product product, int quantity) {
 
     }
 
     @Override
-    public void RemoveProductFromCart() {
+    public void RemoveProductFromCart(String id,String storeName,String productId) {
 
     }
 
     @Override
-    public void changeProductQuantity() {
+    public void changeProductQuantity(String id, String storeName, String productId, int quantity) {
 
     }
 }

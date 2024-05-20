@@ -20,19 +20,19 @@ public class ShoppingCart {
         return baskets.get(storeName);
     }
 
-    public void addProduct(String storeName,int productId, Product product, int quantity) {
+    public void addProduct(String storeName,Product product, int quantity) {
         if(baskets.containsKey(storeName)){
             StoreBasket basket = baskets.get(storeName);
-            basket.addProduct(productId,product,quantity);
+            basket.addProduct(product,quantity);
         }
         else{
             StoreBasket newBasket = new StoreBasket();
-            newBasket.addProduct(productId,product,quantity);
+            newBasket.addProduct(product,quantity);
             baskets.put(storeName,newBasket);
         }
     }
 
-    public void removeProduct(String storeName, int productId){
+    public void removeProduct(String storeName, String productId){
         try{
             StoreBasket basket = getBasket(storeName);
             basket.removeProduct(productId);
@@ -44,19 +44,7 @@ public class ShoppingCart {
 
     }
 
-    public Boolean isProductExists(String storeName, int productId){
-        try{
-            StoreBasket basket = getBasket(storeName);
-            return basket.isProductExists(productId);
-
-        }
-        catch(Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-
-    }
-
-    public void changeProductQuantity(String storeName, int productId,int quantity){
+    public void changeProductQuantity(String storeName, String productId,int quantity){
         try{
             StoreBasket basket = getBasket(storeName);
             basket.changeProductQuantity(productId,quantity);
