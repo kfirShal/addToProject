@@ -1,17 +1,27 @@
 package com.amazonas.business.inventory;
 
+import java.util.HashMap;
+
 public class ProductInventory {
 
+    HashMap<String, Product> hashMap;
 
-
-    public void addProduct(Product product) {
+    public  ProductInventory(){
+        hashMap = new HashMap<>();
     }
 
-    public void updateProduct(Product product) {
+    public void addProduct(Product product) {
+        if(!hashMap.containsKey(product.productID()))
+            hashMap.put(product.productID(), product);
+        else System.out.println("This key already exist");
     }
 
     public void removeProduct(Product product) {
+        hashMap.remove(product.productID());
     }
+
+
+
 
     public void increaseQuantity(Product product, int quantity) {
     }
@@ -19,7 +29,4 @@ public class ProductInventory {
     public void decreaseQuantity(Product product, int quantity) {
     }
 
-    public Product getProduct(String id) {
-        return null;
-    }
 }
