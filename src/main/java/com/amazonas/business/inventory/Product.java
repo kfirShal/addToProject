@@ -1,5 +1,6 @@
 package com.amazonas.business.inventory;
 
+import java.util.HashSet;
 import java.util.Objects;
 
 public class Product {
@@ -7,19 +8,23 @@ public class Product {
     private String nameProduct;
     private double price;
     private String category;
+    private String description;
     private int rate;
+    private HashSet<String> keyWords = new HashSet<>();
 
     public Product(
             String productID,
             String nameProduct,
             double price,
             String category,
+            String description,
             int rate
     ) {
         this.productID = productID;
         this.nameProduct = nameProduct;
         this.price = price;
         this.category = category;
+        this.description = description;
         this.rate = rate;
     }
 
@@ -37,6 +42,10 @@ public class Product {
 
     public String category() {
         return category;
+    }
+
+    public String description() {
+        return description;
     }
 
     public int rate() {
@@ -59,8 +68,20 @@ public class Product {
         this.category = category;
     }
 
+    public void changeDescription(String description) {
+        this.description = description;
+    }
+
     public void changeRate(int rate) {
         this.rate = rate;
+    }
+
+    public void addKeyWords(String key){
+        keyWords.add(key);
+    }
+
+    public void removeKeyWords(String key){
+        keyWords.remove(key);
     }
 
     @Override
