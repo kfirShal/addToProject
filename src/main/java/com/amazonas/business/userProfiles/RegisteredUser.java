@@ -72,11 +72,6 @@ public class RegisteredUser extends User{
     public Boolean getLoggedIn() {
         return isLoggedIn;
     }
-    public boolean isAdmin() {
-        return isAdmin;
-    }
-
-
 
     @Override
     public String getUserId() {

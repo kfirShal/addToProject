@@ -14,16 +14,10 @@ public class ShoppingCart {
     }
 
     public StoreBasket getBasket(String storeName){
-        if(baskets == null){
-            throw new RuntimeException("Store Baskets has not been initialized");
-        }
-
         if(!baskets.containsKey(storeName)){
             throw new RuntimeException("Store basket with name: " + storeName + " not found");
         }
-
         return baskets.get(storeName);
-
     }
 
     public void addProduct(String storeName,int productId, Product product, int quantity) {
@@ -36,7 +30,6 @@ public class ShoppingCart {
             newBasket.addProduct(productId,product,quantity);
             baskets.put(storeName,newBasket);
         }
-
     }
 
     public void removeProduct(String storeName, int productId){

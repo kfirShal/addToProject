@@ -21,16 +21,6 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public User getRegisteredUser(String userName) {
-        return null;
-    }
-
-    @Override
-    public User getGuest(String id) {
-        return null;
-    }
-
-    @Override
     public void register(String email, String userName, String password) {
 
     }
@@ -41,12 +31,12 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public void login(String userName, String password) {
-
+    public void login(String userName) {
+        //add user to logged in users
     }
 
     @Override
-    public void returnToGuest() {
+    public void logout() {
 
     }
 
@@ -56,22 +46,17 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public StoreBasket getBasket() {
-        return null;
-    }
-
-    @Override
     public ShoppingCart getCart() {
         return null;
     }
 
     @Override
-    public void addProductToBasket() {
+    public void addProductToCart() {
 
     }
 
     @Override
-    public void RemoveProductFromBasket() {
+    public void RemoveProductFromCart() {
 
     }
 

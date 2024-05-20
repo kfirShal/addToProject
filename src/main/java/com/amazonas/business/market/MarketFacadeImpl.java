@@ -1,44 +1,68 @@
-package com.amazonas.business.permissions.proxies;
+package com.amazonas.business.market;
 
-import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.market.GlobalSearchRequest;
-import com.amazonas.business.market.MarketActions;
-import com.amazonas.business.market.MarketFacade;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
-import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.shipping.ShippingService;
+import com.amazonas.business.stores.Store;
+import com.amazonas.business.stores.StoresControllerImpl;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedList;
 import java.util.List;
 
-@Component("marketProxy")
-public class MarketProxy extends ControllerProxy implements MarketFacade {
-
-    private final MarketFacade real;
-
-    public MarketProxy(MarketFacade marketFacade, PermissionsController perm, AuthenticationController auth) {
-        super(perm,auth);
-        this.real = marketFacade;
-    }
+@Component("marketFacade")
+public class MarketFacadeImpl implements MarketFacade {
 
     @Override
-    public List<Product> searchProducts(GlobalSearchRequest request) throws AuthenticationFailedException, NoPermissionException {
-        return real.searchProducts(request);
-    }
-
-    @Override
-    public void makePurchase(User user, String token) throws NoPermissionException, AuthenticationFailedException {
-        authenticateToken(user.getUserId() ,token);
-        if(! perm.checkPermission(user.getUserId(), MarketActions.MAKE_PURCHASE)) {
-            throw new NoPermissionException("User does not have permission to make a purchase");
+    public List<Product> searchProducts(GlobalSearchRequest request) {
+        StoresControllerImpl storesController = new StoresControllerImpl();
+        List<Store> stores = storesController.getAllStores();
+        List<Product> ret = new LinkedList<>();
+        for (Store store : stores) {
+            if (store.storeRate == request.getStoreRating())
+            ret.addAll(store.searchProduct(request));
         }
+        return ret;
+    }
 
-        real.makePurchase(user, token);
+    @Override
+    public void makePurchase(User user, String token){
+        /*
+        ShoppingCart shoppingCart = user.getShoppingCart();
+        for (StoreBasket storeBaket : shoppingCart.getBaskets()) {
+            Store store = storeBaket.store;
+            for (ProdctAmount prodctAmount : storeBaket.PoductAmountsList()) {
+                try {
+                    store.decreaseProduct(prodctAmount);
+                }
+                catch (Exception e) {
+                    for (ProdctAmount prodctAmount_ : storeBaket.PoductAmountsList()) {
+                        if(prodctAmount_ != prodctAmount) {
+                            store.increaseProduct(prodctAmount_);
+                        }
+                        else {
+                            return;
+                        }
+                    }
+                }
+            }
+            try {
+                paymentMethod.pay(shoppingCart.getPrice());
+            }
+            catch (Exception e) {
+                for (ProdctAmount prodctAmount : storeBaket.PoductAmountsList()) {
+                    store.increaseProduct(prodctAmount);
+                }
+                return;
+            }
+            TransactionsController transactionsController = new TransactionsController();
+            transactionsController.addTransaction(user);
+        }
+         */
     }
 
     @Override
@@ -118,7 +142,7 @@ public class MarketProxy extends ControllerProxy implements MarketFacade {
 
     @Override
     public void start() throws NoPermissionException, AuthenticationFailedException {
-        
+
     }
 
     @Override
@@ -130,4 +154,5 @@ public class MarketProxy extends ControllerProxy implements MarketFacade {
     public void restart() throws NoPermissionException, AuthenticationFailedException {
 
     }
+
 }

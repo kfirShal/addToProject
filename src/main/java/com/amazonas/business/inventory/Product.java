@@ -8,19 +8,22 @@ public final class Product {
     private final double price;
     private final String category;
     private final int rate;
+    private final String description;
 
     public Product(
             String productID,
             String nameProduct,
             double price,
             String category,
-            int rate
+            int rate,
+            String description
     ) {
         this.productID = productID;
         this.nameProduct = nameProduct;
         this.price = price;
         this.category = category;
         this.rate = rate;
+        this.description = description;
     }
 
     public String productID() {
@@ -71,4 +74,7 @@ public final class Product {
     }
 
 
+    public String description() {
+        return description;
+    }
 }

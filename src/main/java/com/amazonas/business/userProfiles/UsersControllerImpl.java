@@ -9,25 +9,22 @@ import java.util.Map;
 @Component("usersController")
 public class UsersControllerImpl implements UsersController {
 
-    private Map<String,Guest> guests;
-    private Map<String,RegisteredUser> registeredUsers;
+    private final Map<String,Guest> guests;
+    private final Map<String,RegisteredUser> registeredUsers;
 
     private int initialId;
 
-    @Autowired
-    public UsersControllerImpl(Map<String, Guest> guests,Map<String,RegisteredUser> registeredUsers) {
-        this.guests = new HashMap<>(guests);
-        this.registeredUsers = new HashMap<>(registeredUsers);
+    public UsersControllerImpl() {
+        this.guests = new HashMap<>();
+        this.registeredUsers = new HashMap<>();
         this.initialId = 0;
     }
 
-    @Override
-    public RegisteredUser getRegisteredUser(String userName) {
+    private RegisteredUser getRegisteredUser(String userName) {
         return registeredUsers.get(userName);
     }
 
-    @Override
-    public Guest getGuest(String id) {
+    private Guest getGuest(String id) {
         return guests.get(id);
     }
 
@@ -57,7 +54,7 @@ public class UsersControllerImpl implements UsersController {
 
 
     @Override
-    public void login(String userName, String password) {
+    public void login(String userName) {
         if(!registeredUsers.containsKey(userName)){
             throw new RuntimeException("This user name is not exists in the system");
         }
@@ -73,7 +70,7 @@ public class UsersControllerImpl implements UsersController {
     }
 
     @Override
-    public void returnToGuest() {
+    public void logout() {
 
     }
 
@@ -83,22 +80,17 @@ public class UsersControllerImpl implements UsersController {
     }
 
     @Override
-    public StoreBasket getBasket() {
-        return null;
-    }
-
-    @Override
     public ShoppingCart getCart() {
         return null;
     }
 
     @Override
-    public void addProductToBasket() {
+    public void addProductToCart() {
 
     }
 
     @Override
-    public void RemoveProductFromBasket() {
+    public void RemoveProductFromCart() {
 
     }
 
