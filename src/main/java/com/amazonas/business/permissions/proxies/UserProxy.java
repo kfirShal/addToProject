@@ -21,7 +21,12 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public Map<Integer, User> getUser() {
+    public User getRegisteredUser(String userName) {
+        return null;
+    }
+
+    @Override
+    public User getGuest(String id) {
         return null;
     }
 

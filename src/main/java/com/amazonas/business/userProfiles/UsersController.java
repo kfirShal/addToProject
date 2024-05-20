@@ -4,7 +4,9 @@ import java.util.Map;
 
 public interface UsersController {
 
-    public Map<Integer,User> getUser();
+    public User getRegisteredUser(String userName);
+    public User getGuest(String id);
+
     public void register(String email, String userName, String password);
     public void enterAsGuest();
     public void login(String userName, String password);

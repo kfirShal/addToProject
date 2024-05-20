@@ -3,7 +3,7 @@ package com.amazonas.business.userProfiles;
 import com.amazonas.business.inventory.Product;
 
 public class Guest extends User{
-    public Guest(int id){
+    public Guest(String id){
         super(id);
     }
 
@@ -34,6 +34,8 @@ public class Guest extends User{
 
     @Override
     public String getUserId() {
-        return "";
+        return super.getUserId();
     }
+
+
 }

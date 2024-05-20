@@ -4,9 +4,9 @@ import com.amazonas.business.inventory.Product;
 
 public abstract class User {
 
-    private int initialId;
+    private String initialId;
     private ShoppingCart cart;
-    public User(int initialId){
+    public User(String initialId){
         this.initialId = initialId;
         cart = new ShoppingCart();
     }
@@ -31,14 +31,14 @@ public abstract class User {
         cart.changeProductQuantity(storeName,productId,quantity);
     }
 
-    public int getInitialId() {
-        return initialId;
-    }
 
     public ShoppingCart getCart() {
         return cart;
     }
 
-    public abstract String getUserId();
+    public String getUserId(){
+        return initialId;
+    };
+
 
 }

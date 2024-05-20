@@ -8,22 +8,22 @@ import java.util.Map;
 @Configuration
 public class UserProfilesBeans {
     @Bean
-    public UsersController userController(Map<Integer, User> guests, Map<String, User> registeredUsers) {
+    public UsersController userController(Map<String, Guest> guests, Map<String,RegisteredUser > registeredUsers) {
         return new UsersControllerImpl(guests,registeredUsers);
     }
 
     @Bean
     public User guest() {
-        return new Guest(1);
+        return new Guest("guest");
     }
 
     @Bean
     public User registeredUser() {
-        return new RegisteredUser(2,"registeredUser", "password123", "registered@example.com");
+        return new RegisteredUser("notGuestAnymore","registeredUser", "password123", "registered@example.com");
     }
 
     @Bean
     public User admin() {
-        return new RegisteredUser(0,"admin", "adminPassword", "admin@example.com");
+        return new RegisteredUser("notGuestAnymore","admin", "adminPassword", "admin@example.com");
     }
 }
