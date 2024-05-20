@@ -77,6 +77,4 @@ public class ShoppingCart {
     public Map<String, StoreBasket> getBaskets() {
         return baskets;
     }
-
-
 }

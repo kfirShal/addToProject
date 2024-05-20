@@ -78,6 +78,4 @@ public class StoreBasket {
     public Map<Integer, ProductWithQuantity> getProducts() {
         return products;
     }
-
-
 }

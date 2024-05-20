@@ -5,7 +5,10 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.market.GlobalSearchRequest;
 import com.amazonas.business.market.MarketActions;
 import com.amazonas.business.market.MarketController;
+import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.stores.SearchRequest;
+import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
@@ -28,23 +31,24 @@ public class MarketProxy extends ControllerProxy implements MarketController {
         return real.searchProducts(request);
     }
 
+
     @Override
-    public void getShoppingCartDetails(User user, String token) throws NoPermissionException, AuthenticationFailedException {
+    public ShoppingCart getShoppingCartDetails(User user, String token) throws NoPermissionException, AuthenticationFailedException {
         authenticateToken(user.getUserId() ,token);
         if(! perm.checkPermission(user.getUserId(), MarketActions.VIEW_SHOPPING_CART)) {
             throw new NoPermissionException("User does not have permission to view shopping cart");
         }
 
-        real.getShoppingCartDetails(user, token);
+        return real.getShoppingCartDetails(user, token);
     }
 
     @Override
-    public void makePurchase(User user, String token) throws NoPermissionException, AuthenticationFailedException {
+    public void makePurchase(User user, String token, PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException {
         authenticateToken(user.getUserId() ,token);
         if(! perm.checkPermission(user.getUserId(), MarketActions.MAKE_PURCHASE)) {
             throw new NoPermissionException("User does not have permission to make a purchase");
         }
 
-        real.makePurchase(user, token);
+        real.makePurchase(user, token, paymentMethod);
     }
 }
