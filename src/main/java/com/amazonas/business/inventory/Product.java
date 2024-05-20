@@ -2,12 +2,12 @@ package com.amazonas.business.inventory;
 
 import java.util.Objects;
 
-public final class Product {
-    private final String productID;
-    private final String nameProduct;
-    private final double price;
-    private final String category;
-    private final int rate;
+public class Product {
+    private String productID;
+    private String nameProduct;
+    private double price;
+    private String category;
+    private int rate;
 
     public Product(
             String productID,
@@ -41,6 +41,26 @@ public final class Product {
 
     public int rate() {
         return rate;
+    }
+
+    public void changeProductID(String newProductId) {
+         this.productID = newProductId;
+    }
+
+    public void changeNameProduct(String nameProduct) {
+        this.nameProduct = nameProduct;
+    }
+
+    public void changePrice(double price) {
+        this.price = price;
+    }
+
+    public void changeCategory(String category) {
+        this.category = category;
+    }
+
+    public void changeRate(int rate) {
+        this.rate = rate;
     }
 
     @Override
