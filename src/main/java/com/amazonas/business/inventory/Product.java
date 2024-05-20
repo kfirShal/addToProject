@@ -82,23 +82,6 @@ public class Product {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (Product) obj;
-        return Objects.equals(this.productID, that.productID) &&
-                Objects.equals(this.nameProduct, that.nameProduct) &&
-                Double.doubleToLongBits(this.price) == Double.doubleToLongBits(that.price) &&
-                Objects.equals(this.category, that.category) &&
-                this.rate == that.rate;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(productID, nameProduct, price, category, rate);
-    }
-
-    @Override
     public String toString() {
         return "Product[" +
                 "productID=" + productID + ", " +
@@ -111,5 +94,18 @@ public class Product {
 
     public String description() {
         return description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(productID, product.productID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(productID);
     }
 }
