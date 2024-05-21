@@ -14,15 +14,25 @@ import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component("marketFacade")
 public class MarketFacadeImpl implements MarketFacade {
 
-    ExternalServices externalServicesController;
+    private Map<PaymentMethod, Boolean> paymentMethods;
+    private Map<PaymentService, Boolean> paymentServices;
+    private Map<ShippingService, Boolean> shippingServices;
+    private final ReentrantLock paymentMethodsLock;
+    private final ReentrantLock paymentServicesLock;
+    private final ReentrantLock shippingServicesLock;
     public MarketFacadeImpl() {
-        externalServicesController = ExternalServices.getInstance();
+        paymentMethods = new HashMap<>();
+        paymentServices = new HashMap<>();
+        shippingServices = new HashMap<>();
+        paymentMethodsLock = new ReentrantLock(true);
+        paymentServicesLock = new ReentrantLock(true);
+        shippingServicesLock = new ReentrantLock(true);
     }
 
     @Override
@@ -31,7 +41,7 @@ public class MarketFacadeImpl implements MarketFacade {
         List<Store> stores = storesController.getAllStores();
         List<Product> ret = new LinkedList<>();
         for (Store store : stores) {
-            if (store.storeRating.ordinal() >= request.getStoreRating().ordinal()) {
+            if (store.getStoreRating.ordinal() >= request.getStoreRating().ordinal()) {
                 ret.addAll(store.searchProduct(request));
             }
         }
@@ -81,38 +91,22 @@ public class MarketFacadeImpl implements MarketFacade {
     }
 
     @Override
-    public void addShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.addShippingService(shippingService);
+    public void addPaymentService(PaymentService newPaymentService) {
+        paymentServicesLock.lock();  // block until condition holds
+        try {
+            paymentServices.put(newPaymentService, true);
+        } finally {
+            paymentServicesLock.unlock();
+        }
     }
 
-    @Override
-    public void removeShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.removeShippingService(shippingService);
-    }
-
-    @Override
-    public void updateShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
-
-    }
-
-    @Override
-    public void enableShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.enableShippingService(shippingService);
-    }
-
-    @Override
-    public void disableShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.disableShippingService(shippingService);
-    }
-
-    @Override
-    public void addPaymentService(PaymentService paymentService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.addPaymentService(paymentService);
-    }
-
-    @Override
-    public void removePaymentService(PaymentService paymentService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.removePaymentService(paymentService);
+    public void removePaymentService(PaymentService oldPaymentService) {
+        paymentServicesLock.lock();  // block until condition holds
+        try {
+            paymentServices.remove(oldPaymentService);
+        } finally {
+            paymentServicesLock.unlock();
+        }
     }
 
     @Override
@@ -120,24 +114,22 @@ public class MarketFacadeImpl implements MarketFacade {
 
     }
 
-    @Override
-    public void enablePaymentService(PaymentService paymentService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.enablePaymentService(paymentService);
+    public void addPaymentMethod(PaymentMethod newPaymentMethod) {
+        paymentMethodsLock.lock();  // block until condition holds
+        try {
+            paymentMethods.put(newPaymentMethod, true);
+        } finally {
+            paymentMethodsLock.unlock();
+        }
     }
 
-    @Override
-    public void disablePaymentService(PaymentService paymentService) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.disablePaymentService(paymentService);
-    }
-
-    @Override
-    public void addPaymentMethod(PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.addPaymentMethod(paymentMethod);
-    }
-
-    @Override
-    public void removePaymentMethod(PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.removePaymentMethod(paymentMethod);
+    public void removePaymentMethod(PaymentMethod oldPaymentMethod) {
+        paymentMethodsLock.lock();  // block until condition holds
+        try {
+            paymentMethods.remove(oldPaymentMethod);
+        } finally {
+            paymentMethodsLock.unlock();
+        }
     }
 
     @Override
@@ -145,35 +137,186 @@ public class MarketFacadeImpl implements MarketFacade {
 
     }
 
-    @Override
-    public void enablePaymentMethod(PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.enablePaymentMethod(paymentMethod);
+    public void addShippingService(ShippingService newShoppingService) {
+        shippingServicesLock.lock();  // block until condition holds
+        try {
+            shippingServices.put(newShoppingService, true);
+        } finally {
+            shippingServicesLock.unlock();
+        }
+    }
+
+    public void removeShippingService(ShippingService oldShoppingService) {
+        shippingServicesLock.lock();  // block until condition holds
+        try {
+            shippingServices.remove(oldShoppingService);
+        } finally {
+            shippingServicesLock.unlock();
+        }
     }
 
     @Override
-    public void disablePaymentMethod(PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.disablePaymentMethod(paymentMethod);
+    public void updateShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
+
+    }
+
+    public void enablePaymentService(PaymentService paymentService) {
+        paymentServicesLock.lock();  // block until condition holds
+        try {
+            if(paymentServices.containsKey(paymentService)) {
+                paymentServices.put(paymentService, true);
+            }
+        } finally {
+            paymentServicesLock.unlock();
+        }
+    }
+
+    public void enableAllPaymentServices() {
+        paymentServicesLock.lock();  // block until condition holds
+        try {
+            Set<PaymentService> paymentServiceSet = paymentServices.keySet();
+            for (PaymentService PS: paymentServiceSet) {
+                paymentServices.put(PS, true);
+            }
+        } finally {
+            paymentServicesLock.unlock();
+        }
+    }
+
+    public void disablePaymentService(PaymentService paymentService) {
+        paymentServicesLock.lock();  // block until condition holds
+        try {
+            if(paymentServices.containsKey(paymentService)) {
+                paymentServices.put(paymentService, false);
+            }
+        } finally {
+            paymentServicesLock.unlock();
+        }
+    }
+
+    public void disableAllPaymentServices() {
+        paymentServicesLock.lock();  // block until condition holds
+        try {
+            Set<PaymentService> paymentServiceSet = paymentServices.keySet();
+            for (PaymentService PS: paymentServiceSet) {
+                paymentServices.put(PS, false);
+            }
+        } finally {
+            paymentServicesLock.unlock();
+        }
+    }
+
+    public void enablePaymentMethod(PaymentMethod paymentMethod) {
+        paymentMethodsLock.lock();  // block until condition holds
+        try {
+            if(paymentMethods.containsKey(paymentMethod)) {
+                paymentMethods.put(paymentMethod, true);
+            }
+        } finally {
+            paymentMethodsLock.unlock();
+        }
+    }
+
+    public void enableAllPaymentMethods() {
+        paymentMethodsLock.lock();  // block until condition holds
+        try {
+            Set<PaymentMethod> paymentMethodSet = paymentMethods.keySet();
+            for (PaymentMethod PM: paymentMethodSet) {
+                paymentMethods.put(PM, true);
+            }
+        } finally {
+            paymentMethodsLock.unlock();
+        }
+    }
+
+    public void disablePaymentMethod(PaymentMethod paymentMethod) {
+        paymentMethodsLock.lock();  // block until condition holds
+        try {
+            if(paymentMethods.containsKey(paymentMethod)) {
+                paymentMethods.put(paymentMethod, false);
+            }
+        } finally {
+            paymentMethodsLock.unlock();
+        }
+    }
+
+    public void disableAllPaymentMethods() {
+        paymentMethodsLock.lock();  // block until condition holds
+        try {
+            Set<PaymentMethod> paymentMethodSet = paymentMethods.keySet();
+            for (PaymentMethod PM: paymentMethodSet) {
+                paymentMethods.put(PM, false);
+            }
+        } finally {
+            paymentMethodsLock.unlock();
+        }
+    }
+
+    public void enableShippingService(ShippingService shippingService) {
+        shippingServicesLock.lock();  // block until condition holds
+        try {
+            if(shippingServices.containsKey(shippingService)) {
+                shippingServices.put(shippingService, true);
+            }
+        } finally {
+            shippingServicesLock.unlock();
+        }
+    }
+
+    public void enableAllShippingServices() {
+        shippingServicesLock.lock();  // block until condition holds
+        try {
+            Set<ShippingService> shippingServiceSet = shippingServices.keySet();
+            for (ShippingService SS: shippingServiceSet) {
+                shippingServices.put(SS, true);
+            }
+        } finally {
+            shippingServicesLock.unlock();
+        }
+    }
+
+    public void disableShippingService(ShippingService shippingService) {
+        shippingServicesLock.lock();  // block until condition holds
+        try {
+            if(shippingServices.containsKey(shippingService)) {
+                shippingServices.put(shippingService, false);
+            }
+        } finally {
+            shippingServicesLock.unlock();
+        }
+    }
+
+    public void disableAllShippingServices() {
+        shippingServicesLock.lock();  // block until condition holds
+        try {
+            Set<ShippingService> shippingServiceSet = shippingServices.keySet();
+            for (ShippingService SS: shippingServiceSet) {
+                shippingServices.put(SS, false);
+            }
+        } finally {
+            shippingServicesLock.unlock();
+        }
     }
 
     @Override
     public void start() throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.enableAllShippingServices();
-        externalServicesController.enableAllPaymentServices();
-        externalServicesController.enableAllPaymentMethods();
+        enableAllShippingServices();
+        enableAllPaymentServices();
+        enableAllPaymentMethods();
     }
 
     @Override
     public void shutdown() throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.disableAllShippingServices();
-        externalServicesController.disableAllPaymentServices();
-        externalServicesController.disableAllPaymentMethods();
+        disableAllShippingServices();
+        disableAllPaymentServices();
+        disableAllPaymentMethods();
     }
 
     @Override
     public void restart() throws NoPermissionException, AuthenticationFailedException {
-        externalServicesController.enableAllShippingServices();
-        externalServicesController.enableAllPaymentServices();
-        externalServicesController.enableAllPaymentMethods();
+        enableAllShippingServices();
+        enableAllPaymentServices();
+        enableAllPaymentMethods();
     }
 
 }
