@@ -71,4 +71,21 @@ public class StoreBasket {
     public Map<String, Pair<Product, Integer>> getProducts() {
         return products;
     }
+
+    public void mergeStoreBaskets(StoreBasket guestBasket) {
+        for (Map.Entry<String, Pair<Product, Integer>> entry : guestBasket.getProducts().entrySet()) {
+            String productId = entry.getKey();
+            Pair<Product, Integer> guestProductWithQuantity = entry.getValue();
+
+            Pair<Product, Integer> userProductWithQuantity = this.getProducts().get(productId);
+            if (userProductWithQuantity == null) {
+                // If the product ID doesn't exist in the user's basket, add the guest's product
+                this.getProducts().put(productId, guestProductWithQuantity);
+            } else {
+                // If the product ID exists in both baskets, update the quantity
+                int updatedQuantity = userProductWithQuantity.getSecond() + guestProductWithQuantity.getSecond();
+                this.getProducts().put(productId, new Pair<>(userProductWithQuantity.getFirst(), updatedQuantity));
+            }
+        }
+    }
 }

@@ -10,17 +10,15 @@ import java.util.UUID;
 @Component("usersController")
 public class UsersControllerImpl implements UsersController {
 
-    private final Map<String,User> users;
     private final Map<String, ShoppingCart> carts;
     private final Map<String,Guest> guests;
     private final Map<String,RegisteredUser> registeredUsers;
     private final Map<String,User> onlineRegisteredUsers;
 
-    private String initialId;
+    private String guestInitialId;
 
     public UsersControllerImpl() {
 
-        this.users = new HashMap<>();
         this.guests = new HashMap<>();
         this.registeredUsers = new HashMap<>();
         this.onlineRegisteredUsers = new HashMap<>();
@@ -28,78 +26,85 @@ public class UsersControllerImpl implements UsersController {
 
     }
 
-
-    private User getUser(String initialId){
-        return users.get(initialId);
+    private User getOnlineUser(String UserId){
+        return onlineRegisteredUsers.get(UserId);
     }
 
-    private User getOnlineUser(String initialId){
-        return users.get(initialId);
+    private RegisteredUser getRegisteredUser(String UserId) {
+        return registeredUsers.get(UserId);
     }
 
-    private RegisteredUser getRegisteredUser(String userName) {
-        return registeredUsers.get(userName);
-    }
-
-    private Guest getGuest(String id) {
-        return guests.get(id);
+    private Guest getGuest(String GuestInitialId) {
+        return guests.get(GuestInitialId);
     }
 
     @Override
-    public void register(String id,String email, String userName, String password) {
+    public void register(String email, String userName, String password) {
+       if(registeredUsers.containsKey(userName)){
+           throw new RuntimeException("This user name is already exists in the system");
+       }
 
-        if (!isValidPassword(password)) {
+       if (!isValidPassword(password)) {
             throw new IllegalArgumentException("Password must contain at least one uppercase letter and one special character.");
         }
-        //Delete the guest from the list of users and add the registeredUser.
-        users.remove(id);
-        User newRegisteredUser = new RegisteredUser(id,userName,email);
-        users.put(id,newRegisteredUser);
-
-
-
+        //Now the id of the registeredUser is the userName
+        //the user is still in the guests until he logs in
+        RegisteredUser newRegisteredUser = new RegisteredUser(userName,email);
+        registeredUsers.put(userName,newRegisteredUser);
     }
 
     @Override
     public void enterAsGuest() {
-        initialId = UUID.randomUUID().toString();
-        Guest newGuest = new Guest(initialId);
-        users.put(initialId,newGuest);
-        carts.put(initialId,new ShoppingCart());
+        guestInitialId = UUID.randomUUID().toString();
+        Guest newGuest = new Guest(guestInitialId);
+        guests.put(guestInitialId,newGuest);
+        carts.put(guestInitialId,new ShoppingCart());
 
     }
 
     @Override
-    public void loginToRegistered(String id) {
-        if(!users.containsKey(id)){
-            throw new RuntimeException("This user name is not exists in the system");
+    //this is when the guest logs in to the market and turn to registeredUser
+    public void loginToRegistered(String guestInitialId,String userName) {
+
+        if(!registeredUsers.containsKey(userName)){
+            throw new RuntimeException("The user with user name: " + userName + " does not register to the system");
         }
-        else{
-            User loggedInUser = getUser(id);
-            onlineRegisteredUsers.put(id,loggedInUser);
-        }
+            //we delete this user from the list of guest
+            guests.remove(guestInitialId);
+            ShoppingCart cartOfGuest = carts.get(guestInitialId);
+            carts.remove(guestInitialId);
+            ShoppingCart cartOfUser = carts.get(userName);
+            ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
+            carts.put(userName,mergedShoppingCart);
+            RegisteredUser loggedInUser = getRegisteredUser(userName);
+            onlineRegisteredUsers.put(userName,loggedInUser);
     }
 
+
+
     @Override
-    public void logout(String id) {
+    public void logout(String userId) {
         //the registeredUser return to be a guest in the system
-        if(!onlineRegisteredUsers.containsKey(id)){
-            throw new RuntimeException("Wrong id: user with id: " + id + " is not online");
+        if(!onlineRegisteredUsers.containsKey(userId)){
+            throw new RuntimeException("Wrong id: user with id: " + userId + " is not online");
         }
-        onlineRegisteredUsers.remove(id);
-        User user = getUser(id);
-        User guest =new Guest(id);
-        users.replace(id,user,guest);
+
+        onlineRegisteredUsers.remove(userId);
+        guestInitialId = UUID.randomUUID().toString();
+        Guest guest =new Guest(guestInitialId);
+        guests.put(guestInitialId,guest);
+        carts.put(guestInitialId,new ShoppingCart());
     }
 
     @Override
-    public void logoutAsGuest(String id) {
+    public void logoutAsGuest(String guestInitialId) {
         //the guest exits the system, therefore his cart removes from the system
-        if(!users.containsKey(id)){
-            throw new RuntimeException("Wrong id: guest with id: " + id + " is not in the market");
+        if(!guests.containsKey(guestInitialId)){
+            throw new RuntimeException("Wrong id: guest with id: " + guestInitialId + " is not in the market");
         }
-        users.remove(id);
-        carts.remove(id);
+        carts.remove(guestInitialId);
+        guests.remove(guestInitialId);
+
 
     }
 

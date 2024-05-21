@@ -4,11 +4,11 @@ import com.amazonas.business.inventory.Product;
 
 public interface UsersController {
 
-    void register(String id,String email, String userName, String password);
+    void register(String email, String userName, String password);
 
     void enterAsGuest();
 
-    void loginToRegistered(String id);
+    void loginToRegistered(String guestInitialId,String userName);
 
     void logout(String id);
 

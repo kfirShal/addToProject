@@ -6,17 +6,13 @@ import java.util.Objects;
 
 public class RegisteredUser extends User{
 
-    private String userName;
 
     private String email;
 
 
-    public RegisteredUser(String id, String userName, String email){
-        super(id);
-        this.userName = userName;
+    public RegisteredUser(String userId, String email){
+        super(userId);
         this.email = email;
-
-
 
     }
 

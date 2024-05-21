@@ -22,7 +22,7 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public void register(String id, String email, String userName, String password) {
+    public void register(String email, String userName, String password) {
 
     }
 
@@ -32,7 +32,7 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public void loginToRegistered(String id) {
+    public void loginToRegistered(String guestInitialId,String userName) {
 
     }
 

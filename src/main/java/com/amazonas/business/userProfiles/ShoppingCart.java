@@ -58,4 +58,25 @@ public class ShoppingCart {
     public Map<String, StoreBasket> getBaskets() {
         return baskets;
     }
+
+    public ShoppingCart mergeGuestCartWithRegisteredCart(ShoppingCart cartOfGuest) {
+
+
+        for (Map.Entry<String, StoreBasket> entry : cartOfGuest.getBaskets().entrySet()) {
+            String storeId = entry.getKey();
+            StoreBasket guestBasket = entry.getValue();
+
+            StoreBasket userBasket = this.getBaskets().get(storeId);
+            if (userBasket == null) {
+                // If the store ID doesn't exist in the user's cart, add the guest's basket
+                this.getBaskets().put(storeId, guestBasket);
+
+            } else {
+                // If the store ID exists in both carts, merge the products
+                userBasket.mergeStoreBaskets(guestBasket);
+            }
+        }
+
+        return this;
+    }
 }
