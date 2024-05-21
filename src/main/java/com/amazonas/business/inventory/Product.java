@@ -9,6 +9,7 @@ public final class Product {
     private final String category;
     private final int rate;
     private final String description;
+    private boolean enabled;
 
     public Product(
             String productID,

@@ -15,7 +15,12 @@ public class Store {
 
 
 
+
     //functions
+
+    public boolean enableProduct(Product toEnable){
+
+    }
 
     public  boolean updateProduct(Product toUpdate){
         Iterator it = products.iterator();
