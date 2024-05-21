@@ -3,7 +3,6 @@ package com.amazonas.business.inventory;
 public class ProductInventory {
 
 
-
     public void addProduct(Product product) {
     }
 
