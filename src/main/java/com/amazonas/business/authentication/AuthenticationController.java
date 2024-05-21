@@ -10,10 +10,11 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class AuthenticationController {
@@ -29,29 +30,24 @@ public class AuthenticationController {
     private static final MacAlgorithm alg = Jwts.SIG.HS512;
     private static final String passwordStorageFormat = "{bcrypt}";
 
-    private final Map<String, String> userIdToUUID;
-    private final HashSet<String> uuids;
-    private final Semaphore lock;
+    private final ConcurrentMap<String, String> userIdToUUID;
+    private final Set<String> uuids;
 
     private final PasswordEncoder encoder;
     private SecretKey key;
 
     public AuthenticationController() {
         key = Jwts.SIG.HS512.key().build();
-        userIdToUUID = new HashMap<>();
-        uuids = new HashSet<>();
+        userIdToUUID = new ConcurrentHashMap<>();
+        uuids = ConcurrentHashMap.newKeySet();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        lock = new Semaphore(1,true);
     }
 
     public AuthenticationResponse authenticate(String userId, String password) {
         log.debug("Authenticating user: {}", userId);
 
-        //get the hashed password and UUID for the user
-        lockAcquire();
         String hashedPassword = userIdToHashedPassword.get(userId);
         String uuid = userIdToUUID.get(userId);
-        lock.release();
 
         // check if the user exists
         if(hashedPassword == null) {
@@ -69,7 +65,6 @@ public class AuthenticationController {
             return new AuthenticationResponse(false, null);
         }
 
-        lockAcquire();
         //remove the old UUID if it exists
         if(uuid != null) {
             log.trace("Removing old UUID for user {}", userId);
@@ -86,7 +81,6 @@ public class AuthenticationController {
         log.trace("Storing new UUID for user {}", userId);
         userIdToUUID.put(userId, uuid);
         uuids.add(uuid);
-        lock.release();
 
         String token = generateToken(uuid);
         log.debug("User {} authenticated successfully", userId);
@@ -94,11 +88,9 @@ public class AuthenticationController {
     }
 
     public boolean revokeAuthentication(String userId) {
-        lockAcquire();
         log.debug("Revoking authentication for user {}", userId);
         String uuid = userIdToUUID.remove(userId);
         uuids.remove(uuid);
-        lock.release();
         return uuid != null;
     }
 
@@ -112,11 +104,9 @@ public class AuthenticationController {
                     .parseSignedContent(token)
                     .getPayload());
 
-            lockAcquire();
             log.trace("Checking if the UUID from the token matches the stored UUID for user {}", userId);
             String uuid = userIdToUUID.get(userId);
             answer = uuid != null && uuid.equals(uuidFromToken);
-            lock.release();
         } catch (Exception ignored) {
             answer = false;
         }
@@ -128,18 +118,10 @@ public class AuthenticationController {
      * This operation logs out all users by resetting the secret key
      */
     public void resetSecretKey() {
-        lockAcquire();
         log.debug("Resetting secret key");
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID.clear();
         uuids.clear();
-        lock.release();
-    }
-
-    private void lockAcquire() {
-        try {
-            lock.acquire();
-        } catch (InterruptedException ignored) {}
     }
 
     private String generateToken(String userId) {
@@ -157,8 +139,6 @@ public class AuthenticationController {
         log.debug("Adding user credentials for user {}", userId);
         //TODO: store hashed password in database
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
-        lockAcquire();
         userIdToHashedPassword.put(userId, encodedPassword);
-        lock.release();
     }
 }
