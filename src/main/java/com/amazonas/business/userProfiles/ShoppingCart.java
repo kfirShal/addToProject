@@ -20,19 +20,19 @@ public class ShoppingCart {
         return baskets.get(storeName);
     }
 
-    public void addProduct(String storeName,int productId, Product product, int quantity) {
+    public void addProduct(String storeName,Product product, int quantity) {
         if(baskets.containsKey(storeName)){
             StoreBasket basket = baskets.get(storeName);
-            basket.addProduct(productId,product,quantity);
+            basket.addProduct(product,quantity);
         }
         else{
             StoreBasket newBasket = new StoreBasket();
-            newBasket.addProduct(productId,product,quantity);
+            newBasket.addProduct(product,quantity);
             baskets.put(storeName,newBasket);
         }
     }
 
-    public void removeProduct(String storeName, int productId){
+    public void removeProduct(String storeName, String productId){
         try{
             StoreBasket basket = getBasket(storeName);
             basket.removeProduct(productId);
@@ -44,19 +44,7 @@ public class ShoppingCart {
 
     }
 
-    public Boolean isProductExists(String storeName, int productId){
-        try{
-            StoreBasket basket = getBasket(storeName);
-            return basket.isProductExists(productId);
-
-        }
-        catch(Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-
-    }
-
-    public void changeProductQuantity(String storeName, int productId,int quantity){
+    public void changeProductQuantity(String storeName, String productId,int quantity){
         try{
             StoreBasket basket = getBasket(storeName);
             basket.changeProductQuantity(productId,quantity);
@@ -69,5 +57,26 @@ public class ShoppingCart {
 
     public Map<String, StoreBasket> getBaskets() {
         return baskets;
+    }
+
+    public ShoppingCart mergeGuestCartWithRegisteredCart(ShoppingCart cartOfGuest) {
+
+
+        for (Map.Entry<String, StoreBasket> entry : cartOfGuest.getBaskets().entrySet()) {
+            String storeId = entry.getKey();
+            StoreBasket guestBasket = entry.getValue();
+
+            StoreBasket userBasket = this.getBaskets().get(storeId);
+            if (userBasket == null) {
+                // If the store ID doesn't exist in the user's cart, add the guest's basket
+                this.getBaskets().put(storeId, guestBasket);
+
+            } else {
+                // If the store ID exists in both carts, merge the products
+                userBasket.mergeStoreBaskets(guestBasket);
+            }
+        }
+
+        return this;
     }
 }
