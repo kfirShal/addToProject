@@ -6,17 +6,28 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class GlobalProductTracker {
-    Map<Product, Store> productToStore;
+    ConcurrentMap<Product, Store> productToStore;
+
 
     public GlobalProductTracker(){
-        productToStore = new HashMap<>();
+        productToStore = new ConcurrentHashMap<>();
     }
 
     public boolean productExists(Product product){
         return productToStore.containsKey(product);
+    }
+
+    public boolean addProduct(Product product, Store store){
+        if(productExists(product)){
+            return false;
+        }
+        productToStore.put(product,store);
+        return true;
     }
 
     public void addProduct(){}
