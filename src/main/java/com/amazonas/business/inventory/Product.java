@@ -17,7 +17,8 @@ public final class Product {
             double price,
             String category,
             int rate,
-            String description
+            String description,
+            Boolean enabled
     ) {
         this.productID = productID;
         this.nameProduct = nameProduct;
@@ -25,6 +26,7 @@ public final class Product {
         this.category = category;
         this.rate = rate;
         this.description = description;
+        this.enabled = enabled;
     }
 
     public String productID() {
@@ -77,5 +79,18 @@ public final class Product {
 
     public String description() {
         return description;
+    }
+
+    public void setEnabled(){
+        enabled = true;
+    }
+    public void setDisable(){
+        enabled = true;
+    }
+    public void setDisabled(){
+        enabled = false;
+    }
+    public boolean getEnabled(){
+        return enabled;
     }
 }
