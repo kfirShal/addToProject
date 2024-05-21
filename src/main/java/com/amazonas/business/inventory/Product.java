@@ -1,27 +1,30 @@
 package com.amazonas.business.inventory;
 
+import java.util.HashSet;
 import java.util.Objects;
 
-public final class Product {
-    private final String productID;
-    private final String nameProduct;
-    private final double price;
-    private final String category;
-    private final int rate;
-    private final String description;
+public class Product {
+    private String productID;
+    private String nameProduct;
+    private double price;
+    private String category;
+    private String description;
+    private int rate;
+    private HashSet<String> keyWords = new HashSet<>();
 
     public Product(
             String productID,
             String nameProduct,
             double price,
             String category,
-            int rate,
-            String description
+            String description,
+            int rate
     ) {
         this.productID = productID;
         this.nameProduct = nameProduct;
         this.price = price;
         this.category = category;
+        this.description = description;
         this.rate = rate;
         this.description = description;
     }
@@ -46,21 +49,36 @@ public final class Product {
         return rate;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (Product) obj;
-        return Objects.equals(this.productID, that.productID) &&
-                Objects.equals(this.nameProduct, that.nameProduct) &&
-                Double.doubleToLongBits(this.price) == Double.doubleToLongBits(that.price) &&
-                Objects.equals(this.category, that.category) &&
-                this.rate == that.rate;
+    public void changeProductID(String newProductId) {
+         this.productID = newProductId;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(productID, nameProduct, price, category, rate);
+    public void changeNameProduct(String nameProduct) {
+        this.nameProduct = nameProduct;
+    }
+
+    public void changePrice(double price) {
+        this.price = price;
+    }
+
+    public void changeCategory(String category) {
+        this.category = category;
+    }
+
+    public void changeDescription(String description) {
+        this.description = description;
+    }
+
+    public void changeRate(int rate) {
+        this.rate = rate;
+    }
+
+    public void addKeyWords(String key){
+        keyWords.add(key);
+    }
+
+    public void removeKeyWords(String key){
+        keyWords.remove(key);
     }
 
     @Override
@@ -76,5 +94,18 @@ public final class Product {
 
     public String description() {
         return description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(productID, product.productID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(productID);
     }
 }

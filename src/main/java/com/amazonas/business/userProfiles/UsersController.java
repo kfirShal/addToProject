@@ -1,22 +1,24 @@
 package com.amazonas.business.userProfiles;
 
+import com.amazonas.business.inventory.Product;
+
 public interface UsersController {
 
     void register(String email, String userName, String password);
 
     void enterAsGuest();
 
-    void login(String userName);
+    void loginToRegistered(String guestInitialId,String userName);
 
-    void logout();
+    void logout(String id);
 
-    void logoutAsGuest();
+    void logoutAsGuest(String id);
 
-    ShoppingCart getCart();
+    ShoppingCart getCart(String id);
 
-    void addProductToCart();
+    void addProductToCart(String id, String storeName, Product product, int quantity);
 
-    void RemoveProductFromCart();
+    void RemoveProductFromCart(String id,String storeName,String productId);
 
-    void changeProductQuantity();
+    void changeProductQuantity(String id, String storeName, String productId, int quantity);
 }

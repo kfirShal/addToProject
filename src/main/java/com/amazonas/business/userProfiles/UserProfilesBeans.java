@@ -8,6 +8,6 @@ public class UserProfilesBeans {
 
     @Bean
     public User systemAdmin() {
-        return new RegisteredUser("admin","admin", "adminPassword", "admin@example.com");
+        return new RegisteredUser("admin","admin@example.com");
     }
 }

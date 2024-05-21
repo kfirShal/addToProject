@@ -41,7 +41,7 @@ public class MarketFacadeImpl implements MarketFacade {
         List<Store> stores = storesController.getAllStores();
         List<Product> ret = new LinkedList<>();
         for (Store store : stores) {
-            if (store.getStoreRating.ordinal() >= request.getStoreRating().ordinal()) {
+            if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
                 ret.addAll(store.searchProduct(request));
             }
         }
@@ -50,26 +50,26 @@ public class MarketFacadeImpl implements MarketFacade {
 
     @Override
     public void makePurchase(User user, String token){
-        ShoppingCart shoppingCart = user.getCart();
-        for (String storeID : shoppingCart.getBaskets().keySet()) {
-            Store store = getStore(storeID);
-            StoreBasket storeBaket = shoppingCart.getBaskets().get(storeID);
-            for (ProductWithQuantity prodctAmount : storeBaket.getProducts().values()) {
-                try {
-                    //TODO after store will be implemented
-                    //store.decreaseProduct(prodctAmount);
-                }
-                catch (Exception e) {
-                    for (ProductWithQuantity prodctAmount_ : storeBaket.getProducts().values()) {
-                        if(prodctAmount_ != prodctAmount) {
-                            //store.increaseProduct(prodctAmount_);
-                        }
-                        else {
-                            return;
-                        }
-                    }
-                }
-            }
+//        ShoppingCart shoppingCart = user.getCart();
+//        for (String storeID : shoppingCart.getBaskets().keySet()) {
+//            Store store = getStore(storeID);
+//            StoreBasket storeBaket = shoppingCart.getBaskets().get(storeID);
+//            for (ProductWithQuantity prodctAmount : storeBaket.getProducts().values()) {
+//                try {
+//                    //TODO after store will be implemented
+//                    //store.decreaseProduct(prodctAmount);
+//                }
+//                catch (Exception e) {
+//                    for (ProductWithQuantity prodctAmount_ : storeBaket.getProducts().values()) {
+//                        if(prodctAmount_ != prodctAmount) {
+//                            //store.increaseProduct(prodctAmount_);
+//                        }
+//                        else {
+//                            return;
+//                        }
+//                    }
+//                }
+//            }
             /*
             try {
                 paymentMethod.pay(shoppingCart.getPrice());
@@ -83,7 +83,7 @@ public class MarketFacadeImpl implements MarketFacade {
             TransactionsController transactionsController = new TransactionsController();
             transactionsController.addTransaction(user);
              */
-        }
+//        }
     }
 
     private Store getStore(String storeID) {
