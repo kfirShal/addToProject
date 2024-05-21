@@ -19,7 +19,13 @@ public class Store {
     //functions
 
     public boolean enableProduct(Product toEnable){
-
+        Iterator it = products.iterator();
+        while ((it.hasNext())){
+            Product curr = (Product) it.next();
+            if(curr.productID() == toEnable.productID()){
+                if(curr.)
+            }
+        }
     }
 
     public  boolean updateProduct(Product toUpdate){
