@@ -27,17 +27,25 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
 
     @Override
     public boolean addStorePermission(String storeId, StoreActions action) {
-        Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, _ -> new HashSet<>());
-        return allowedActions.add(action);
+        synchronized (storeIdToAllowedStoreActions){
+            Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, _ -> new HashSet<>());
+            return allowedActions.add(action);
+        }
     }
 
     @Override
     public boolean removeStorePermission(String storeId, StoreActions action) {
-        Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
-        if (allowedActions == null) {
-            return false;
+        synchronized (storeIdToAllowedStoreActions){
+            Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
+            if (allowedActions == null) {
+                return false;
+            }
+            boolean result = allowedActions.remove(action);
+            if (allowedActions.isEmpty()) {
+                storeIdToAllowedStoreActions.remove(storeId);
+            }
+            return result;
         }
-        return allowedActions.remove(action);
     }
 
     @Override
@@ -45,7 +53,9 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedUserActions.add(action);
+        synchronized (allowedUserActions){
+            return allowedUserActions.add(action);
+        }
     }
 
     @Override
@@ -53,7 +63,9 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedUserActions.remove(action);
+        synchronized (allowedUserActions){
+            return allowedUserActions.remove(action);
+        }
     }
 
     @Override
@@ -61,7 +73,9 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedMarketActions.add(action);
+        synchronized (allowedMarketActions){
+            return allowedMarketActions.add(action);
+        }
     }
 
     @Override
@@ -69,23 +83,37 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedMarketActions.remove(action);
+        synchronized (allowedMarketActions){
+            return allowedMarketActions.remove(action);
+        }
     }
 
     @Override
     public boolean hasPermission(UserActions action) {
-        return defaultProfile.hasPermission(action) || allowedUserActions.contains(action);
+        if(defaultProfile.hasPermission(action)) {
+            return true;
+        }
+        synchronized (allowedUserActions){
+            return allowedUserActions.contains(action);
+        }
     }
 
     @Override
     public boolean hasPermission(MarketActions action) {
-        return defaultProfile.hasPermission(action) || allowedMarketActions.contains(action);
+        if(defaultProfile.hasPermission(action)) {
+            return true;
+        }
+        synchronized (allowedMarketActions){
+            return allowedMarketActions.contains(action);
+        }
     }
 
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
-        Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
-        return allowedActions != null && allowedActions.contains(action);
+        synchronized (storeIdToAllowedStoreActions){
+            Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
+            return allowedActions != null && allowedActions.contains(action);
+        }
     }
 
     @Override
