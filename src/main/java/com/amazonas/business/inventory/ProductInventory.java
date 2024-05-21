@@ -13,7 +13,6 @@ public class ProductInventory {
     private final GlobalProductTracker tracker;
     ConcurrentMap<String, Product> idToProduct;
     ConcurrentMap<String, Integer> idToQuantity;
-    
 
     public  ProductInventory(GlobalProductTracker tracker){
         this.tracker = tracker;
