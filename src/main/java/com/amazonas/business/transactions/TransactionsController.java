@@ -2,10 +2,7 @@ package com.amazonas.business.transactions;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -29,11 +26,11 @@ public class TransactionsController {
     }
 
     public List<Transaction> getTransactionByUser(String userId){
-        return userIdToTransactions.get(userId);
+        return userIdToTransactions.getOrDefault(userId, new LinkedList<>());
     }
 
     public List<Transaction> getTransactionByStore(String storeId){
-        return storeIdToTransactions.get(storeId);
+        return storeIdToTransactions.getOrDefault(storeId, new LinkedList<>());
     }
 
 }
