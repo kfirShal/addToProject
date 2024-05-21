@@ -5,17 +5,19 @@ import org.springframework.security.core.parameters.P;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ProductInventory {
 
     private final GlobalProductTracker tracker;
-    HashMap<String, Product> idToProduct;
-    Map<String, Integer> idToQuantity;
+    ConcurrentMap<String, Product> idToProduct;
+    ConcurrentMap<String, Integer> idToQuantity;
 
     public  ProductInventory(GlobalProductTracker tracker){
         this.tracker = tracker;
-        idToProduct = new HashMap<>();
-        idToQuantity = new HashMap<>();
+        idToProduct = new ConcurrentHashMap<>();
+        idToQuantity = new ConcurrentHashMap<>();
     }
 
     public void addProduct(Product product) {
@@ -25,7 +27,6 @@ public class ProductInventory {
             product.changeProductID(newId);
         }while (tracker.productExists(product));
         idToProduct.put(product.productID(),product);
-
     }
 
     public void removeProduct(Product product) {
@@ -33,6 +34,9 @@ public class ProductInventory {
     }
 
     public void updateProduct(Product product){
+
+        // we want to make sure the object is the same object
+        // so we can update it for the entire system
         if(idToProduct.containsKey(product.productID())) {
             Product product1 = idToProduct.get(product.productID());
             product1.changeNameProduct(product.nameProduct());
@@ -43,18 +47,15 @@ public class ProductInventory {
         }
     }
 
-
-
-
     public void setQuantity(Product product, int quantity) {
-
         idToQuantity.put(product.productID(), quantity);
-
     }
 
+    /**
+     * @return the quantity of the product. -1 if the product is not in the inventory
+     */
     public int getQuantity(Product product){
         return idToQuantity.getOrDefault(product.productID(), -1);
     }
-
 
 }
