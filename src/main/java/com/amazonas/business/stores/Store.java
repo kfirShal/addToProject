@@ -29,7 +29,7 @@ public class Store {
             if(curr.productID() == toUpdate.productID()){
                 products.remove(curr);
                 products.add(toUpdate);
-                return true
+                return true;
             }
         }
         return false;
