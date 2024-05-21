@@ -6,7 +6,7 @@ import com.amazonas.business.stores.purchasePolicy.PurchasePolicy;
 import java.util.List;
 
 public class Store {
-    public Rating storeRate;
+    public Rating storeRating;
     public List<Product> products;
 
 
