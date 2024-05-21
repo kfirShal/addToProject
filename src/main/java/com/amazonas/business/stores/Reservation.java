@@ -13,6 +13,8 @@ public class Reservation {
 
     private boolean isPaid;
 
+    private boolean isCancelled;
+
     public Reservation(
             String userId,
             Map<Product, Integer> productToQuantity,
@@ -43,6 +45,13 @@ public class Reservation {
 
     public void setPaid() {
         isPaid = true;
+    }
+    public void setCancelled() {
+        isCancelled = true;
+    }
+
+    public boolean isCancelled() {
+        return isCancelled;
     }
 
     @Override
