@@ -1,14 +1,14 @@
 package com.amazonas.service;
 
-import com.amazonas.business.market.MarketController;
+import com.amazonas.business.market.MarketFacade;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MarketService {
 
-    private final MarketController controller;
+    private final MarketFacade controller;
 
-    public MarketService(MarketController marketProxy) {
+    public MarketService(MarketFacade marketProxy) {
         this.controller = marketProxy;
     }
 
