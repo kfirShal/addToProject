@@ -23,7 +23,7 @@ public class MarketFacadeImpl implements MarketFacade {
         List<Store> stores = storesController.getAllStores();
         List<Product> ret = new LinkedList<>();
         for (Store store : stores) {
-            if (store.storeRate == request.getStoreRating())
+            if (store.getStoreRating() == request.getStoreRating())
             ret.addAll(store.searchProduct(request));
         }
         return ret;
