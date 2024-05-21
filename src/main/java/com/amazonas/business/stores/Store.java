@@ -14,6 +14,7 @@ import java.util.concurrent.Semaphore;
 
 public class Store {
 
+    private final long reservationTimeoutSeconds;
     private Rating storeRating;
 
     private final ConcurrentMap<Product, Integer> productsToQuantity;
@@ -25,7 +26,8 @@ public class Store {
     private final Semaphore lock;
     private final Object waitObject = new Object();
 
-    public Store(Rating storeRating) {
+    public Store(Rating storeRating, long reservationTimeoutSeconds) {
+        this.reservationTimeoutSeconds = reservationTimeoutSeconds;
         productsToQuantity = new ConcurrentHashMap<>();
         productsToID = new ConcurrentHashMap<>();
         disabledProducts = ConcurrentHashMap.newKeySet();
@@ -111,7 +113,7 @@ public class Store {
                     for (var pair : toReserve) {
                         put(pair.first(), pair.second());
                     }}},
-                LocalDateTime.now().plusMinutes(10), false);
+                LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), false);
         reservedProducts.put(userId, reservation);
 
         lock.release();
