@@ -3,7 +3,6 @@ package com.amazonas.business.userProfiles;
 
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.inventory.ProductWithQuantity;
 import com.amazonas.utils.Pair;
 
 import java.util.HashMap;
@@ -83,8 +82,8 @@ public class StoreBasket {
                 this.getProducts().put(productId, guestProductWithQuantity);
             } else {
                 // If the product ID exists in both baskets, update the quantity
-                int updatedQuantity = userProductWithQuantity.getSecond() + guestProductWithQuantity.getSecond();
-                this.getProducts().put(productId, new Pair<>(userProductWithQuantity.getFirst(), updatedQuantity));
+                int updatedQuantity = userProductWithQuantity.second() + guestProductWithQuantity.second();
+                this.getProducts().put(productId, new Pair<>(userProductWithQuantity.first(), updatedQuantity));
             }
         }
     }
