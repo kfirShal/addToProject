@@ -2,6 +2,7 @@ package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.stores.Rating;
 import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.StoresController;
 import org.springframework.stereotype.Component;
@@ -26,5 +27,10 @@ public class StoreProxy extends ControllerProxy implements StoresController {
     @Override
     public List<Store> getAllStores() {
         return null;
+    }
+
+    @Override
+    public void addStore(String storeId, String storeDescription, Rating storeRating) {
+
     }
 }

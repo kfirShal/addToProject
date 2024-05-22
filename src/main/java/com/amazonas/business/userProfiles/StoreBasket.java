@@ -30,10 +30,10 @@ public class StoreBasket {
     public void addProduct(Product product, int quantity) {
         //TODO : store need to check if the product is legal due to policy restrictions (not for now)
 
-        if(!isProductExists(product.productID())){
+        if(!isProductExists(product.productId())){
             //TODO: calculate the new price of the product if needed (not for now)
             Pair <Product, Integer> productWithQuantity = new Pair<>(product,quantity);
-            products.put(product.productID(), productWithQuantity);
+            products.put(product.productId(), productWithQuantity);
         }
         else{
             throw new RuntimeException("Product is already exists, change the quantity of the product if needed");

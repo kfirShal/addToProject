@@ -1,6 +1,5 @@
 package com.amazonas.business.userProfiles;
 
-import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentMethod;
 
 public abstract class User {

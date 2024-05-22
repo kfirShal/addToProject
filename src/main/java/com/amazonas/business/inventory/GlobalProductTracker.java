@@ -8,7 +8,8 @@ import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class GlobalProductTracker {
-    ConcurrentMap<Product, Store> productToStore;
+
+    private ConcurrentMap<Product, Store> productToStore;
 
     public GlobalProductTracker(){
         productToStore = new ConcurrentHashMap<>();
@@ -26,5 +27,4 @@ public class GlobalProductTracker {
         return true;
     }
 
-    public void addProduct(){}
 }

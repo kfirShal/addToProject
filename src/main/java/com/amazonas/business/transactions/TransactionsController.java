@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,8 +26,8 @@ public class TransactionsController {
 
     public void documentTransaction(Transaction transaction){
         log.debug("Documenting transaction for user {} in store {}", transaction.userId(), transaction.storeId());
-        userIdToTransactions.computeIfAbsent(transaction.userId(), _ -> new ArrayList<>()).add(transaction);
-        storeIdToTransactions.computeIfAbsent(transaction.storeId(), _ -> new ArrayList<>()).add(transaction);
+        userIdToTransactions.computeIfAbsent(transaction.userId(), _ -> new LinkedList<>()).add(transaction);
+        storeIdToTransactions.computeIfAbsent(transaction.storeId(), _ -> new LinkedList<>()).add(transaction);
     }
 
     public List<Transaction> getTransactionByUser(String userId){

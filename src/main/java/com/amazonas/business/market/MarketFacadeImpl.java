@@ -1,15 +1,12 @@
 package com.amazonas.business.market;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.inventory.ProductWithQuantity;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.shipping.ShippingService;
 import com.amazonas.business.stores.Reservation;
 import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.StoresController;
-import com.amazonas.business.stores.StoresControllerImpl;
-import com.amazonas.business.transactions.FinalProduct;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.transactions.TransactionsController;
 import com.amazonas.business.userProfiles.ShoppingCart;
@@ -17,7 +14,6 @@ import com.amazonas.business.userProfiles.StoreBasket;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
-import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -34,7 +30,9 @@ public class MarketFacadeImpl implements MarketFacade {
     private final ReentrantLock paymentMethodsLock;
     private final ReentrantLock paymentServicesLock;
     private final ReentrantLock shippingServicesLock;
-    public MarketFacadeImpl() {
+    private final StoresController controller;
+
+    public MarketFacadeImpl(StoresController storesController) {
         paymentMethods = new HashMap<>();
         paymentServices = new HashMap<>();
         shippingServices = new HashMap<>();
@@ -42,12 +40,12 @@ public class MarketFacadeImpl implements MarketFacade {
         paymentServicesLock = new ReentrantLock(true);
         shippingServicesLock = new ReentrantLock(true);
         currenPaymentService = new PaymentService();
+        controller = storesController;
     }
 
     @Override
     public List<Product> searchProducts(GlobalSearchRequest request) {
-        StoresControllerImpl storesController = new StoresControllerImpl();
-        List<Store> stores = storesController.getAllStores();
+        List<Store> stores = controller.getAllStores();
         List<Product> ret = new LinkedList<>();
         for (Store store : stores) {
             if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
@@ -65,8 +63,7 @@ public class MarketFacadeImpl implements MarketFacade {
         LocalDateTime transactionTime = LocalDateTime.now();
         double totalPrice = 0;
         for (String storeID : shoppingCart.getBaskets().keySet()) {
-            StoresController storesController = new StoresControllerImpl();
-            Store store = storesController.getStore(Integer.getInteger(storeID));
+            Store store = controller.getStore(Integer.getInteger(storeID));
             StoreBasket storeBaket = shoppingCart.getBaskets().get(storeID);
             Reservation reservation = null;
             try {
@@ -77,7 +74,15 @@ public class MarketFacadeImpl implements MarketFacade {
                 reservations.add(reservation);
                 double price = store.calculateTotalPrice((List)storeBaket.getProducts().values());
                 totalPrice += price;
-                Transaction transaction = new Transaction(storeID, user.getUserId(), user.getPaymentMethod(), transactionTime, productToFinalProduct(storeBaket.getProducts().values()), price);
+                Transaction transaction = new Transaction(storeID,
+                        user.getUserId(),
+                        user.getPaymentMethod(),
+                        transactionTime,
+                        new HashMap<>(){{
+                            for (var entry : storeBaket.getProducts().entrySet()) {
+                                var pair = entry.getValue();
+                                put(pair.first(), pair.second());
+                            }}});
                 transactions.add(transaction);
             }
             catch (Exception e) {
@@ -97,15 +102,6 @@ public class MarketFacadeImpl implements MarketFacade {
         for (Transaction transaction : transactions) {
             transactionsController.documentTransaction(transaction);
         }
-    }
-
-    private Collection<Pair<FinalProduct, Integer>> productToFinalProduct(Collection<Pair<Product, Integer>> products) {
-        Collection<Pair<FinalProduct, Integer>> ret = new LinkedList<>();
-        for (Pair<Product, Integer> product : products) {
-            FinalProduct finalProduct = new FinalProduct(product.first(), product.first().productID());
-            ret.add(new Pair(finalProduct, product.second()));
-        }
-        return ret;
     }
 
     @Override

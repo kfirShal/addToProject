@@ -1,37 +1,42 @@
 package com.amazonas.business.stores;
 
+import com.amazonas.business.inventory.GlobalProductTracker;
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.utils.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 
 public class Store {
 
-    private Rating storeRating;
+    private static final int FIVE_MINUTES = 5 * 60;
 
-    private final ConcurrentMap<Product, Integer> productsToQuantity;
-    private final ConcurrentMap<String, Product> productsToID;
-    private final Set<Product> disabledProducts;
-
+    private long reservationTimeoutSeconds;
+    private final GlobalProductTracker tracker;
+    private final ProductInventory inventory;
     private final ConcurrentMap<String, Reservation> reservedProducts;
-
     private final Semaphore lock;
     private final Object waitObject = new Object();
 
-    public Store(Rating storeRating) {
-        productsToQuantity = new ConcurrentHashMap<>();
-        productsToID = new ConcurrentHashMap<>();
-        disabledProducts = ConcurrentHashMap.newKeySet();
+    private String storeId;
+    private String storeDescription;
+    private Rating storeRating;
+
+    public Store(GlobalProductTracker tracker, ProductInventory inventory) {
+        this.reservationTimeoutSeconds = FIVE_MINUTES;
+        this.tracker = tracker;
+        this.inventory = inventory;
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
-        this.storeRating = storeRating;
+        storeRating = Rating.NOT_RATED;
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
         reserveTimeoutThread.start();
@@ -42,39 +47,25 @@ public class Store {
         return 0;
     }
 
-    public boolean enableProduct(Product toEnable){
-        return disabledProducts.remove(toEnable);
-    }
-
-    public  boolean updateProduct(Product toUpdate){
-        Product product = productsToID.get(toUpdate.productID());
-        if(product == null){
-            return false;
-        }
-        product.changeNameProduct(toUpdate.nameProduct());
-        product.changeCategory(toUpdate.category());
-        product.changeRate(toUpdate.rate());
-        product.changePrice(toUpdate.price());
-        product.changeDescription(toUpdate.description());
-        return true;
-    }
-
-    public  boolean addProduct(Product toAdd){
-        if(productsToID.containsKey(toAdd.productID())){
-            return false;
-        }
-        productsToID.put(toAdd.productID(),toAdd);
-        productsToQuantity.put(toAdd,0);
-        return true;
+    public void addProduct(Product toAdd){
+        inventory.addProduct(toAdd);
+        tracker.addProduct(toAdd,this);
     }
 
     public  boolean removeProduct(Product toRemove){
-        if(!productsToID.containsKey(toRemove.productID())){
-            return false;
-        }
-        productsToID.remove(toRemove.productID());
-        productsToQuantity.remove(toRemove);
-        return true;
+        return inventory.removeProduct(toRemove);
+    }
+
+    public  boolean updateProduct(Product toUpdate){
+        return inventory.updateProduct(toUpdate);
+    }
+
+    public boolean enableProduct(Product toEnable){
+        return inventory.enableProduct(toEnable);
+    }
+
+    public boolean disableProduct(Product toDisable){
+        return inventory.disableProduct(toDisable);
     }
 
     public Reservation reserveProducts(String userId, List<Pair<Product,Integer>> toReserve){
@@ -92,7 +83,7 @@ public class Store {
         for (var pair : toReserve) {
             Product product = pair.first();
             int quantity = pair.second();
-            if (productsToQuantity.getOrDefault(product, -1) < quantity) {
+            if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
                 lock.release();
                 return null;
             }
@@ -102,7 +93,7 @@ public class Store {
         for (var pair : toReserve) {
             Product product = pair.first();
             int quantity = pair.second();
-            productsToQuantity.put(product, productsToQuantity.get(product) - quantity);
+            inventory.setQuantity(product, inventory.getQuantity(product) - quantity);
         }
 
         // Create the reservation
@@ -111,7 +102,7 @@ public class Store {
                     for (var pair : toReserve) {
                         put(pair.first(), pair.second());
                     }}},
-                LocalDateTime.now().plusMinutes(10), false);
+                LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), false);
         reservedProducts.put(userId, reservation);
 
         lock.release();
@@ -121,71 +112,22 @@ public class Store {
         return reservation;
     }
 
-    private void lockAcquire() {
-        try {
-            lock.acquire();
-        } catch (InterruptedException ignored) {}
-    }
-
-    public void reservationThreadMain(){
-        long nextWakeUp = Long.MAX_VALUE;
-        Reservation nextExpiringReservation = null;
-        while(true){
-
-            // Wait something to happen
-            do{
-                try {
-                    waitObject.wait(10000L);
-                } catch (InterruptedException ignored) {}
-            }while(reservedProducts.isEmpty());
-
-            // Find the next reservation to expire
-            for(var entry : reservedProducts.entrySet()){
-                Reservation reservation = entry.getValue();
-                LocalDateTime expirationDate = reservation.expirationDate();
-                long expirationTimeMillis = expirationDate.toEpochSecond(ZoneOffset.UTC);
-                if(expirationTimeMillis < nextWakeUp){
-                    nextWakeUp = expirationTimeMillis;
-                    nextExpiringReservation = reservation;
-                }
-            }
-
-            // Wait until the next reservation expires
-            try {
-                Thread.sleep(nextWakeUp - System.currentTimeMillis());
-            } catch (InterruptedException ignored) {}
-
-            assert nextExpiringReservation != null;
-
-            // Check if the reservation is paid
-            // If not, release the products
-            if(! nextExpiringReservation.isPaid()){
-                cancelReservation(nextExpiringReservation);
-            }
-            reservedProducts.remove(nextExpiringReservation.userId());
-
-            nextExpiringReservation = null;
-            nextWakeUp = Long.MAX_VALUE;
-        }
-    }
-
     public void cancelReservation(String userId){
+        lockAcquire();
         Reservation reservation = reservedProducts.get(userId);
         if(reservation == null){
             return;
         }
-        cancelReservation(reservation);
-        reservedProducts.remove(userId);
-    }
-
-    private void cancelReservation(Reservation reservation) {
-        lockAcquire();
         for(var entry : reservation.productToQuantity().entrySet()){
             Product product = entry.getKey();
             int quantity = entry.getValue();
-            productsToQuantity.put(product, productsToQuantity.get(product) + quantity);
+            inventory.setQuantity(product, inventory.getQuantity(product) + quantity);
         }
+        reservedProducts.remove(reservation.userId());
         lock.release();
+        synchronized (waitObject) {
+            waitObject.notifyAll();
+        }
     }
 
     public boolean setReservationPaid(String userId){
@@ -200,11 +142,121 @@ public class Store {
     public void setStoreRating(Rating storeRating) {
         this.storeRating = storeRating;
     }
+
     public List<Product> searchProduct(SearchRequest request) {
-        return null;
+        List<Product> toReturn = new LinkedList<>();
+        for (Product product : inventory.getAllEnabledProducts()) {
+
+            // Check if the product matches the search request
+            if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
+                        || product.rating().ordinal() >= request.getProductRating().ordinal()
+                        || product.productName().toLowerCase().contains(request.getProductName())
+                        || product.category().toLowerCase().contains(request.getProductCategory())
+                        || product.description().toLowerCase().contains(request.getProductName())
+                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
+            {
+                toReturn.add(product);
+            }
+        }
+        return toReturn;
     }
 
     public Rating getStoreRating() {
         return storeRating;
+    }
+
+    public String getStoreId() {
+        return storeId;
+    }
+
+    @Autowired(required = false)
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getStoreDescription() {
+        return storeDescription;
+    }
+
+    public void setStoreDescription(String storeDescription) {
+        this.storeDescription = storeDescription;
+    }
+
+    private void lockAcquire() {
+        try {
+            lock.acquire();
+        } catch (InterruptedException ignored) {}
+    }
+
+    // ================================================================= |
+    // ===================== Reservation Thread ======================== |
+    // ================================================================= |
+
+    private void reservationThreadMain(){
+        long nextWakeUp = Long.MAX_VALUE;
+        Reservation nextExpiringReservation = null;
+        while(true){
+
+            // Wait something to happen
+            do{
+                _wait(10000L);
+            }while(reservedProducts.isEmpty());
+
+            // Find the first reservation that will expire
+            for(var entry : reservedProducts.entrySet()){
+                long expirationTimeMillis = localDateTimeToEpochMillis(entry.getValue().expirationDate());
+                if(expirationTimeMillis <= nextWakeUp){
+                    nextWakeUp = expirationTimeMillis;
+                    nextExpiringReservation = entry.getValue();
+                }
+            }
+
+            // if for some reason there is no reservation
+            // continue to the next iteration
+            if(nextExpiringReservation == null){
+                continue;
+            }
+
+            // Wait until the next reservation expires
+            do{
+                long waitTime = Math.max(nextWakeUp - System.currentTimeMillis(), 1L);
+                _wait(waitTime);
+            } while(System.currentTimeMillis() < nextWakeUp
+                    && !nextExpiringReservation.isPaid()
+                    && !nextExpiringReservation.isCancelled());
+
+            //if the reservation is cancelled, no need to do anything
+            // if not, move to the next step
+            if(! nextExpiringReservation.isCancelled()){
+
+                // if the reservation is paid, remove it
+                if (nextExpiringReservation.isPaid()) {
+                    reservedProducts.remove(nextExpiringReservation.userId());
+                } else {
+
+                    // if the reservation is not paid, cancel it
+                    cancelReservation(nextExpiringReservation.userId());
+                }
+            }
+
+            nextExpiringReservation = null;
+            nextWakeUp = Long.MAX_VALUE;
+        }
+    }
+
+    private void _wait(long waitTime) {
+        synchronized (waitObject) {
+            try {
+                waitObject.wait(waitTime);
+            } catch (InterruptedException ignored) {}
+        }
+    }
+
+    private long localDateTimeToEpochMillis(LocalDateTime time){
+        return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
+        this.reservationTimeoutSeconds = reservationTimeoutSeconds;
     }
 }
