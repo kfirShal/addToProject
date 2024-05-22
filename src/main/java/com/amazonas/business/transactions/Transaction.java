@@ -2,6 +2,7 @@ package com.amazonas.business.transactions;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentMethod;
+import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
