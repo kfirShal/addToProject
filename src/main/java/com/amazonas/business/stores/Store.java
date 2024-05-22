@@ -4,6 +4,7 @@ import com.amazonas.business.inventory.GlobalProductTracker;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.utils.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 
-@Component("store")
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Store {
 
     private static final int FIVE_MINUTES = 5 * 60;
@@ -30,6 +29,8 @@ public class Store {
     private final Semaphore lock;
     private final Object waitObject = new Object();
 
+    private String storeId;
+    private String storeDescription;
     private Rating storeRating;
 
     public Store(GlobalProductTracker tracker, ProductInventory inventory) {
@@ -167,6 +168,23 @@ public class Store {
         return storeRating;
     }
 
+    public String getStoreId() {
+        return storeId;
+    }
+
+    @Autowired(required = false)
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getStoreDescription() {
+        return storeDescription;
+    }
+
+    public void setStoreDescription(String storeDescription) {
+        this.storeDescription = storeDescription;
+    }
+
     private void lockAcquire() {
         try {
             lock.acquire();
@@ -176,7 +194,6 @@ public class Store {
     // ================================================================= |
     // ===================== Reservation Thread ======================== |
     // ================================================================= |
-
 
     private void reservationThreadMain(){
         long nextWakeUp = Long.MAX_VALUE;

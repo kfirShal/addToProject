@@ -10,8 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-@Component("ProductInventory")
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ProductInventory {
 
     private final GlobalProductTracker tracker;

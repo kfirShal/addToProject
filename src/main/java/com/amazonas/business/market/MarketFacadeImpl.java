@@ -5,6 +5,7 @@ import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.shipping.ShippingService;
 import com.amazonas.business.stores.Store;
+import com.amazonas.business.stores.StoresController;
 import com.amazonas.business.stores.StoresControllerImpl;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
@@ -17,10 +18,15 @@ import java.util.List;
 @Component("marketFacade")
 public class MarketFacadeImpl implements MarketFacade {
 
+    private final StoresController controller;
+
+    public MarketFacadeImpl(StoresController storesController) {
+        this.controller = storesController;
+    }
+
     @Override
     public List<Product> searchProducts(GlobalSearchRequest request) {
-        StoresControllerImpl storesController = new StoresControllerImpl();
-        List<Store> stores = storesController.getAllStores();
+        List<Store> stores = controller.getAllStores();
         List<Product> ret = new LinkedList<>();
         for (Store store : stores) {
             if (store.getStoreRating() == request.getStoreRating())
