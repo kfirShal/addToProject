@@ -24,7 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component("marketFacade")
 public class MarketFacadeImpl implements MarketFacade {
 
-    private final PaymentService currenPaymentService;
+    private final PaymentService currentPaymentService;
+    private final ShippingService currentShippingService;
     private final Map<PaymentMethod, Boolean> paymentMethods;
     private final Map<PaymentService, Boolean> paymentServices;
     private final Map<ShippingService, Boolean> shippingServices;
@@ -40,7 +41,8 @@ public class MarketFacadeImpl implements MarketFacade {
         paymentMethodsLock = new ReentrantLock(true);
         paymentServicesLock = new ReentrantLock(true);
         shippingServicesLock = new ReentrantLock(true);
-        currenPaymentService = new PaymentService();
+        currentPaymentService = new PaymentService();
+        currentShippingService = new ShippingService();
         controller = storesController;
     }
 
@@ -101,8 +103,10 @@ public class MarketFacadeImpl implements MarketFacade {
         };
 
         // Charge the user and set the reservations as paid
-        boolean isPaidSuccessfully = currenPaymentService.charge(user.getPaymentMethod(), totalPrice);
-        if(!isPaidSuccessfully){
+        boolean isPaidSuccessfully = currentPaymentService.charge(user.getPaymentMethod(), totalPrice);
+        boolean isShippedSuccessfully = currentShippingService.ship(transactions);
+
+        if(!isPaidSuccessfully || !isShippedSuccessfully){
             for (Reservation reservation : reservations) {
                 //TODO: cancel the reservation from the store object, it's better
                 reservation.setCancelled();
