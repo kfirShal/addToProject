@@ -2,15 +2,16 @@ package com.amazonas.business.inventory;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-public class Product {
+public class Product implements Cloneable {
     private String productID;
     private String nameProduct;
     private double price;
     private String category;
     private String description;
     private int rate;
-    private HashSet<String> keyWords = new HashSet<>();
+    private Set<String> keyWords = new HashSet<>();
 
     public Product(
             String productID,
@@ -107,5 +108,22 @@ public class Product {
     @Override
     public int hashCode() {
         return Objects.hashCode(productID);
+    }
+
+    @Override
+    public Product clone() {
+        try {
+            Product clone = (Product) super.clone();
+            clone.productID = productID;
+            clone.nameProduct = nameProduct;
+            clone.price = price;
+            clone.category = category;
+            clone.description = description;
+            clone.rate = rate;
+            clone.keyWords = (HashSet<String>)((HashSet<String>) keyWords).clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
