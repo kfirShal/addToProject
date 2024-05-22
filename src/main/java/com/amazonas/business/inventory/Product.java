@@ -1,39 +1,40 @@
 package com.amazonas.business.inventory;
 
+import com.amazonas.business.stores.Rating;
+
 import java.util.HashSet;
 import java.util.Objects;
 
 public class Product {
-    private String productID;
+    private String productId;
     private String nameProduct;
     private double price;
     private String category;
     private String description;
-    private int rate;
+    private Rating rating;
     private HashSet<String> keyWords = new HashSet<>();
 
     public Product(
-            String productID,
+            String productId,
             String nameProduct,
             double price,
             String category,
             String description,
-            int rate
+            Rating rating
     ) {
-        this.productID = productID;
+        this.productId = productId;
         this.nameProduct = nameProduct;
         this.price = price;
         this.category = category;
-        this.description = description;
-        this.rate = rate;
+        this.rating = rating;
         this.description = description;
     }
 
-    public String productID() {
-        return productID;
+    public String productId() {
+        return productId;
     }
 
-    public String nameProduct() {
+    public String productName() {
         return nameProduct;
     }
 
@@ -45,32 +46,36 @@ public class Product {
         return category;
     }
 
-    public int rate() {
-        return rate;
+    public Rating rating() {
+        return rating;
     }
 
-    public void changeProductID(String newProductId) {
-         this.productID = newProductId;
+    public String description() {
+        return description;
     }
 
-    public void changeNameProduct(String nameProduct) {
-        this.nameProduct = nameProduct;
+    public void setProductID(String newProductId) {
+         this.productId = newProductId;
     }
 
-    public void changePrice(double price) {
+    public void setProductName(String productName) {
+        this.nameProduct = productName;
+    }
+
+    public void setPrice(double price) {
         this.price = price;
     }
 
-    public void changeCategory(String category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
-    public void changeDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public void changeRate(int rate) {
-        this.rate = rate;
+    public void setRating(Rating rating) {
+        this.rating = rating;
     }
 
     public void addKeyWords(String key){
@@ -84,16 +89,11 @@ public class Product {
     @Override
     public String toString() {
         return "Product[" +
-                "productID=" + productID + ", " +
+                "productID=" + productId + ", " +
                 "nameProduct=" + nameProduct + ", " +
                 "price=" + price + ", " +
                 "category=" + category + ", " +
-                "rate=" + rate + ']';
-    }
-
-
-    public String description() {
-        return description;
+                "rate=" + rating + ']';
     }
 
     @Override
@@ -101,11 +101,11 @@ public class Product {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return Objects.equals(productID, product.productID);
+        return Objects.equals(productId, product.productId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(productID);
+        return Objects.hashCode(productId);
     }
 }

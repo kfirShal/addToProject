@@ -1,39 +1,44 @@
 package com.amazonas.business.stores;
 
+import com.amazonas.business.inventory.GlobalProductTracker;
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.utils.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 
+@Component("store")
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Store {
 
-    private final long reservationTimeoutSeconds;
-    private Rating storeRating;
+    private static final int FIVE_MINUTES = 5 * 60;
 
-    private final ConcurrentMap<Product, Integer> productsToQuantity;
-    private final ConcurrentMap<String, Product> productsToID;
-    private final Set<Product> disabledProducts;
-
+    private long reservationTimeoutSeconds;
+    private final GlobalProductTracker tracker;
+    private final ProductInventory inventory;
     private final ConcurrentMap<String, Reservation> reservedProducts;
-
     private final Semaphore lock;
     private final Object waitObject = new Object();
 
-    public Store(Rating storeRating, long reservationTimeoutSeconds) {
-        this.reservationTimeoutSeconds = reservationTimeoutSeconds;
-        productsToQuantity = new ConcurrentHashMap<>();
-        productsToID = new ConcurrentHashMap<>();
-        disabledProducts = ConcurrentHashMap.newKeySet();
+    private Rating storeRating;
+
+    public Store(GlobalProductTracker tracker, ProductInventory inventory) {
+        this.reservationTimeoutSeconds = FIVE_MINUTES;
+        this.tracker = tracker;
+        this.inventory = inventory;
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
-        this.storeRating = storeRating;
+        storeRating = Rating.NOT_RATED;
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
         reserveTimeoutThread.start();
@@ -44,39 +49,25 @@ public class Store {
         return 0;
     }
 
-    public boolean enableProduct(Product toEnable){
-        return disabledProducts.remove(toEnable);
-    }
-
-    public  boolean updateProduct(Product toUpdate){
-        Product product = productsToID.get(toUpdate.productID());
-        if(product == null){
-            return false;
-        }
-        product.changeNameProduct(toUpdate.nameProduct());
-        product.changeCategory(toUpdate.category());
-        product.changeRate(toUpdate.rate());
-        product.changePrice(toUpdate.price());
-        product.changeDescription(toUpdate.description());
-        return true;
-    }
-
-    public  boolean addProduct(Product toAdd){
-        if(productsToID.containsKey(toAdd.productID())){
-            return false;
-        }
-        productsToID.put(toAdd.productID(),toAdd);
-        productsToQuantity.put(toAdd,0);
-        return true;
+    public void addProduct(Product toAdd){
+        inventory.addProduct(toAdd);
+        tracker.addProduct(toAdd,this);
     }
 
     public  boolean removeProduct(Product toRemove){
-        if(!productsToID.containsKey(toRemove.productID())){
-            return false;
-        }
-        productsToID.remove(toRemove.productID());
-        productsToQuantity.remove(toRemove);
-        return true;
+        return inventory.removeProduct(toRemove);
+    }
+
+    public  boolean updateProduct(Product toUpdate){
+        return inventory.updateProduct(toUpdate);
+    }
+
+    public boolean enableProduct(Product toEnable){
+        return inventory.enableProduct(toEnable);
+    }
+
+    public boolean disableProduct(Product toDisable){
+        return inventory.disableProduct(toDisable);
     }
 
     public boolean reserveProducts(String userId, List<Pair<Product,Integer>> toReserve){
@@ -94,7 +85,7 @@ public class Store {
         for (var pair : toReserve) {
             Product product = pair.first();
             int quantity = pair.second();
-            if (productsToQuantity.getOrDefault(product, -1) < quantity) {
+            if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
                 lock.release();
                 return false;
             }
@@ -104,7 +95,7 @@ public class Store {
         for (var pair : toReserve) {
             Product product = pair.first();
             int quantity = pair.second();
-            productsToQuantity.put(product, productsToQuantity.get(product) - quantity);
+            inventory.setQuantity(product, inventory.getQuantity(product) - quantity);
         }
 
         // Create the reservation
@@ -132,7 +123,7 @@ public class Store {
         for(var entry : reservation.productToQuantity().entrySet()){
             Product product = entry.getKey();
             int quantity = entry.getValue();
-            productsToQuantity.put(product, productsToQuantity.get(product) + quantity);
+            inventory.setQuantity(product, inventory.getQuantity(product) + quantity);
         }
         reservedProducts.remove(reservation.userId());
         lock.release();
@@ -235,5 +226,9 @@ public class Store {
 
     private long localDateTimeToEpochMillis(LocalDateTime time){
         return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
+        this.reservationTimeoutSeconds = reservationTimeoutSeconds;
     }
 }

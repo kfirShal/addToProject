@@ -1,7 +1,6 @@
 package com.amazonas.business.inventory;
 
 import com.amazonas.business.stores.Store;
-import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -19,5 +18,7 @@ public class GlobalProductTracker {
         return productToStore.containsKey(product);
     }
 
-    public void addProduct(){}
+    public void addProduct(Product toAdd, Store store){
+        productToStore.put(toAdd, store);
+    }
 }

@@ -10,6 +10,6 @@ public record FinalProduct (
         String description
 ){
     public FinalProduct(Product product, String id){
-        this(id, product.nameProduct(), product.price(), product.category(), product.description());
+        this(id, product.productName(), product.price(), product.category(), product.description());
     }
 }
