@@ -11,11 +11,11 @@ public class SearchRequest {
     private final Rating productRating;
 
     public SearchRequest(String productName, List<String> keyWords, Integer minPrice, Integer maxPrice, String productCategory, Rating productRating) {
-        this.productName = productName;
-        this.keyWords = keyWords;
+        this.productName = productName.toLowerCase();
+        this.keyWords = keyWords.stream().map(String::toLowerCase).toList();
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
-        this.productCategory = productCategory;
+        this.productCategory = productCategory.toLowerCase();
         this.productRating = productRating;
     }
 

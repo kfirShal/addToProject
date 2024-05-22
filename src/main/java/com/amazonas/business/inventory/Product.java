@@ -12,6 +12,7 @@ public class Product {
     private String category;
     private String description;
     private Rating rating;
+
     private HashSet<String> keyWords = new HashSet<>();
 
     public Product(
@@ -76,6 +77,10 @@ public class Product {
 
     public void setRating(Rating rating) {
         this.rating = rating;
+    }
+
+    public HashSet<String> keyWords() {
+        return keyWords;
     }
 
     public void addKeyWords(String key){

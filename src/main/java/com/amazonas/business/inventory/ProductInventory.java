@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Component("ProductInventory")
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -83,5 +84,11 @@ public class ProductInventory {
 
     public boolean isProductDisabled(Product product) {
         return disabledProducts.contains(product);
+    }
+
+    public Set<Product> getAllEnabledProducts(){
+        return idToProduct.values().stream()
+                .filter(product -> !disabledProducts.contains(product))
+                .collect(Collectors.toSet());
     }
 }

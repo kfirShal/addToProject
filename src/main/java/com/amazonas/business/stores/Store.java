@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -145,7 +146,21 @@ public class Store {
     }
 
     public List<Product> searchProduct(SearchRequest request) {
-        return null;
+        List<Product> toReturn = new LinkedList<>();
+        for (Product product : inventory.getAllEnabledProducts()) {
+
+            // Check if the product matches the search request
+            if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
+                        || product.rating().ordinal() >= request.getProductRating().ordinal()
+                        || product.productName().toLowerCase().contains(request.getProductName())
+                        || product.category().toLowerCase().contains(request.getProductCategory())
+                        || product.description().toLowerCase().contains(request.getProductName())
+                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
+            {
+                toReturn.add(product);
+            }
+        }
+        return toReturn;
     }
 
     public Rating getStoreRating() {
