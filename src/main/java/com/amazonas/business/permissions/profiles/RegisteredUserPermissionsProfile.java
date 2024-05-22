@@ -28,7 +28,7 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
     @Override
     public boolean addStorePermission(String storeId, StoreActions action) {
         synchronized (storeIdToAllowedStoreActions){
-            Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, _ -> new HashSet<>());
+            Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, x -> new HashSet<>());
             return allowedActions.add(action);
         }
     }

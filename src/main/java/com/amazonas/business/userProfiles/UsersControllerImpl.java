@@ -11,6 +11,19 @@ import java.util.UUID;
 public class UsersControllerImpl implements UsersController {
 
     private final Map<String, ShoppingCart> carts;
+
+    public Map<String, Guest> getGuests() {
+        return guests;
+    }
+
+    public Map<String, RegisteredUser> getRegisteredUsers() {
+        return registeredUsers;
+    }
+
+    public Map<String, User> getOnlineRegisteredUsers() {
+        return onlineRegisteredUsers;
+    }
+
     private final Map<String,Guest> guests;
     private final Map<String,RegisteredUser> registeredUsers;
     private final Map<String,User> onlineRegisteredUsers;
@@ -26,21 +39,22 @@ public class UsersControllerImpl implements UsersController {
 
     }
 
-    private User getOnlineUser(String UserId){
+    User getOnlineUser(String UserId){
         return onlineRegisteredUsers.get(UserId);
     }
 
-    private RegisteredUser getRegisteredUser(String UserId) {
+    RegisteredUser getRegisteredUser(String UserId) {
         return registeredUsers.get(UserId);
     }
 
-    private Guest getGuest(String GuestInitialId) {
+    Guest getGuest(String GuestInitialId) {
         return guests.get(GuestInitialId);
     }
 
     @Override
     public void register(String email, String userName, String password) {
-       if(registeredUsers.containsKey(userName)){
+
+        if(registeredUsers.containsKey(userName)){
            throw new RuntimeException("This user name is already exists in the system");
        }
 
@@ -51,14 +65,16 @@ public class UsersControllerImpl implements UsersController {
         //the user is still in the guests until he logs in
         RegisteredUser newRegisteredUser = new RegisteredUser(userName,email);
         registeredUsers.put(userName,newRegisteredUser);
+        carts.put(userName,new ShoppingCart());
     }
 
     @Override
-    public void enterAsGuest() {
+    public String enterAsGuest() {
         guestInitialId = UUID.randomUUID().toString();
         Guest newGuest = new Guest(guestInitialId);
         guests.put(guestInitialId,newGuest);
         carts.put(guestInitialId,new ShoppingCart());
+        return guestInitialId;
 
     }
 
@@ -88,7 +104,6 @@ public class UsersControllerImpl implements UsersController {
         if(!onlineRegisteredUsers.containsKey(userId)){
             throw new RuntimeException("Wrong id: user with id: " + userId + " is not online");
         }
-
         onlineRegisteredUsers.remove(userId);
         guestInitialId = UUID.randomUUID().toString();
         Guest guest =new Guest(guestInitialId);
@@ -109,44 +124,50 @@ public class UsersControllerImpl implements UsersController {
     }
 
     @Override
-    public ShoppingCart getCart(String id) {
-        if(!carts.containsKey(id)){
+    public ShoppingCart getCart(String userId) {
+        if(!carts.containsKey(userId)){
             throw new RuntimeException("The cart does not exists");
         }
-        return carts.get(id);
+        return carts.get(userId);
     }
 
     @Override
-    public void addProductToCart(String id, String storeName, Product product, int quantity) {
+    public void addProductToCart(String userId, String storeName, Product product, int quantity) {
         if(quantity <= 0){
             throw  new RuntimeException("Quantity cannot be 0 or less");
         }
-        if(!carts.containsKey(id)){
+        if(!carts.containsKey(userId)){
             throw new RuntimeException("The cart does not exists");
         }
-        carts.get(id).addProduct(storeName,product,quantity);
+        carts.get(userId).addProduct(storeName,product,quantity);
 
     }
 
     @Override
-    public void RemoveProductFromCart(String id,String storeName,String productId) {
-        if(!carts.containsKey(id)){
+    public void RemoveProductFromCart(String userId,String storeName,String productId) {
+        if(!carts.containsKey(userId)){
             throw new RuntimeException("The cart does not exists");
         }
-        carts.get(id).removeProduct(storeName,productId);
+        if(!carts.get(userId).isStoreExists(storeName)){
+            throw new RuntimeException("The store does not exists in the cart");
+        }
+        if(!carts.get(userId).getBasket(storeName).isProductExists(productId)){
+            throw new RuntimeException("The product does not exists in the store" + storeName);
+        }
+        carts.get(userId).removeProduct(storeName,productId);
 
 
     }
 
     @Override
-    public void changeProductQuantity(String id, String storeName, String productId, int quantity) {
+    public void changeProductQuantity(String userId, String storeName, String productId, int quantity) {
         if(quantity <= 0){
             throw  new RuntimeException("Quantity cannot be 0 or less");
         }
-        if(!carts.containsKey(id)){
+        if(!carts.containsKey(userId)){
             throw new RuntimeException("The cart does not exists");
         }
-        carts.get(id).changeProductQuantity(storeName, productId,quantity);
+        carts.get(userId).changeProductQuantity(storeName, productId,quantity);
 
 
     }

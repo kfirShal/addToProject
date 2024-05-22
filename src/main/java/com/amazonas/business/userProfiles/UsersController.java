@@ -6,7 +6,7 @@ public interface UsersController {
 
     void register(String email, String userName, String password);
 
-    void enterAsGuest();
+    String enterAsGuest();
 
     void loginToRegistered(String guestInitialId,String userName);
 

@@ -27,8 +27,8 @@ public class UserProxy extends ControllerProxy implements UsersController {
     }
 
     @Override
-    public void enterAsGuest() {
-
+    public String enterAsGuest() {
+        return null;
     }
 
     @Override

@@ -79,4 +79,8 @@ public class ShoppingCart {
 
         return this;
     }
+
+    public boolean isStoreExists(String storeName) {
+        return baskets.containsKey(storeName);
+    }
 }
