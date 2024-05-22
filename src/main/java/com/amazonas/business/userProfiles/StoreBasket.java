@@ -50,7 +50,7 @@ public class StoreBasket {
         products.remove(productId);
     }
 
-    private Boolean isProductExists(String productId) {
+    Boolean isProductExists(String productId) {
         return products.containsKey(productId);
     }
 
