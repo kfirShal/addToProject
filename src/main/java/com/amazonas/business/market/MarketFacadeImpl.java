@@ -101,7 +101,15 @@ public class MarketFacadeImpl implements MarketFacade {
         };
 
         // Charge the user and set the reservations as paid
-        currenPaymentService.charge(user.getPaymentMethod(), totalPrice);
+        boolean isPaidSuccessfully = currenPaymentService.charge(user.getPaymentMethod(), totalPrice);
+        if(!isPaidSuccessfully){
+            for (Reservation reservation : reservations) {
+                //TODO: cancel the reservation from the store object, it's better
+                reservation.setCancelled();
+            }
+            return;
+        }
+
         for (Reservation reservation : reservations) {
             reservation.setPaid();
         }
