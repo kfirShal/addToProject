@@ -5,21 +5,29 @@ import com.amazonas.business.inventory.ProductWithQuantity;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.shipping.ShippingService;
+import com.amazonas.business.stores.Reservation;
 import com.amazonas.business.stores.Store;
+import com.amazonas.business.stores.StoresController;
 import com.amazonas.business.stores.StoresControllerImpl;
+import com.amazonas.business.transactions.FinalProduct;
+import com.amazonas.business.transactions.Transaction;
+import com.amazonas.business.transactions.TransactionsController;
 import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.StoreBasket;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
+import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component("marketFacade")
 public class MarketFacadeImpl implements MarketFacade {
 
+    private PaymentService currenPaymentService;
     private Map<PaymentMethod, Boolean> paymentMethods;
     private Map<PaymentService, Boolean> paymentServices;
     private Map<ShippingService, Boolean> shippingServices;
@@ -33,6 +41,7 @@ public class MarketFacadeImpl implements MarketFacade {
         paymentMethodsLock = new ReentrantLock(true);
         paymentServicesLock = new ReentrantLock(true);
         shippingServicesLock = new ReentrantLock(true);
+        currenPaymentService = new PaymentService();
     }
 
     @Override
@@ -50,44 +59,53 @@ public class MarketFacadeImpl implements MarketFacade {
 
     @Override
     public void makePurchase(User user, String token){
-//        ShoppingCart shoppingCart = user.getCart();
-//        for (String storeID : shoppingCart.getBaskets().keySet()) {
-//            Store store = getStore(storeID);
-//            StoreBasket storeBaket = shoppingCart.getBaskets().get(storeID);
-//            for (ProductWithQuantity prodctAmount : storeBaket.getProducts().values()) {
-//                try {
-//                    //TODO after store will be implemented
-//                    //store.decreaseProduct(prodctAmount);
-//                }
-//                catch (Exception e) {
-//                    for (ProductWithQuantity prodctAmount_ : storeBaket.getProducts().values()) {
-//                        if(prodctAmount_ != prodctAmount) {
-//                            //store.increaseProduct(prodctAmount_);
-//                        }
-//                        else {
-//                            return;
-//                        }
-//                    }
-//                }
-//            }
-            /*
+        ShoppingCart shoppingCart = user.getCart();
+        List<Transaction> transactions = new LinkedList<>();
+        List<Reservation> reservations = new LinkedList<>();
+        LocalDateTime transactionTime = LocalDateTime.now();
+        double totalPrice = 0;
+        for (String storeID : shoppingCart.getBaskets().keySet()) {
+            StoresController storesController = new StoresControllerImpl();
+            Store store = storesController.getStore(Integer.getInteger(storeID));
+            StoreBasket storeBaket = shoppingCart.getBaskets().get(storeID);
+            Reservation reservation = null;
             try {
-                paymentMethod.pay(shoppingCart.getPrice());
+                reservation = store.reserveProducts(user.getUserId(), (List)storeBaket.getProducts().values());
+                if (reservation == null) {
+                    throw new NullPointerException();
+                }
+                reservations.add(reservation);
+                double price = store.calculateTotalPrice((List)storeBaket.getProducts().values());
+                totalPrice += price;
+                Transaction transaction = new Transaction(storeID, user.getUserId(), user.getPaymentMethod(), transactionTime, productToFinalProduct(storeBaket.getProducts().values()), price);
+                transactions.add(transaction);
             }
             catch (Exception e) {
-                for (ProdctAmount prodctAmount : storeBaket.PoductAmountsList()) {
-                    store.increaseProduct(prodctAmount);
-                }
                 return;
             }
-            TransactionsController transactionsController = new TransactionsController();
-            transactionsController.addTransaction(user);
-             */
-//        }
+        };
+        try {
+            currenPaymentService.charge(user.getPaymentMethod(), totalPrice);
+        }
+        catch (Exception e) {
+            return;
+        }
+        for (Reservation reservation : reservations) {
+            reservation.isPaid();
+        }
+        TransactionsController transactionsController = new TransactionsController();
+        for (Transaction transaction : transactions) {
+            transactionsController.documentTransaction(transaction);
+        }
     }
 
-    private Store getStore(String storeID) {
-        return null;
+    private Collection<Pair<FinalProduct, Integer>> productToFinalProduct(Collection<Pair<Product, Integer>> products) {
+        Collection<Pair<FinalProduct, Integer>> ret = new LinkedList<>();
+        for (Pair<Product, Integer> product : products) {
+            FinalProduct finalProduct = new FinalProduct(product.first(), product.first().productID());
+            ret.add(new Pair(finalProduct, product.second()));
+        }
+        return ret;
     }
 
     @Override

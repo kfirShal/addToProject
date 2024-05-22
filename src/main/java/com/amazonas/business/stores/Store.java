@@ -77,7 +77,7 @@ public class Store {
         return true;
     }
 
-    public boolean reserveProducts(String userId, List<Pair<Product,Integer>> toReserve){
+    public Reservation reserveProducts(String userId, List<Pair<Product,Integer>> toReserve){
 
         // Check if the user already has a reservation
         // If so, cancel it
@@ -94,7 +94,7 @@ public class Store {
             int quantity = pair.second();
             if (productsToQuantity.getOrDefault(product, -1) < quantity) {
                 lock.release();
-                return false;
+                return null;
             }
         }
 
@@ -118,7 +118,7 @@ public class Store {
         synchronized (waitObject) {
             waitObject.notifyAll();
         }
-        return true;
+        return reservation;
     }
 
     private void lockAcquire() {
