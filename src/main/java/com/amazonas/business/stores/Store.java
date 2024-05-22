@@ -4,7 +4,6 @@ import com.amazonas.business.inventory.GlobalProductTracker;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.utils.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -130,19 +129,6 @@ public class Store {
         }
     }
 
-    public boolean setReservationPaid(String userId){
-        Reservation reservation = reservedProducts.get(userId);
-        if(reservation == null){
-            return false;
-        }
-        reservation.setPaid();
-        return true;
-    }
-
-    public void setStoreRating(Rating storeRating) {
-        this.storeRating = storeRating;
-    }
-
     public List<Product> searchProduct(SearchRequest request) {
         List<Product> toReturn = new LinkedList<>();
         for (Product product : inventory.getAllEnabledProducts()) {
@@ -161,6 +147,10 @@ public class Store {
         return toReturn;
     }
 
+    public void setStoreRating(Rating storeRating) {
+        this.storeRating = storeRating;
+    }
+
     public Rating getStoreRating() {
         return storeRating;
     }
@@ -169,7 +159,6 @@ public class Store {
         return storeId;
     }
 
-    @Autowired(required = false)
     public void setStoreId(String storeId) {
         this.storeId = storeId;
     }

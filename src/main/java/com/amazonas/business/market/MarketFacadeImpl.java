@@ -14,6 +14,7 @@ import com.amazonas.business.userProfiles.StoreBasket;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
+import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -23,10 +24,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component("marketFacade")
 public class MarketFacadeImpl implements MarketFacade {
 
-    private PaymentService currenPaymentService;
-    private Map<PaymentMethod, Boolean> paymentMethods;
-    private Map<PaymentService, Boolean> paymentServices;
-    private Map<ShippingService, Boolean> shippingServices;
+    private final PaymentService currenPaymentService;
+    private final Map<PaymentMethod, Boolean> paymentMethods;
+    private final Map<PaymentService, Boolean> paymentServices;
+    private final Map<ShippingService, Boolean> shippingServices;
     private final ReentrantLock paymentMethodsLock;
     private final ReentrantLock paymentServicesLock;
     private final ReentrantLock shippingServicesLock;
@@ -57,47 +58,54 @@ public class MarketFacadeImpl implements MarketFacade {
 
     @Override
     public void makePurchase(User user, String token){
+
         ShoppingCart shoppingCart = user.getCart();
         List<Transaction> transactions = new LinkedList<>();
         List<Reservation> reservations = new LinkedList<>();
         LocalDateTime transactionTime = LocalDateTime.now();
+
         double totalPrice = 0;
+
         for (String storeID : shoppingCart.getBaskets().keySet()) {
+
+            // Get the store and the basket
             Store store = controller.getStore(Integer.getInteger(storeID));
-            StoreBasket storeBaket = shoppingCart.getBaskets().get(storeID);
-            Reservation reservation = null;
-            try {
-                reservation = store.reserveProducts(user.getUserId(), (List)storeBaket.getProducts().values());
-                if (reservation == null) {
-                    throw new NullPointerException();
-                }
-                reservations.add(reservation);
-                double price = store.calculateTotalPrice((List)storeBaket.getProducts().values());
-                totalPrice += price;
-                Transaction transaction = new Transaction(storeID,
-                        user.getUserId(),
-                        user.getPaymentMethod(),
-                        transactionTime,
-                        new HashMap<>(){{
-                            for (var entry : storeBaket.getProducts().entrySet()) {
-                                var pair = entry.getValue();
-                                put(pair.first(), pair.second());
-                            }}});
-                transactions.add(transaction);
-            }
-            catch (Exception e) {
-                return;
-            }
+            StoreBasket storeBasket = shoppingCart.getBaskets().get(storeID);
+
+            // Get the products to reserve from this store
+            List<Pair<Product,Integer>> productsToReserve = storeBasket
+                    .getProducts()
+                    .values()
+                    .stream()
+                    .toList();
+
+            // Reserve the products
+            Reservation reservation = store.reserveProducts(user.getUserId(), productsToReserve);
+            reservations.add(reservation);
+
+            // add the price of the products to the total price
+            double price = store.calculateTotalPrice(productsToReserve);
+            totalPrice += price;
+
+            // Create the transaction and add it to the list
+            Transaction transaction = new Transaction(storeID,
+                    user.getUserId(),
+                    user.getPaymentMethod(),
+                    transactionTime,
+                    new HashMap<>(){{
+                        for (var entry : storeBasket.getProducts().entrySet()) {
+                            var pair = entry.getValue();
+                            put(pair.first(), pair.second());
+                        }}});
+            transactions.add(transaction);
         };
-        try {
-            currenPaymentService.charge(user.getPaymentMethod(), totalPrice);
-        }
-        catch (Exception e) {
-            return;
-        }
+
+        // Charge the user and set the reservations as paid
+        currenPaymentService.charge(user.getPaymentMethod(), totalPrice);
         for (Reservation reservation : reservations) {
-            reservation.isPaid();
+            reservation.setPaid();
         }
+
         TransactionsController transactionsController = new TransactionsController();
         for (Transaction transaction : transactions) {
             transactionsController.documentTransaction(transaction);
