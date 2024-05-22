@@ -4,12 +4,8 @@ import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.business.userProfiles.StoreBasket;
-import com.amazonas.business.userProfiles.User;
 import com.amazonas.business.userProfiles.UsersController;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component("userProxy")
 public class UserProxy extends ControllerProxy implements UsersController {

@@ -3,15 +3,16 @@ package com.amazonas.business.inventory;
 import com.amazonas.business.stores.Store;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class GlobalProductTracker {
-    Map<Product, Store> productToStore;
+
+    private ConcurrentMap<Product, Store> productToStore;
 
     public GlobalProductTracker(){
-        productToStore = new HashMap<>();
+        productToStore = new ConcurrentHashMap<>();
     }
 
     public boolean productExists(Product product){
