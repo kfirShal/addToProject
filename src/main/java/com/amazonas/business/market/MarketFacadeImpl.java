@@ -33,8 +33,9 @@ public class MarketFacadeImpl implements MarketFacade {
     private final ReentrantLock paymentServicesLock;
     private final ReentrantLock shippingServicesLock;
     private final StoresController controller;
+    private final TransactionsController transactionsController;
 
-    public MarketFacadeImpl(StoresController storesController) {
+    public MarketFacadeImpl(StoresController storesController, TransactionsController transactionsController) {
         paymentMethods = new HashMap<>();
         paymentServices = new HashMap<>();
         shippingServices = new HashMap<>();
@@ -44,6 +45,7 @@ public class MarketFacadeImpl implements MarketFacade {
         currentPaymentService = new PaymentService();
         currentShippingService = new ShippingService();
         controller = storesController;
+        this.transactionsController = transactionsController;
     }
 
     @Override
@@ -103,10 +105,17 @@ public class MarketFacadeImpl implements MarketFacade {
         };
 
         // Charge the user and set the reservations as paid
-        boolean isPaidSuccessfully = currentPaymentService.charge(user.getPaymentMethod(), totalPrice);
-        boolean isShippedSuccessfully = currentShippingService.ship(transactions);
 
-        if(!isPaidSuccessfully || !isShippedSuccessfully){
+        if (! currentPaymentService.charge(user.getPaymentMethod(), totalPrice)) {
+            for (Reservation reservation : reservations) {
+                //TODO: cancel the reservation from the store object, it's better
+                reservation.setCancelled();
+            }
+            return;
+        }
+
+        //TODO: handle the case where the shipping service fails after the payment was successful
+        if (! currentShippingService.ship(transactions)) {
             for (Reservation reservation : reservations) {
                 //TODO: cancel the reservation from the store object, it's better
                 reservation.setCancelled();
@@ -118,10 +127,11 @@ public class MarketFacadeImpl implements MarketFacade {
             reservation.setPaid();
         }
 
-        TransactionsController transactionsController = new TransactionsController();
         for (Transaction transaction : transactions) {
             transactionsController.documentTransaction(transaction);
         }
+
+        //TODO: return a response to the service layer
     }
 
     @Override
