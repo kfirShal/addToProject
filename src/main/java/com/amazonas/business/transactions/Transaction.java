@@ -13,15 +13,15 @@ public record Transaction(
         String userId,
         PaymentMethod paymentMethod,
         LocalDateTime dateOfTransaction,
-        Map<Product, Integer> productToPrice) {
+        Map<Product, Double> productToPrice) {
 
-    public Transaction(String storeId, String userId, PaymentMethod paymentMethod, LocalDateTime dateOfTransaction, Map<Product, Integer> productToPrice) {
+    public Transaction(String storeId, String userId, PaymentMethod paymentMethod, LocalDateTime dateOfTransaction, Map<Product, Double> productToPrice) {
         this.storeId = storeId;
         this.userId = userId;
         this.paymentMethod = paymentMethod;
         this.dateOfTransaction = dateOfTransaction;
         this.productToPrice = Collections.unmodifiableMap(new HashMap<>() {{
-            productToPrice.forEach((key, value) -> put(key.clone(), value));
+            productToPrice.forEach((key, value) -> put(key.clone(), Double.valueOf(value)));
         }});
     }
 }

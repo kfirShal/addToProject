@@ -21,11 +21,14 @@ public class TransactionsController {
     //=================================================================
 
     public TransactionsController() {
-        storeIdToTransactions = new ConcurrentHashMap<>();
         userIdToTransactions = new ConcurrentHashMap<>();
+        storeIdToTransactions = new ConcurrentHashMap<>();
     }
 
     public void documentTransaction(Transaction transaction){
+        if (transaction.userId() == null || transaction.storeId() == null) {
+            throw new IllegalArgumentException("User ID and Store ID cannot be null");
+        }
         log.debug("Documenting transaction for user {} in store {}", transaction.userId(), transaction.storeId());
         userIdToTransactions.computeIfAbsent(transaction.userId(), _ -> new ArrayList<>()).add(transaction);
         storeIdToTransactions.computeIfAbsent(transaction.storeId(), _ -> new ArrayList<>()).add(transaction);
