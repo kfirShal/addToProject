@@ -32,8 +32,8 @@ public class MarketProxy extends ControllerProxy implements MarketFacade {
 
     @Override
     public void makePurchase(String userId, String token) throws NoPermissionException, AuthenticationFailedException {
-        authenticateToken(userId.getUserId() ,token);
-        if(! perm.checkPermission(userId.getUserId(), MarketActions.MAKE_PURCHASE)) {
+        authenticateToken(userId ,token);
+        if(! perm.checkPermission(userId, MarketActions.MAKE_PURCHASE)) {
             throw new NoPermissionException("User does not have permission to make a purchase");
         }
 

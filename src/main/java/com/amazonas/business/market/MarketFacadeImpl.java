@@ -9,10 +9,7 @@ import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.StoresController;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.transactions.TransactionsController;
-import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.business.userProfiles.StoreBasket;
-import com.amazonas.business.userProfiles.UsersController;
-import com.amazonas.business.userProfiles.UsersControllerImpl;
+import com.amazonas.business.userProfiles.*;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import com.amazonas.utils.Pair;
@@ -59,6 +56,7 @@ public class MarketFacadeImpl implements MarketFacade {
         //TODO: fix this
 
         ShoppingCart shoppingCart = usersController.getCart(userId);
+        User user = usersController.getUser(userId);
         List<Transaction> transactions = new LinkedList<>();
         List<Reservation> reservations = new LinkedList<>();
         LocalDateTime transactionTime = LocalDateTime.now();
@@ -89,7 +87,7 @@ public class MarketFacadeImpl implements MarketFacade {
             // Create the transaction and add it to the list
             Transaction transaction = new Transaction(storeId,
                     userId,
-                    userId.getPaymentMethod(),
+                    user.getPaymentMethod(),
                     transactionTime,
                     new HashMap<>(){{
                         for (var entry : storeBasket.getProducts().entrySet()) {
@@ -101,7 +99,7 @@ public class MarketFacadeImpl implements MarketFacade {
 
         // Charge the user and set the reservations as paid
 
-        if (! currentPaymentService.charge(userId.getPaymentMethod(), totalPrice)) {
+        if (! currentPaymentService.charge(user.getPaymentMethod(), totalPrice)) {
             for (Reservation reservation : reservations) {
                 //TODO: cancel the reservation from the store object, it's better
                 reservation.setCancelled();

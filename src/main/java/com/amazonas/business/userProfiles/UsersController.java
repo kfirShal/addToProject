@@ -21,4 +21,6 @@ public interface UsersController {
     void RemoveProductFromCart(String id,String storeName,String productId);
 
     void changeProductQuantity(String id, String storeName, String productId, int quantity);
+
+    User getUser(String userId);
 }

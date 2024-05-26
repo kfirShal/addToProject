@@ -172,6 +172,11 @@ public class UsersControllerImpl implements UsersController {
 
     }
 
+    @Override
+    public User getUser(String userId) {
+        return null;
+    }
+
     //This method checks if the password contains at least one uppercase letter and one special character.
     private boolean isValidPassword(String password) {
         String passwordPattern = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+$";

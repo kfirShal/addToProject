@@ -1,6 +1,7 @@
 package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.stores.Rating;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,17 +94,17 @@ class UsersControllerImplTest {
 
     @Test
     void addProductToCartSuccess() {
-        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category",5,""), 1);
+        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5", Rating.NOT_RATED), 1);
         assertEquals(1, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
     }
     @Test
     void addProductToCartFailure() {
-        assertThrows(RuntimeException.class, () -> usersController.addProductToCart("testUserName1", "testStoreName", new Product("productId","name",100,"category",5,""), 1));
+        assertThrows(RuntimeException.class, () -> usersController.addProductToCart("testUserName1", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), 1));
     }
 
     @Test
     void removeProductFromCartSuccess() {
-        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category",5,""), 1);
+        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), 1);
         assertEquals(1, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
         usersController.RemoveProductFromCart("testUserName", "testStoreName", "productId");
         assertEquals(0, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
@@ -116,10 +117,10 @@ class UsersControllerImplTest {
 
     @Test
     void changeProductQuantitySuccess() {
-        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category",5,""), 1);
+        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), 1);
         assertEquals(1, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
         usersController.changeProductQuantity("testUserName", "testStoreName", "productId", 5);
-        assertEquals(5, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().get("productId").getSecond());
+        assertEquals(5, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().get("productId").second());
     }
     @Test
     void changeProductQuantityFailure() {
