@@ -16,9 +16,11 @@ public class ProductInventory {
     private final ConcurrentMap<String, Product> idToProduct;
     private final ConcurrentMap<String, Integer> idToQuantity;
     private final Set<Product> disabledProducts;
+    private final String storeId;
 
-    public  ProductInventory(GlobalProductTracker tracker){
+    public  ProductInventory(GlobalProductTracker tracker, String storeId){
         this.tracker = tracker;
+        this.storeId = storeId;
         idToProduct = new ConcurrentHashMap<>();
         idToQuantity = new ConcurrentHashMap<>();
         disabledProducts = ConcurrentHashMap.newKeySet();
@@ -29,10 +31,11 @@ public class ProductInventory {
         do{
             newId = UUID.randomUUID().toString();
             product.setProductId(newId);
-        }while (tracker.productExists(product));
+        }while (tracker.productExists(product.productId()));
 
         log.debug("Adding product {} with id {} to inventory", product.productName(), product.productId());
         idToProduct.put(product.productId(),product);
+        tracker.addProduct(product.productId(),storeId);
     }
 
     public boolean updateProduct(Product product) {

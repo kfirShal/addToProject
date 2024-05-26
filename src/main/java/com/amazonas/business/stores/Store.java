@@ -1,6 +1,5 @@
 package com.amazonas.business.stores;
 
-import com.amazonas.business.inventory.GlobalProductTracker;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.utils.Pair;
@@ -19,7 +18,6 @@ public class Store {
     private static final int FIVE_MINUTES = 5 * 60;
 
     private long reservationTimeoutSeconds;
-    private final GlobalProductTracker tracker;
     private final ProductInventory inventory;
     private final ConcurrentMap<String, Reservation> reservedProducts;
     private final Semaphore lock;
@@ -29,26 +27,31 @@ public class Store {
     private String storeDescription;
     private Rating storeRating;
 
-    public Store(GlobalProductTracker tracker, ProductInventory inventory) {
+    public Store(String storeId, String description, Rating rating, ProductInventory inventory) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
-        this.tracker = tracker;
         this.inventory = inventory;
+        this.storeId = storeId;
+        this.storeDescription = description;
+        this.storeRating = rating;
+
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
-        storeRating = Rating.NOT_RATED;
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
         reserveTimeoutThread.start();
     }
 
-    public int calculateTotalPrice(List<Pair<Product,Integer>> products){
+    public int calculatePrice(List<Pair<Product,Integer>> products){
         //TODO: Implement this
         return 0;
     }
 
+    public boolean isProductAvailable(String productId){
+        return false;
+    }
+
     public void addProduct(Product toAdd){
         inventory.addProduct(toAdd);
-        tracker.addProduct(toAdd,this);
     }
 
     public  boolean removeProduct(Product toRemove){
@@ -69,14 +72,13 @@ public class Store {
 
     public Reservation reserveProducts(String userId, List<Pair<Product,Integer>> toReserve){
 
+        lockAcquire();
+
         // Check if the user already has a reservation
         // If so, cancel it
         if(reservedProducts.containsKey(userId)){
             cancelReservation(userId);
         }
-
-        // Acquire the lock
-        lockAcquire();
 
         // Check if the products are available
         for (var pair : toReserve) {
@@ -132,6 +134,8 @@ public class Store {
     public List<Product> searchProduct(SearchRequest request) {
         List<Product> toReturn = new LinkedList<>();
         for (Product product : inventory.getAllEnabledProducts()) {
+
+            //TODO: remove products with 0 quantity
 
             // Check if the product matches the search request
             if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())

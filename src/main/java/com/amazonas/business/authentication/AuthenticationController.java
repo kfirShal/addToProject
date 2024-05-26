@@ -43,11 +43,14 @@ public class AuthenticationController {
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    public AuthenticationResponse authenticate(String userId, String password) {
-        log.debug("Authenticating user: {}", userId);
+    public AuthenticationResponse authenticateGuest(String userid){
+        log.debug("Generating token for guest user {}", userid);
+        return new AuthenticationResponse(true, getToken(userid));
+    }
 
+    public AuthenticationResponse authenticateUser(String userId, String password) {
+        log.debug("Authenticating user: {}", userId);
         String hashedPassword = userIdToHashedPassword.get(userId);
-        String uuid = userIdToUUID.get(userId);
 
         // check if the user exists
         if(hashedPassword == null) {
@@ -57,32 +60,12 @@ public class AuthenticationController {
         log.trace("User {} exists", userId);
 
         // check if the password is correct
-        boolean passwordsMatch = encoder.matches(
-                passwordStorageFormat+password,
-                hashedPassword); //TODO: get hashed password from database
-        if(!passwordsMatch) {
+        if(! isPasswordsMatch(password, hashedPassword)) {
             log.debug("Incorrect password for user {}", userId);
             return new AuthenticationResponse(false, null);
         }
 
-        //remove the old UUID if it exists
-        if(uuid != null) {
-            log.trace("Removing old UUID for user {}", userId);
-            uuids.remove(uuid);
-        }
-
-        //generate a unique UUID
-        log.trace("Generating new UUID for user {}", userId);
-        do{
-            uuid = UUID.randomUUID().toString();
-        } while (uuids.contains(uuid));
-
-        //store the UUID and associate it with the user
-        log.trace("Storing new UUID for user {}", userId);
-        userIdToUUID.put(userId, uuid);
-        uuids.add(uuid);
-
-        String token = generateToken(uuid);
+        String token = getToken(userId);
         log.debug("User {} authenticated successfully", userId);
         return new AuthenticationResponse(true,token);
     }
@@ -124,10 +107,37 @@ public class AuthenticationController {
         uuids.clear();
     }
 
-    private String generateToken(String userId) {
-        log.debug("Generating token for user {}", userId);
+    private boolean isPasswordsMatch(String password, String hashedPassword) {
+        return encoder.matches(passwordStorageFormat+ password, hashedPassword);
+    }
+
+    private String getToken(String userId) {
+
+        //remove the old UUID if it exists
+        String uuid;
+        if((uuid = userIdToUUID.get(userId)) != null) {
+            log.trace("Removing old UUID for user {}", userId);
+            uuids.remove(uuid);
+        }
+
+        //generate a unique UUID
+        log.trace("Generating new UUID for user {}", userId);
+        do{
+            uuid = UUID.randomUUID().toString();
+        } while (uuids.contains(uuid));
+
+        //store the UUID and associate it with the user
+        log.trace("Storing new UUID for user {}", userId);
+        userIdToUUID.put(userId, uuid);
+        uuids.add(uuid);
+
+        return generateJwt(uuid);
+    }
+
+    private String generateJwt(String payload) {
+        log.debug("Generating token for user {}", payload);
         return Jwts.builder()
-                .content(userId, "text/plain")
+                .content(payload, "text/plain")
                 .signWith(key,alg)
                 .compact();
     }

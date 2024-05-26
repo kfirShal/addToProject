@@ -2,7 +2,7 @@ package com.amazonas.business.stores;
 
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -10,23 +10,22 @@ import java.util.concurrent.ConcurrentMap;
 public class StoresControllerImpl implements StoresController {
 
 
-    private final StoreFactory storeProvider;
+    private final StoreFactory storeFactory;
     private final ConcurrentMap<String,Store> storeIdToStore;
 
-
-    public StoresControllerImpl(StoreFactory storeProvider) {
-        this.storeProvider = storeProvider;
+    public StoresControllerImpl(StoreFactory storeFactory) {
+        this.storeFactory = storeFactory;
         storeIdToStore = new ConcurrentHashMap<>();
     }
 
     @Override
-    public Store getStore(int storeID) {
+    public Store getStore(String storeId) {
         return null;
     }
 
     @Override
-    public List<Store> getAllStores() {
-        return null;
+    public Collection<Store> getAllStores() {
+        return storeIdToStore.values();
     }
 
     @Override
@@ -34,7 +33,7 @@ public class StoresControllerImpl implements StoresController {
         if(storeIdToStore.containsKey(storeId)){
             throw new IllegalArgumentException("Store with id " + storeId + " already exists");
         }
-        Store toAdd = storeProvider.getObject(storeId,storeDescription,storeRating);
+        Store toAdd = storeFactory.getObject(storeId,storeDescription,storeRating);
         storeIdToStore.put(toAdd.getStoreId(),toAdd);
     }
 }

@@ -15,7 +15,7 @@ public class AuthenticationService {
     }
 
     public String authenticate(String username, String password) {
-        AuthenticationResponse authResp = controller.authenticate(username, password);
+        AuthenticationResponse authResp = controller.authenticateUser(username, password);
         String data = authResp.success() ? authResp.token() : "";
         String message = authResp.success() ? "Authentication successful" : "Authentication failed";
         return new Response(message,authResp.success(), data).toJson();

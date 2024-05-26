@@ -4,7 +4,6 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.shipping.ShippingService;
-import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 
@@ -14,7 +13,7 @@ public interface MarketFacade {
 
     List<Product> searchProducts(GlobalSearchRequest request) throws NoPermissionException, AuthenticationFailedException;
 
-    void makePurchase(User user, String token) throws NoPermissionException, AuthenticationFailedException;
+    void makePurchase(String userId, String token) throws NoPermissionException, AuthenticationFailedException;
     
     void addShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException;
     

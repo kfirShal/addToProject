@@ -11,7 +11,8 @@ import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.transactions.TransactionsController;
 import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.StoreBasket;
-import com.amazonas.business.userProfiles.User;
+import com.amazonas.business.userProfiles.UsersController;
+import com.amazonas.business.userProfiles.UsersControllerImpl;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import com.amazonas.utils.Pair;
@@ -26,16 +27,22 @@ public class MarketFacadeImpl implements MarketFacade {
 
     private final PaymentService currentPaymentService;
     private final ShippingService currentShippingService;
+    private final StoresController storesController;
+    private final TransactionsController transactionsController;
+    private final UsersController usersController;
+
+
     private final Map<PaymentMethod, Boolean> paymentMethods;
     private final Map<PaymentService, Boolean> paymentServices;
     private final Map<ShippingService, Boolean> shippingServices;
     private final ReentrantLock paymentMethodsLock;
     private final ReentrantLock paymentServicesLock;
     private final ReentrantLock shippingServicesLock;
-    private final StoresController controller;
-    private final TransactionsController transactionsController;
 
-    public MarketFacadeImpl(StoresController storesController, TransactionsController transactionsController) {
+    public MarketFacadeImpl(StoresController storesController, TransactionsController transactionsController, UsersController usersController) {
+        this.storesController = storesController;
+        this.transactionsController = transactionsController;
+        this.usersController = usersController;
         paymentMethods = new HashMap<>();
         paymentServices = new HashMap<>();
         shippingServices = new HashMap<>();
@@ -44,37 +51,25 @@ public class MarketFacadeImpl implements MarketFacade {
         shippingServicesLock = new ReentrantLock(true);
         currentPaymentService = new PaymentService();
         currentShippingService = new ShippingService();
-        controller = storesController;
-        this.transactionsController = transactionsController;
     }
 
     @Override
-    public List<Product> searchProducts(GlobalSearchRequest request) {
-        List<Store> stores = controller.getAllStores();
-        List<Product> ret = new LinkedList<>();
-        for (Store store : stores) {
-            if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
-                ret.addAll(store.searchProduct(request));
-            }
-        }
-        return ret;
-    }
+    public void makePurchase(String userId, String token){
 
-    @Override
-    public void makePurchase(User user, String token){
+        //TODO: fix this
 
-        ShoppingCart shoppingCart = user.getCart();
+        ShoppingCart shoppingCart = usersController.getCart(userId);
         List<Transaction> transactions = new LinkedList<>();
         List<Reservation> reservations = new LinkedList<>();
         LocalDateTime transactionTime = LocalDateTime.now();
 
         double totalPrice = 0;
 
-        for (String storeID : shoppingCart.getBaskets().keySet()) {
+        for (String storeId : shoppingCart.getBaskets().keySet()) {
 
             // Get the store and the basket
-            Store store = controller.getStore(Integer.getInteger(storeID));
-            StoreBasket storeBasket = shoppingCart.getBaskets().get(storeID);
+            Store store = storesController.getStore(storeId);
+            StoreBasket storeBasket = shoppingCart.getBaskets().get(storeId);
 
             // Get the products to reserve from this store
             List<Pair<Product,Integer>> productsToReserve = storeBasket
@@ -84,17 +79,17 @@ public class MarketFacadeImpl implements MarketFacade {
                     .toList();
 
             // Reserve the products
-            Reservation reservation = store.reserveProducts(user.getUserId(), productsToReserve);
+            Reservation reservation = store.reserveProducts(userId, productsToReserve);
             reservations.add(reservation);
 
             // add the price of the products to the total price
-            double price = store.calculateTotalPrice(productsToReserve);
+            double price = store.calculatePrice(productsToReserve);
             totalPrice += price;
 
             // Create the transaction and add it to the list
-            Transaction transaction = new Transaction(storeID,
-                    user.getUserId(),
-                    user.getPaymentMethod(),
+            Transaction transaction = new Transaction(storeId,
+                    userId,
+                    userId.getPaymentMethod(),
                     transactionTime,
                     new HashMap<>(){{
                         for (var entry : storeBasket.getProducts().entrySet()) {
@@ -106,7 +101,7 @@ public class MarketFacadeImpl implements MarketFacade {
 
         // Charge the user and set the reservations as paid
 
-        if (! currentPaymentService.charge(user.getPaymentMethod(), totalPrice)) {
+        if (! currentPaymentService.charge(userId.getPaymentMethod(), totalPrice)) {
             for (Reservation reservation : reservations) {
                 //TODO: cancel the reservation from the store object, it's better
                 reservation.setCancelled();
@@ -132,6 +127,18 @@ public class MarketFacadeImpl implements MarketFacade {
         }
 
         //TODO: return a response to the service layer
+    }
+
+    @Override
+    public List<Product> searchProducts(GlobalSearchRequest request) {
+        Collection<Store> stores = storesController.getAllStores();
+        List<Product> ret = new LinkedList<>();
+        for (Store store : stores) {
+            if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
+                ret.addAll(store.searchProduct(request));
+            }
+        }
+        return ret;
     }
 
     @Override

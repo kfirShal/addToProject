@@ -13,9 +13,6 @@ public abstract class User {
 
     }
 
-    public ShoppingCart getCart() {return null;}
-
-
     public String getUserId(){
         return initialId;
     }

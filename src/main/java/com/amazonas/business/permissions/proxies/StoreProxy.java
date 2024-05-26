@@ -20,7 +20,7 @@ public class StoreProxy extends ControllerProxy implements StoresController {
     }
 
     @Override
-    public Store getStore(int storeID) {
+    public Store getStore(String storeID) {
         return null;
     }
 

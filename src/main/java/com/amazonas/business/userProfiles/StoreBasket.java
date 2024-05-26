@@ -38,8 +38,6 @@ public class StoreBasket {
         else{
             throw new RuntimeException("Product is already exists, change the quantity of the product if needed");
         }
-
-
     }
 
     public void removeProduct(String productId) {

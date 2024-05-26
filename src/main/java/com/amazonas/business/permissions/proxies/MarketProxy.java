@@ -9,7 +9,6 @@ import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.shipping.ShippingService;
-import com.amazonas.business.userProfiles.User;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
@@ -32,13 +31,13 @@ public class MarketProxy extends ControllerProxy implements MarketFacade {
     }
 
     @Override
-    public void makePurchase(User user, String token) throws NoPermissionException, AuthenticationFailedException {
-        authenticateToken(user.getUserId() ,token);
-        if(! perm.checkPermission(user.getUserId(), MarketActions.MAKE_PURCHASE)) {
+    public void makePurchase(String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId.getUserId() ,token);
+        if(! perm.checkPermission(userId.getUserId(), MarketActions.MAKE_PURCHASE)) {
             throw new NoPermissionException("User does not have permission to make a purchase");
         }
 
-        real.makePurchase(user, token);
+        real.makePurchase(userId, token);
     }
 
     @Override
