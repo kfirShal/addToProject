@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -70,7 +71,7 @@ public class Store {
         return inventory.disableProduct(toDisable);
     }
 
-    public Reservation reserveProducts(String userId, List<Pair<Product,Integer>> toReserve){
+    public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
 
         lockAcquire();
 
@@ -81,9 +82,9 @@ public class Store {
         }
 
         // Check if the products are available
-        for (var pair : toReserve) {
-            Product product = pair.first();
-            int quantity = pair.second();
+        for (var entry : toReserve.entrySet()) {
+            Product product = entry.getKey();
+            int quantity = entry.getValue();
             if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
                 lock.release();
                 return null;
@@ -91,17 +92,17 @@ public class Store {
         }
 
         // Reserve the products
-        for (var pair : toReserve) {
-            Product product = pair.first();
-            int quantity = pair.second();
+        for (var entry : toReserve.entrySet()) {
+            Product product = entry.getKey();
+            int quantity = entry.getValue();
             inventory.setQuantity(product, inventory.getQuantity(product) - quantity);
         }
 
         // Create the reservation
         Reservation reservation = new Reservation(userId,
                 new HashMap<>(){{
-                    for (var pair : toReserve) {
-                        put(pair.first(), pair.second());
+                    for (var entry : toReserve.entrySet()) {
+                        put(entry.getKey(), entry.getValue());
                     }}},
                 LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), false);
         reservedProducts.put(userId, reservation);

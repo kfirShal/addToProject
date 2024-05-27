@@ -8,12 +8,19 @@ import com.amazonas.utils.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class StoreBasket {
 
     private final Map<String, Pair<Product, Integer>> products; // productId --> <Product,Quantity>
+    private final Function<Map<Product,Integer>, Reservation> makeReservation;
+    private final Runnable cancelReservation;
 
-    public StoreBasket (){
+    public StoreBasket (Function<Map<Product,Integer>, Reservation> makeReservation,
+                        Runnable cancelReservation){
+
+        this.cancelReservation = cancelReservation;
+        this.makeReservation = makeReservation;
         products = new HashMap<>();
     }
 
@@ -89,6 +96,6 @@ public class StoreBasket {
     }
 
     public Reservation reserveBasket() {
-        return null;
+        makeReservation.apply(products);
     }
 }

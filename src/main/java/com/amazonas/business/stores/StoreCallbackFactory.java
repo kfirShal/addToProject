@@ -5,6 +5,7 @@ import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @Component("storeCallbackFactory")
@@ -24,7 +25,7 @@ public class StoreCallbackFactory {
         return productId -> storesController.getStore(storeId).availableCount(productId);
     }
 
-    public Function<List<Pair<Product,Integer>>,Reservation> makeReservation(String storeId, String userId){
+    public Function<Map<Product,Integer>, Reservation> makeReservation(String storeId, String userId){
         return products -> storesController.getStore(storeId).reserveProducts(userId,products);
     }
 
