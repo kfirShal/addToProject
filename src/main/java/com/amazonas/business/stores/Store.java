@@ -46,8 +46,8 @@ public class Store {
         return 0;
     }
 
-    public boolean isProductAvailable(String productId){
-        return false;
+    public int availableCount(String productId){
+        return -1;
     }
 
     public void addProduct(Product toAdd){

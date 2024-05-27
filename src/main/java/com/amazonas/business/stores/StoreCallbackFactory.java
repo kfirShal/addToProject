@@ -5,7 +5,6 @@ import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Component("storeCallbackFactory")
@@ -18,25 +17,22 @@ public class StoreCallbackFactory {
     }
 
     public Function<List<Pair<Product,Integer>>,Integer> calculatePrice(String storeId){
-        final Store store = storesController.getStore(storeId);
-        return store::calculatePrice;
+        return products -> storesController.getStore(storeId).calculatePrice(products);
     }
 
-    public Function<String,Boolean> isProductAvailable(String storeId){
-        final Store store = storesController.getStore(storeId);
-        return store::isProductAvailable;
+    public Function<String,Integer> availableCount(String storeId){
+        return productId -> storesController.getStore(storeId).availableCount(productId);
     }
 
-    public Function<List<Pair<Product,Integer>>,Reservation> reserveProducts(String storeId, String userId){
-        final Store store = storesController.getStore(storeId);
-        return products -> store.reserveProducts(userId, products);
+    public Function<List<Pair<Product,Integer>>,Reservation> makeReservation(String storeId, String userId){
+        return products -> storesController.getStore(storeId).reserveProducts(userId,products);
     }
 
     public Function<String,Void> cancelReservation(String storeId){
-        final Store store = storesController.getStore(storeId);
-        return reservationId -> {
-            store.cancelReservation(reservationId);
+        return userId -> {
+            storesController.getStore(storeId).cancelReservation(userId);
             return null;
         };
     }
+
 }
