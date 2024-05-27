@@ -133,17 +133,15 @@ public class Store {
 
     public List<Product> searchProduct(SearchRequest request) {
         List<Product> toReturn = new LinkedList<>();
-        for (Product product : inventory.getAllEnabledProducts()) {
-
-            //TODO: remove products with 0 quantity
+        for (Product product : inventory.getAllAvailableProducts()) {
 
             // Check if the product matches the search request
             if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
-                        || product.rating().ordinal() >= request.getProductRating().ordinal()
-                        || product.productName().toLowerCase().contains(request.getProductName())
-                        || product.category().toLowerCase().contains(request.getProductCategory())
-                        || product.description().toLowerCase().contains(request.getProductName())
-                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
+                    || product.rating().ordinal() >= request.getProductRating().ordinal()
+                    || product.productName().toLowerCase().contains(request.getProductName())
+                    || product.category().toLowerCase().contains(request.getProductCategory())
+                    || product.description().toLowerCase().contains(request.getProductName())
+                    || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
             {
                 toReturn.add(product);
             }

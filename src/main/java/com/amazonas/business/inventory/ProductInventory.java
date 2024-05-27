@@ -101,9 +101,10 @@ public class ProductInventory {
         return disabledProducts.contains(product);
     }
 
-    public Set<Product> getAllEnabledProducts(){
+    public Set<Product> getAllAvailableProducts(){
         return idToProduct.values().stream()
-                .filter(product -> !disabledProducts.contains(product))
+                .filter(product -> !disabledProducts.contains(product)
+                                    && idToQuantity.get(product.productId()) > 0)
                 .collect(Collectors.toSet());
     }
 }
