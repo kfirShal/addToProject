@@ -28,11 +28,8 @@ public class StoreCallbackFactory {
         return products -> storesController.getStore(storeId).reserveProducts(userId,products);
     }
 
-    public Function<String,Void> cancelReservation(String storeId){
-        return userId -> {
-            storesController.getStore(storeId).cancelReservation(userId);
-            return null;
-        };
+    public Runnable cancelReservation(String storeId, String userId){
+        return () -> storesController.getStore(storeId).cancelReservation(userId);
     }
 
 }

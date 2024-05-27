@@ -4,27 +4,29 @@ import com.amazonas.business.inventory.Product;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
+import java.util.function.Function;
 
 public class Reservation {
     private final String userId;
     private final Map<Product, Integer> productToQuantity;
     private final LocalDateTime expirationDate;
+    private final Runnable cancelCallback;
 
     private boolean isPaid;
 
     private boolean isCancelled;
+    private boolean isShipped;
 
     public Reservation(
             String userId,
             Map<Product, Integer> productToQuantity,
-            LocalDateTime expirationDate,
-            boolean isPaid
+            LocalDateTime expirationDate, Runnable cancelCallback
     ) {
         this.userId = userId;
         this.productToQuantity = productToQuantity;
         this.expirationDate = expirationDate;
-        this.isPaid = isPaid;
+        this.cancelCallback = cancelCallback;
+        this.isPaid = false;
     }
 
     public String userId() {
@@ -46,38 +48,21 @@ public class Reservation {
     public void setPaid() {
         isPaid = true;
     }
-    public void setCancelled() {
+
+    public boolean isShipped() {
+        return isShipped;
+    }
+
+    public void setShipped() {
+        isShipped = true;
+    }
+
+    public void cancelReservation() {
         isCancelled = true;
+        cancelCallback.run();
     }
 
     public boolean isCancelled() {
         return isCancelled;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (Reservation) obj;
-        return Objects.equals(this.userId, that.userId) &&
-                Objects.equals(this.productToQuantity, that.productToQuantity) &&
-                Objects.equals(this.expirationDate, that.expirationDate) &&
-                this.isPaid == that.isPaid;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userId, productToQuantity, expirationDate, isPaid);
-    }
-
-    @Override
-    public String toString() {
-        return "Reservation[" +
-                "userId=" + userId + ", " +
-                "productToQuantity=" + productToQuantity + ", " +
-                "expirationDate=" + expirationDate + ", " +
-                "isPaid=" + isPaid + ']';
-    }
-
-
 }

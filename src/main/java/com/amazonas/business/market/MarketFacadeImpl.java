@@ -102,7 +102,7 @@ public class MarketFacadeImpl implements MarketFacade {
         if (! currentPaymentService.charge(user.getPaymentMethod(), totalPrice)) {
             for (Reservation reservation : reservations) {
                 //TODO: cancel the reservation from the store object, it's better
-                reservation.setCancelled();
+                reservation.cancelReservation();
             }
             return;
         }
@@ -111,7 +111,7 @@ public class MarketFacadeImpl implements MarketFacade {
         if (! currentShippingService.ship(transactions)) {
             for (Reservation reservation : reservations) {
                 //TODO: cancel the reservation from the store object, it's better
-                reservation.setCancelled();
+                reservation.cancelReservation();
             }
             return;
         }
