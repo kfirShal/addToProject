@@ -69,13 +69,6 @@ public class MarketFacadeImpl implements MarketFacade {
             Store store = storesController.getStore(storeId);
             StoreBasket storeBasket = shoppingCart.getBaskets().get(storeId);
 
-            // Get the products to reserve from this store
-            List<Pair<Product,Integer>> productsToReserve = storeBasket
-                    .getProducts()
-                    .values()
-                    .stream()
-                    .toList();
-
             // Reserve the products
             Reservation reservation = store.reserveProducts(userId, productsToReserve);
             reservations.add(reservation);
@@ -89,11 +82,7 @@ public class MarketFacadeImpl implements MarketFacade {
                     userId,
                     user.getPaymentMethod(),
                     transactionTime,
-                    new HashMap<>(){{
-                        for (var entry : storeBasket.getProducts().entrySet()) {
-                            var pair = entry.getValue();
-                            put(pair.first(), pair.second());
-                        }}});
+                    storeBasket.getProducts());
             transactions.add(transaction);
         };
 

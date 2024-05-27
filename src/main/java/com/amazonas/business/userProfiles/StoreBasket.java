@@ -3,6 +3,7 @@ package com.amazonas.business.userProfiles;
 
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.stores.Reservation;
 import com.amazonas.utils.Pair;
 
 import java.util.HashMap;
@@ -13,9 +14,7 @@ public class StoreBasket {
     private final Map<String, Pair<Product, Integer>> products; // productId --> <Product,Quantity>
 
     public StoreBasket (){
-
         products = new HashMap<>();
-
     }
 
     public Pair<Product, Integer> getProductWithQuantity(String productId){
@@ -58,31 +57,38 @@ public class StoreBasket {
           pq.setSecond(quantity);
 
       }
-      catch(Exception e){
+      catch(Exception e) {
           throw new RuntimeException(e.getMessage());
-        }
-
-
+      }
     }
 
-    public Map<String, Pair<Product, Integer>> getProducts() {
-        return products;
+    public Map<Product,Integer> getProducts() {
+        return new HashMap<>() {{
+            for (var entry : products.entrySet()) {
+                var pair = entry.getValue();
+                put(pair.first(), pair.second());
+            }
+        }};
     }
 
     public void mergeStoreBaskets(StoreBasket guestBasket) {
-        for (Map.Entry<String, Pair<Product, Integer>> entry : guestBasket.getProducts().entrySet()) {
+        for (Map.Entry<String, Pair<Product, Integer>> entry : guestBasket.products.entrySet()) {
             String productId = entry.getKey();
             Pair<Product, Integer> guestProductWithQuantity = entry.getValue();
 
-            Pair<Product, Integer> userProductWithQuantity = this.getProducts().get(productId);
+            Pair<Product, Integer> userProductWithQuantity = this.products.get(productId);
             if (userProductWithQuantity == null) {
                 // If the product ID doesn't exist in the user's basket, add the guest's product
-                this.getProducts().put(productId, guestProductWithQuantity);
+                this.products.put(productId, guestProductWithQuantity);
             } else {
                 // If the product ID exists in both baskets, update the quantity
                 int updatedQuantity = userProductWithQuantity.second() + guestProductWithQuantity.second();
-                this.getProducts().put(productId, new Pair<>(userProductWithQuantity.first(), updatedQuantity));
+                this.products.put(productId, Pair.of(userProductWithQuantity.first(), updatedQuantity));
             }
         }
+    }
+
+    public Reservation reserveBasket() {
+        return null;
     }
 }
