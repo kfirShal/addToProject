@@ -18,7 +18,7 @@ public class ProductInventory {
     private final Set<Product> disabledProducts;
     private final String storeId;
 
-    public  ProductInventory(GlobalProductTracker tracker, String storeId){
+    public ProductInventory(GlobalProductTracker tracker, String storeId){
         this.tracker = tracker;
         this.storeId = storeId;
         idToProduct = new ConcurrentHashMap<>();
