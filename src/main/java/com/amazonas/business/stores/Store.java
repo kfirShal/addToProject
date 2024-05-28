@@ -29,6 +29,8 @@ public class Store {
     private boolean isOpen;
     private ManagementNode managementTree;
     private Map<String, ManagementNode> managersList;
+    private ManagementNode ownershipTree;
+    private Map<String, ManagementNode> ownershipList;
 
     public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUseId) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
@@ -38,6 +40,8 @@ public class Store {
         this.storeRating = rating;
         this.managementTree = new ManagementNode(ownerUseId, null);
         this.managersList = new HashMap<>();
+        this.ownershipTree = new ManagementNode(ownerUseId, null);
+        this.ownershipList = new HashMap<>();
 
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
@@ -313,6 +317,35 @@ public class Store {
                     List<String> appointerChildren = deletedManager.getAllChildren();
                     for (String appointerToRemove : appointerChildren) {
                         managersList.remove(appointerToRemove);
+                    }
+                }
+            }
+        }
+    }
+
+    public void addOwner(String appointeeUserId, String appointedUserId) {
+        if (appointedUserId != null && appointedUserId != null) {
+            // add write acquire lock
+            ManagementNode appointeeNode = ownershipList.get(appointeeUserId);
+            if (appointeeNode != null) {
+                if (!ownershipList.containsKey(appointedUserId)) {
+                    ManagementNode appointedNode = appointeeNode.addManager(appointeeUserId);
+                    ownershipList.put(appointeeUserId, appointedNode);
+                }
+            }
+        }
+    }
+
+    public void removeOwner(String appointeeUserId, String appointedUserId) {
+        if (appointedUserId != null && appointedUserId != null) {
+            // add write acquire lock
+            ManagementNode appointeeNode = ownershipList.get(appointeeUserId);
+            if (appointeeNode != null) {
+                ManagementNode deletedOwner = appointeeNode.deleteManager(appointedUserId);
+                if (deletedOwner != null) {
+                    List<String> appointerChildren = deletedOwner.getAllChildren();
+                    for (String appointerToRemove : appointerChildren) {
+                        ownershipList.remove(appointerToRemove);
                     }
                 }
             }
