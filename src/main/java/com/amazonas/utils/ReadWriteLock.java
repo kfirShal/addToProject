@@ -34,13 +34,20 @@ public class ReadWriteLock {
                     entryLock.wait();
                 } catch(InterruptedException ignored){}
             }
+
+            // ==============================================
+            // this needs to be inside the synchronized block
+            // because writers check the number of readers
+            // inside the synchronized(entryLock) block
+            // before proceeding to the write queue
+            increment(readers);
+            // ==============================================
         }
-        increment(readers);
     }
 
     public void releaseRead() {
-        decrement(readers);
         synchronized(entryLock){
+            decrement(readers); // this needs to be inside the synchronized block
             if(readers.get() == 0){
                 entryLock.notifyAll();
             }
