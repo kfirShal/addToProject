@@ -5,7 +5,6 @@ import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,10 +34,13 @@ public class Store {
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
-
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
         isOpen = true;
+    }
+
+    public boolean isOpen(){
+        return isOpen;
     }
 
     public boolean openStore(){
@@ -105,6 +107,7 @@ public class Store {
             if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
                 lock.release();
                 return null;
+
             }
         }
 

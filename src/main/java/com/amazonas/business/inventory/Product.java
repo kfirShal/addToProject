@@ -20,8 +20,14 @@ public class Product implements Cloneable {
             String productName,
             double price,
             String category,
+<<<<<<< HEAD
             String description,
             Rating rating
+=======
+            int rate,
+            String description,
+            Boolean enabled
+>>>>>>> dace3e6ae6448bb5df3c3db7401cdff255994dcf
     ) {
         this.productId = productId;
         this.productName = productName;
@@ -29,7 +35,11 @@ public class Product implements Cloneable {
         this.category = category;
         this.rating = rating;
         this.description = description;
+<<<<<<< HEAD
         this.keyWords = new HashSet<>();
+=======
+        this.enabled = enabled;
+>>>>>>> dace3e6ae6448bb5df3c3db7401cdff255994dcf
     }
 
     public String productId() {
@@ -130,5 +140,18 @@ public class Product implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
+    }
+
+    public void setEnabled(){
+        enabled = true;
+    }
+    public void setDisable(){
+        enabled = true;
+    }
+    public void setDisabled(){
+        enabled = false;
+    }
+    public boolean getEnabled(){
+        return enabled;
     }
 }
