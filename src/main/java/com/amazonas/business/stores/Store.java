@@ -3,7 +3,6 @@ package com.amazonas.business.stores;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.exceptions.StoreException;
-import com.amazonas.utils.ErrorCollection;
 import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
@@ -27,10 +26,9 @@ public class Store {
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
-    private ManagementNode managementTree;
-    private Map<String, ManagementNode> managersList;
-    private ManagementNode ownershipTree;
-    private Map<String, ManagementNode> ownershipList;
+    private Map<String, OwnerNode> managersList;
+    private OwnerNode ownershipTree;
+    private Map<String, OwnerNode> ownershipList;
 
     public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUseId) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
@@ -38,9 +36,8 @@ public class Store {
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
-        this.managementTree = new ManagementNode(ownerUseId, null);
         this.managersList = new HashMap<>();
-        this.ownershipTree = new ManagementNode(ownerUseId, null);
+        this.ownershipTree = new OwnerNode(ownerUseId, null);
         this.ownershipList = new HashMap<>();
 
         reservedProducts = new ConcurrentHashMap<>();
@@ -294,54 +291,50 @@ public class Store {
         this.reservationTimeoutSeconds = reservationTimeoutSeconds;
     }
 
-    public void addManager(String appointeeUserId, String appointedUserId) {
-        if (appointedUserId != null && appointedUserId != null) {
+    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
             // add write acquire lock
-            ManagementNode appointeeNode = managersList.get(appointeeUserId);
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (!managersList.containsKey(appointedUserId)) {
-                    ManagementNode appointedNode = appointeeNode.addManager(appointeeUserId);
-                    managersList.put(appointeeUserId, appointedNode);
+                    appointeeNode.addManager(appointedUserId);
+                    managersList.put(appointedUserId, null);
                 }
             }
         }
     }
 
-    public void removeManager(String appointeeUserId, String appointedUserId) {
-        if (appointedUserId != null && appointedUserId != null) {
+    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
             // add write acquire lock
-            ManagementNode appointeeNode = managersList.get(appointeeUserId);
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
-                ManagementNode deletedManager = appointeeNode.deleteManager(appointedUserId);
-                if (deletedManager != null) {
-                    List<String> appointerChildren = deletedManager.getAllChildren();
-                    for (String appointerToRemove : appointerChildren) {
-                        managersList.remove(appointerToRemove);
-                    }
+                if (appointeeNode.deleteManager(appointedUserId)) {
+                    managersList.remove(appointedUserId);
                 }
             }
         }
     }
 
-    public void addOwner(String appointeeUserId, String appointedUserId) {
-        if (appointedUserId != null && appointedUserId != null) {
+    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
             // add write acquire lock
-            ManagementNode appointeeNode = ownershipList.get(appointeeUserId);
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (!ownershipList.containsKey(appointedUserId)) {
-                    ManagementNode appointedNode = appointeeNode.addManager(appointeeUserId);
-                    ownershipList.put(appointeeUserId, appointedNode);
+                    OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
+                    ownershipList.put(appointeeOwnerUserId, appointedNode);
                 }
             }
         }
     }
 
-    public void removeOwner(String appointeeUserId, String appointedUserId) {
-        if (appointedUserId != null && appointedUserId != null) {
+    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
             // add write acquire lock
-            ManagementNode appointeeNode = ownershipList.get(appointeeUserId);
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
-                ManagementNode deletedOwner = appointeeNode.deleteManager(appointedUserId);
+                OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
                 if (deletedOwner != null) {
                     List<String> appointerChildren = deletedOwner.getAllChildren();
                     for (String appointerToRemove : appointerChildren) {
