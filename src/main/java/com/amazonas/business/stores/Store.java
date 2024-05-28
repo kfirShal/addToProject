@@ -2,6 +2,8 @@ package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
+import com.amazonas.exceptions.StoreException;
+import com.amazonas.utils.ErrorCollection;
 import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
@@ -45,6 +47,8 @@ public class Store {
         isOpen = true;
     }
 
+
+
     public boolean openStore(){
         if(isOpen)
             return false;
@@ -70,12 +74,26 @@ public class Store {
         return -1;
     }
 
-    public void addProduct(Product toAdd){
-        inventory.addProduct(toAdd);
+    public String addProduct(Product toAdd) throws StoreException {
+        if(isOpen) {
+            if(inventory.nameExists(toAdd.productName())) {
+                inventory.addProduct(toAdd);
+                return "product added";
+            }
+            else
+                return "product name exists";
+        }
+        else {
+            throw new StoreException("store is closed");
+        }
     }
 
-    public  boolean removeProduct(Product toRemove){
-        return inventory.removeProduct(toRemove);
+    public String removeProduct(String productIdToRemove) {
+        if (isOpen) {
+            inventory.removeProduct(productIdToRemove);
+            return "product removed";
+        }
+        else return "product wasnt removed - store closed";
     }
 
     public  boolean updateProduct(Product toUpdate){
