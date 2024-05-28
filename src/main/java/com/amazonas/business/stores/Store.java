@@ -104,7 +104,8 @@ public class Store {
                     for (var entry : toReserve.entrySet()) {
                         put(entry.getKey(), entry.getValue());
                     }}},
-                LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), false);
+
+                LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), null); //TODO: Implement the cancel callback
         reservedProducts.put(userId, reservation);
 
         lock.release();

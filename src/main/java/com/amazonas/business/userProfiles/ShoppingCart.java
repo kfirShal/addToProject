@@ -28,7 +28,8 @@ public class ShoppingCart {
             basket.addProduct(product,quantity);
         }
         else{
-            StoreBasket newBasket = new StoreBasket();
+            //TODO: add the makeReservation and cancelReservation instead of null
+            StoreBasket newBasket = new StoreBasket(null,null);
             newBasket.addProduct(product,quantity);
             baskets.put(storeName,newBasket);
         }

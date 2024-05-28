@@ -70,19 +70,19 @@ public class MarketFacadeImpl implements MarketFacade {
             StoreBasket storeBasket = shoppingCart.getBaskets().get(storeId);
 
             // Reserve the products
-            Reservation reservation = store.reserveProducts(userId, productsToReserve);
-            reservations.add(reservation);
+//            Reservation reservation = store.reserveProducts(userId, productsToReserve);
+//            reservations.add(reservation);
 
             // add the price of the products to the total price
-            double price = store.calculatePrice(productsToReserve);
-            totalPrice += price;
+//            double price = store.calculatePrice(productsToReserve);
+//            totalPrice += price;
 
             // Create the transaction and add it to the list
             Transaction transaction = new Transaction(storeId,
                     userId,
                     user.getPaymentMethod(),
                     transactionTime,
-                    storeBasket.getProducts());
+                    storeBasket.getProductsMap());
             transactions.add(transaction);
         };
 

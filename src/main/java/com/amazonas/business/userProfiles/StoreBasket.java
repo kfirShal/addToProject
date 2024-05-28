@@ -13,9 +13,9 @@ import java.util.function.Function;
 public class StoreBasket {
 
     private final Map<String, Pair<Product, Integer>> products; // productId --> <Product,Quantity>
+
     private final Function<Map<Product,Integer>, Reservation> makeReservation;
     private final Runnable cancelReservation;
-
     public StoreBasket (Function<Map<Product,Integer>, Reservation> makeReservation,
                         Runnable cancelReservation){
 
@@ -33,6 +33,7 @@ public class StoreBasket {
         return products.get(productId);
 
     }
+
     public void addProduct(Product product, int quantity) {
         //TODO : store need to check if the product is legal due to policy restrictions (not for now)
 
@@ -45,7 +46,6 @@ public class StoreBasket {
             throw new RuntimeException("Product is already exists, change the quantity of the product if needed");
         }
     }
-
     public void removeProduct(String productId) {
         if(!products.containsKey(productId)){
             throw new RuntimeException("Product with id: " + productId + " not found");
@@ -69,7 +69,12 @@ public class StoreBasket {
       }
     }
 
-    public Map<Product,Integer> getProducts() {
+
+    public Map<String, Pair<Product, Integer>> getProducts() {
+        return products;
+    }
+
+    public Map<Product,Integer> getProductsMap() {
         return new HashMap<>() {{
             for (var entry : products.entrySet()) {
                 var pair = entry.getValue();
@@ -96,6 +101,6 @@ public class StoreBasket {
     }
 
     public Reservation reserveBasket() {
-        makeReservation.apply(products);
+        return makeReservation.apply(getProductsMap());
     }
 }
