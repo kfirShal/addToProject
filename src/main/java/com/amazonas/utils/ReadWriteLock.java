@@ -34,8 +34,8 @@ public class ReadWriteLock {
                     entryLock.wait();
                 } catch(InterruptedException ignored){}
             }
-            increment(readers);
         }
+        increment(readers);
     }
 
     public void releaseRead() {
