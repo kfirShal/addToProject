@@ -16,14 +16,14 @@ public class ReadWriteLock {
     private final AtomicInteger readers;
     private final AtomicInteger waitingToWrite;
     private final Object entryLock;
-    private final AtomicBoolean writeQueueLock;
+    private final SpinLock writeQueueLock;
     private final List<Object> writeQueue;
 
     public ReadWriteLock() {
         readers = new AtomicInteger();
         waitingToWrite = new AtomicInteger();
         entryLock = new Object();
-        writeQueueLock = new AtomicBoolean();
+        writeQueueLock = new SpinLock();
         writeQueue = new LinkedList<>();
     }
 
@@ -51,12 +51,12 @@ public class ReadWriteLock {
         increment(waitingToWrite);
 
         // wait for the busy wait lock
-        acquireWriteQueueLock();
+        writeQueueLock.acquire();
 
         // create a new object to wait on and add it to the queue
         Object obj = new Object();
         writeQueue.add(obj);
-        writeQueueLock.set(false); // release the busy wait lock
+        writeQueueLock.release(); // release the busy wait lock
 
         // wait for all readers to leave
         synchronized(entryLock){
@@ -68,37 +68,37 @@ public class ReadWriteLock {
         }
 
         // wait for your turn
-        acquireWriteQueueLock();
+        writeQueueLock.acquire();
         if(writeQueue.getFirst() != obj){
             // you are not next in line
             synchronized (obj){
-                writeQueueLock.set(false);
+                writeQueueLock.release();
                 try{
                     obj.wait();
                 } catch(InterruptedException ignored){}
             }
         }else {
             // you are next in line
-            writeQueueLock.set(false);
+            writeQueueLock.release();
         }
     }
 
     public void releaseWrite(){
         decrement(waitingToWrite);
 
-        acquireWriteQueueLock();
+        writeQueueLock.acquire();
         writeQueue.removeFirst();
 
         if(waitingToWrite.get() == 0){
             // no one is waiting to write
-            writeQueueLock.set(false);
+            writeQueueLock.release();
             synchronized(entryLock){
                 entryLock.notifyAll();
             }
         } else if(!writeQueue.isEmpty()) {
             // waitingToWrite > 0 && writeQueue.size() > 0
             Object next = writeQueue.getFirst();
-            writeQueueLock.set(false);
+            writeQueueLock.release();
             synchronized(next){
                 next.notify();
             }
@@ -106,12 +106,8 @@ public class ReadWriteLock {
             // waitingToWrite > 0 && writeQueue.size() == 0
             // this means that the write queue is empty
             // but a writer is waiting on the write queue lock
-            writeQueueLock.set(false);
+            writeQueueLock.release();
         }
-    }
-
-    private void acquireWriteQueueLock(){
-        while(!writeQueueLock.compareAndSet(false, true)){/*spin*/}
     }
 
     private void increment(AtomicInteger num){
