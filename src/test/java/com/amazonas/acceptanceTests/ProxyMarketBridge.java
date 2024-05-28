@@ -1,13 +1,16 @@
 package com.amazonas.acceptanceTests;
 
+import com.amazonas.business.market.GlobalSearchRequest;
+import com.amazonas.business.userProfiles.User;
+
 public class ProxyMarketBridge implements MarketBridge{
     @Override
-    public boolean searchProduct(String productName) {
+    public boolean searchProduct(GlobalSearchRequest request) {
         return false;
     }
 
     @Override
-    public boolean makePurchase(String productName, String productDescription) {
+    public boolean makePurchase(User user, String token) {
         return false;
     }
 

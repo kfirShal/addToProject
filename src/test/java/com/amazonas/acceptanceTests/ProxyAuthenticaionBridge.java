@@ -5,4 +5,19 @@ public class ProxyAuthenticaionBridge implements AuthenticationBridge{
     public boolean authenticate(String userId, String password) {
         return false;
     }
+
+    @Override
+    public void testAuthenticateValidUser() {
+
+    }
+
+    @Override
+    public void testAuthenticateInvalidUser() {
+
+    }
+
+    @Override
+    public void testAuthenticateInvalidPassword() {
+
+    }
 }

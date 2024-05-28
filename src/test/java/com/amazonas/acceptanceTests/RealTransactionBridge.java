@@ -1,8 +1,10 @@
 package com.amazonas.acceptanceTests;
 
+import com.amazonas.business.transactions.Transaction;
+
 public class RealTransactionBridge implements TransactionBridge {
     @Override
-    public boolean documentTransaction(String productName, String productDescription) {
+    public boolean documentTransaction(Transaction transaction) {
         return false;
     }
 

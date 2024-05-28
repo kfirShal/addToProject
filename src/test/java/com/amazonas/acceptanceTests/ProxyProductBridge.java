@@ -15,4 +15,9 @@ public class ProxyProductBridge implements ProductBridge {
     public boolean updateProduct(String productName, String productDescription) {
         return false;
     }
+
+    @Override
+    public void testAddProduct() {
+
+    }
 }

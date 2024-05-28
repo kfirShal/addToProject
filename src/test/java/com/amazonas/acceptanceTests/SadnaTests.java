@@ -1,7 +1,10 @@
 package com.amazonas.acceptanceTests;
 
+import com.amazonas.business.market.GlobalSearchRequest;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.stores.StoreActions;
+import com.amazonas.business.transactions.Transaction;
+import com.amazonas.business.userProfiles.User;
 import com.amazonas.business.userProfiles.UserActions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,17 +51,19 @@ public class SadnaTests {
         userBridge = null;
     }
 
+
+    //////////Autenticate
     public boolean authenticate(String userId, String password) {
         return authenticationBridge.authenticate(userId, password);
     }
 
-    public boolean searchProduct(String productName){
-        return marketBridge.searchProduct(productName);
+    //////////Market
+    public boolean searchProduct(GlobalSearchRequest request){
+        return marketBridge.searchProduct(request);
     }
 
-
-    public boolean makePurchase(String productName, String productDescription){
-        return marketBridge.makePurchase(productName, productDescription);
+    public boolean makePurchase(User user, String token){
+        return marketBridge.makePurchase(user, token);
     }
 
     public boolean start(){
@@ -73,9 +78,41 @@ public class SadnaTests {
         return marketBridge.restart();
     }
 
+    //////////Payment
     public boolean charge(PaymentMethod paymentMethod, double amount){
         return paymentBridge.charge(paymentMethod, amount);
     }
+
+    //////////Transactions
+    public boolean documentTransaction(Transaction transaction){
+        return transactionBridge.documentTransaction(transaction);
+    }
+
+    public boolean getTransactionByUser(String userId){
+        return transactionBridge.getTransactionByUser(userId);
+    }
+
+    public boolean getTransactionByStore(String storeId){
+        return transactionBridge.getTransactionByStore(storeId);
+    }
+
+
+
+
+    //////////Permission
+    public boolean addPermission(String userId,String storeId, UserActions action){
+        return permissionBridge.addPermission(userId, action);
+    }
+
+    public boolean removePermission(String userId,String storeId, UserActions action){
+        return permissionBridge.removePermission(userId, action);
+    }
+
+    public boolean checkPermission(String userId,String storeId, UserActions action){
+        return permissionBridge.checkPermission(userId, action);
+    }
+
+
 
     public boolean addPermission(String userId, UserActions action){
         return permissionBridge.addPermission(userId, action);
@@ -89,6 +126,11 @@ public class SadnaTests {
         return permissionBridge.checkPermission(userId, action);
     }
 
+
+
+
+
+    //////////Product
     public boolean addProduct(String productName, String productDescription){
         return productBridge.addProduct(productName, productDescription);
     }
@@ -109,30 +151,10 @@ public class SadnaTests {
         return productBridge.updateProduct(storeId, productDescription);
     }
 
-    public boolean addPermission(String userId,String storeId, UserActions action){
-        return permissionBridge.addPermission(userId, action);
-    }
 
-    public boolean removePermission(String userId,String storeId, UserActions action){
-        return permissionBridge.removePermission(userId, action);
-    }
 
-    public boolean checkPermission(String userId,String storeId, UserActions action){
-        return permissionBridge.checkPermission(userId, action);
-    }
 
-    public boolean documentTransaction(String productName, String productDescription){
-        return transactionBridge.documentTransaction(productName, productDescription);
-    }
-
-    public boolean getTransactionByUser(String userId){
-        return transactionBridge.getTransactionByUser(userId);
-    }
-
-    public boolean getTransactionByStore(String storeId){
-        return transactionBridge.getTransactionByStore(storeId);
-    }
-
+    //////////Users
     public boolean register(String email, String userName, String password){
         return userBridge.register(email, userName, password);
     }
@@ -163,6 +185,15 @@ public class SadnaTests {
     public boolean removeFromCart(String productName){
         return false;
     }
+
+
+
+
+
+
+
+
+
 
 
     public void testAuthenticateValidUser() {

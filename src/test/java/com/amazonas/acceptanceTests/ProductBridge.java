@@ -6,4 +6,6 @@ public interface ProductBridge {
     boolean updateProduct(String productName, String productDescription);
 
     void testAddProduct();
+
+    void testAddProductValid();
 }
