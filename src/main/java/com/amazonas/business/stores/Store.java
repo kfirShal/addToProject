@@ -6,10 +6,7 @@ import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -28,13 +25,17 @@ public class Store {
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
+    private ManagementNode managementTree;
+    private Map<String, ManagementNode> managersList;
 
-    public Store(String storeId, String description, Rating rating, ProductInventory inventory) {
+    public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUseId) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
+        this.managementTree = new ManagementNode(ownerUseId, null);
+        this.managersList = new HashMap<>();
 
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
@@ -269,5 +270,34 @@ public class Store {
 
     public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
         this.reservationTimeoutSeconds = reservationTimeoutSeconds;
+    }
+
+    public void addManager(String appointeeUserId, String appointedUserId) {
+        if (appointedUserId != null && appointedUserId != null) {
+            // add write acquire lock
+            ManagementNode appointeeNode = managersList.get(appointeeUserId);
+            if (appointeeNode != null) {
+                if (!managersList.containsKey(appointedUserId)) {
+                    ManagementNode appointedNode = appointeeNode.addManager(appointeeUserId);
+                    managersList.put(appointeeUserId, appointedNode);
+                }
+            }
+        }
+    }
+
+    public void removeManager(String appointeeUserId, String appointedUserId) {
+        if (appointedUserId != null && appointedUserId != null) {
+            // add write acquire lock
+            ManagementNode appointeeNode = managersList.get(appointeeUserId);
+            if (appointeeNode != null) {
+                ManagementNode deletedManager = appointeeNode.deleteManager(appointedUserId);
+                if (deletedManager != null) {
+                    List<String> appointerChildren = deletedManager.getAllChildren();
+                    for (String appointerToRemove : appointerChildren) {
+                        managersList.remove(appointerToRemove);
+                    }
+                }
+            }
+        }
     }
 }
