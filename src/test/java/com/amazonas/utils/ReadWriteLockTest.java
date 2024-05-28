@@ -3,9 +3,6 @@ package com.amazonas.utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,10 +48,10 @@ class ReadWriteLockTest {
 
                 // acquire the lock
                 lock.acquireWrite();
-                writing.set(true);
-                if(reading.get() > 0){
+                if(reading.get() > 0 || writing.get()){
                     fail("ERROR: writer writing while reader reading");
                 }
+                writing.set(true);
 
                 // do some work
                 for(long j = 0; j < 99000000L; j++){}
