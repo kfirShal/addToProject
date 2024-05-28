@@ -6,13 +6,15 @@ import com.amazonas.business.stores.Rating;
 import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.StoreActions;
 import com.amazonas.business.stores.StoresController;
+import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 
 @Component("storeProxy")
-public class StoreProxy extends ControllerProxy implements StoresController {
+public class StoreProxy extends ControllerProxy{
 
     private final StoresController real;
 
@@ -21,22 +23,6 @@ public class StoreProxy extends ControllerProxy implements StoresController {
         this.real = storesController;
     }
 
-    @Override
-    public Store getStore(String storeID) {
-        return null;
-    }
-
-    @Override
-    public List<Store> getAllStores() {
-        return null;
-    }
-
-    @Override
-    public void addStore(String storeId, String storeDescription, Rating storeRating, String userId, String token) {
-
-    }
-
-
     public void addStorePermission(String storeId, String userId, StoreActions action, String token) throws NoPermissionException {
         if(! perm.checkPermission(storeId, userId, action)){
             throw new NoPermissionException("User does not have permission to add permission");
@@ -44,4 +30,5 @@ public class StoreProxy extends ControllerProxy implements StoresController {
 
         real.addStorePermission(storeId, userId, action, token);
     }
+
 }
