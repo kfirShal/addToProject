@@ -16,10 +16,10 @@ public class StoreFactory {
     }
 
     @NonNull
-    public Store getObject(String storeId, String description, Rating rating) throws BeansException {
+    public Store getObject(String storeId,String ownerUserId, String description, Rating rating) throws BeansException {
         return new Store(storeId,
                 description,
                 rating,
-                new ProductInventory(globalProductTracker,storeId));
+                new ProductInventory(globalProductTracker,storeId),ownerUserId);
     }
 }

@@ -15,11 +15,11 @@ public class StoresController {
         this.pc = pc;
     }
 
-    public boolean addOwner(String username, int storeID){
+    public boolean addOwner(String username, String storeId){
         return false;
     }
 
-    public Store getStore(int storeID) {
+    public Store getStore(String storeID) {
         return null;
     }
 
@@ -27,7 +27,7 @@ public class StoresController {
         return null;
     }
 
-    public Store getStore(int storeID, String userID, String token) throws InvalidTokenException, NoPermissionException {
+    public Store getStore(String storeId, String userID, String token) throws InvalidTokenException, NoPermissionException {
         return null;
     }
 

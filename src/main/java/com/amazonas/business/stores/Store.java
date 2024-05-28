@@ -2,6 +2,7 @@ package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
@@ -27,13 +28,19 @@ public class Store {
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
+    private Map<String, OwnerNode> managersList;
+    private OwnerNode ownershipTree;
+    private Map<String, OwnerNode> ownershipList;
 
-    public Store(String storeId, String description, Rating rating, ProductInventory inventory) {
+    public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUserId) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
+        this.managersList = new HashMap<>();
+        this.ownershipTree = new OwnerNode(ownerUserId, null);
+        this.ownershipList = new HashMap<>();
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
         isOpen = true;
@@ -70,12 +77,26 @@ public class Store {
         return -1;
     }
 
-    public void addProduct(Product toAdd){
-        inventory.addProduct(toAdd);
+    public String addProduct(Product toAdd) throws StoreException {
+        if(isOpen) {
+            if(inventory.nameExists(toAdd.productName())) {
+                inventory.addProduct(toAdd);
+                return "product added";
+            }
+            else
+                return "product name exists";
+        }
+        else {
+            throw new StoreException("store is closed");
+        }
     }
 
-    public  boolean removeProduct(Product toRemove){
-        return inventory.removeProduct(toRemove);
+    public String removeProduct(String productIdToRemove) {
+        if (isOpen) {
+            inventory.removeProduct(productIdToRemove);
+            return "product removed";
+        }
+        else return "product wasnt removed - store closed";
     }
 
     public  boolean updateProduct(Product toUpdate){
@@ -203,5 +224,59 @@ public class Store {
 
     public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
         this.reservationTimeoutSeconds = reservationTimeoutSeconds;
+    }
+
+    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                if (!managersList.containsKey(appointedUserId)) {
+                    appointeeNode.addManager(appointedUserId);
+                    managersList.put(appointedUserId, null);
+                }
+            }
+        }
+    }
+
+    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                if (appointeeNode.deleteManager(appointedUserId)) {
+                    managersList.remove(appointedUserId);
+                }
+            }
+        }
+    }
+
+    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                if (!ownershipList.containsKey(appointedUserId)) {
+                    OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
+                    ownershipList.put(appointeeOwnerUserId, appointedNode);
+                }
+            }
+        }
+    }
+
+    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
+                if (deletedOwner != null) {
+                    List<String> appointerChildren = deletedOwner.getAllChildren();
+                    for (String appointerToRemove : appointerChildren) {
+                        ownershipList.remove(appointerToRemove);
+                    }
+                }
+            }
+        }
     }
 }

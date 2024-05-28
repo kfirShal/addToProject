@@ -22,13 +22,6 @@ public class StoreProxy extends ControllerProxy{
         super(perm,auth);
         this.real = storesController;
     }
-
-    public void addStorePermission(String storeId, String userId, StoreActions action, String token) throws NoPermissionException {
-        if(! perm.checkPermission(storeId, userId, action)){
-            throw new NoPermissionException("User does not have permission to add permission");
-        }
-
-        real.addStorePermission(storeId, userId, action, token);
-    }
+    
 
 }
