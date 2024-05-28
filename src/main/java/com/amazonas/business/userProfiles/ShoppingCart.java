@@ -2,6 +2,7 @@ package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.stores.Reservation;
+import com.amazonas.business.stores.ReservationFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +88,7 @@ public class ShoppingCart {
         return baskets.containsKey(storeName);
     }
 
-    public List<Reservation> reserveCart(){
-        return baskets.values().stream().map(StoreBasket::reserveBasket).toList();
+    public Map<String, Reservation> reserveCart(){
+        return null;
     }
 }
