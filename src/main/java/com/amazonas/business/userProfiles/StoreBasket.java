@@ -16,6 +16,7 @@ public class StoreBasket {
 
     private final Function<Map<Product,Integer>, Reservation> makeReservation;
     private final Runnable cancelReservation;
+
     public StoreBasket (Function<Map<Product,Integer>, Reservation> makeReservation,
                         Runnable cancelReservation){
 

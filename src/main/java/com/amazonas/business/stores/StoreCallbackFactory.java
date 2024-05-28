@@ -11,9 +11,9 @@ import java.util.function.Function;
 @Component("storeCallbackFactory")
 public class StoreCallbackFactory {
 
-    private final StoresControllerImpl storesController;
+    private final StoresController storesController;
 
-    public StoreCallbackFactory(StoresControllerImpl storesController) {
+    public StoreCallbackFactory(StoresController storesController) {
         this.storesController = storesController;
     }
 

@@ -27,6 +27,7 @@ public class Store {
     private String storeId;
     private String storeDescription;
     private Rating storeRating;
+    private boolean isOpen;
 
     public Store(String storeId, String description, Rating rating, ProductInventory inventory) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
@@ -40,8 +41,25 @@ public class Store {
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
         reserveTimeoutThread.start();
+        isOpen = true;
     }
 
+    public boolean openStore(){
+        if(isOpen)
+            return false;
+        else{
+            isOpen = true;
+            return true;
+        }
+    }
+    public boolean closeStore(){
+        if(isOpen){
+            isOpen = false;
+            return true;
+        }
+        else
+            return false;
+    }
     public int calculatePrice(List<Pair<Product,Integer>> products){
         //TODO: Implement this
         return 0;

@@ -12,7 +12,6 @@ import com.amazonas.business.transactions.TransactionsController;
 import com.amazonas.business.userProfiles.*;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
-import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
