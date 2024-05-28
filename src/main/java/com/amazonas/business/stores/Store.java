@@ -38,9 +38,6 @@ public class Store {
 
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
-
-        Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
-        reserveTimeoutThread.start();
         isOpen = true;
     }
 
@@ -60,6 +57,8 @@ public class Store {
         else
             return false;
     }
+
+    //TODO: SHOHAM - Implement this
     public int calculatePrice(List<Pair<Product,Integer>> products){
         //TODO: Implement this
         return 0;
@@ -197,74 +196,6 @@ public class Store {
         try {
             lock.acquire();
         } catch (InterruptedException ignored) {}
-    }
-
-    // ================================================================= |
-    // ===================== Reservation Thread ======================== |
-    // ================================================================= |
-
-    private void reservationThreadMain(){
-        long nextWakeUp = Long.MAX_VALUE;
-        Reservation nextExpiringReservation = null;
-        while(true){
-
-            // Wait something to happen
-            do{
-                _wait(10000L);
-            }while(reservedProducts.isEmpty());
-
-            // Find the first reservation that will expire
-            for(var entry : reservedProducts.entrySet()){
-                long expirationTimeMillis = localDateTimeToEpochMillis(entry.getValue().expirationDate());
-                if(expirationTimeMillis <= nextWakeUp){
-                    nextWakeUp = expirationTimeMillis;
-                    nextExpiringReservation = entry.getValue();
-                }
-            }
-
-            // if for some reason there is no reservation
-            // continue to the next iteration
-            if(nextExpiringReservation == null){
-                continue;
-            }
-
-            // Wait until the next reservation expires
-            do{
-                long waitTime = Math.max(nextWakeUp - System.currentTimeMillis(), 1L);
-                _wait(waitTime);
-            } while(System.currentTimeMillis() < nextWakeUp
-                    && !nextExpiringReservation.isPaid()
-                    && !nextExpiringReservation.isCancelled());
-
-            //if the reservation is cancelled, no need to do anything
-            // if not, move to the next step
-            if(! nextExpiringReservation.isCancelled()){
-
-                // if the reservation is paid, remove it
-                if (nextExpiringReservation.isPaid()) {
-                    reservedProducts.remove(nextExpiringReservation.userId());
-                } else {
-
-                    // if the reservation is not paid, cancel it
-                    cancelReservation(nextExpiringReservation.userId());
-                }
-            }
-
-            nextExpiringReservation = null;
-            nextWakeUp = Long.MAX_VALUE;
-        }
-    }
-
-    private void _wait(long waitTime) {
-        synchronized (waitObject) {
-            try {
-                waitObject.wait(waitTime);
-            } catch (InterruptedException ignored) {}
-        }
-    }
-
-    private long localDateTimeToEpochMillis(LocalDateTime time){
-        return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
     }
 
     public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
