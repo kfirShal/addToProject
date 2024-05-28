@@ -70,21 +70,24 @@ public class StoresControllerImpl implements StoresController {
     //TODO: SHOHAM - implement this
     @Override
     public void addStorePermission(String storeId, String userId, StoreActions action, String token)  {
+        permissionsController.addPermission(userId,storeId,action);
 
     }
 
     //TODO: SHOHAM - implement this
     public void removeStorePermission(String storeId, String userId, StoreActions action, String token) {
-
+        permissionsController.removePermission(userId,storeId,action); 
     }
 
     //TODO: SHOHAM - implement this
-    public String closeStore(){
+    public String closeStore(String storeId){
+        storeIdToStore.get(storeId).closeStore();
         return null;
     }
 
     //TODO: SHOHAM - implement this
-    public String openStore(){
+    public String openStore(String storeId){
+        storeIdToStore.get(storeId).openStore();
         return null;
     }
 
