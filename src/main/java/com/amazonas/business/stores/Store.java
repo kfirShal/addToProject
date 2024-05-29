@@ -66,9 +66,12 @@ public class Store {
         else
             return false;
     }
-    public int calculatePrice(List<Pair<Product,Integer>> products){
-        //TODO: Implement this
-        return 0;
+    public double calculatePrice(List<Pair<Product,Integer>> products){
+        double sum = 0;
+        for(Pair<Product,Integer> pair : products){
+            sum += pair.first().price() * pair.second();
+        }
+        return sum;
     }
 
     public int availableCount(String productId){

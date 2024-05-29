@@ -17,7 +17,7 @@ public class StoreCallbackFactory {
         this.storesController = storesController;
     }
 
-    public Function<List<Pair<Product,Integer>>,Integer> calculatePrice(String storeId){
+    public Function<List<Pair<Product,Integer>>, Double> calculatePrice(String storeId){
         return products -> storesController.getStore(storeId).calculatePrice(products);
     }
 
