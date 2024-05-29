@@ -111,6 +111,7 @@ public class Store {
         return inventory.disableProduct(toDisable);
     }
 
+    //TODO: THIS NEEDS TO BE REIMPLEMENTED
     public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
 
         lockAcquire();
@@ -140,12 +141,13 @@ public class Store {
         }
 
         // Create the reservation
-        Reservation reservation = new Reservation(userId,
-                new HashMap<>(){{
-                    for (var entry : toReserve.entrySet()) {
-                        put(entry.getKey(), entry.getValue());
-                    }}},
 
+        Reservation reservation = new Reservation(
+                storeId,
+                userId,
+                new HashMap<>(){{
+                    this.putAll(toReserve);
+                }},
                 LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), null); //TODO: Implement the cancel callback
         reservedProducts.put(userId, reservation);
 
@@ -156,6 +158,7 @@ public class Store {
         return reservation;
     }
 
+    //TODO: THIS NEEDS TO BE REIMPLEMENTED
     public void cancelReservation(String userId){
         lockAcquire();
         Reservation reservation = reservedProducts.get(userId);

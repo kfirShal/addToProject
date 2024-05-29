@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Component("reservationMonitor")
@@ -14,9 +16,11 @@ public class ReservationMonitor {
     private final Object waitObject;
 
     private final ConcurrentLinkedDeque<Pair<Reservation, LocalDateTime>> reservations;
+    private final Set<Reservation> paidReservations;
 
     public ReservationMonitor() {
         reservations = new ConcurrentLinkedDeque<>();
+        paidReservations = ConcurrentHashMap.newKeySet();
         waitObject = new Object();
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
@@ -24,10 +28,15 @@ public class ReservationMonitor {
     }
 
     public void addReservation(Reservation reservation){
-        reservations.add(Pair.of(reservation, reservation.expirationDate()));
         synchronized (waitObject) {
+            reservations.add(Pair.of(reservation, reservation.expirationDate()));
             waitObject.notify();
         }
+    }
+
+    //TODO: alert admin of reservations that are paid but not shipped
+    private void alertAdminShippingIssue(Reservation r){
+
     }
 
     // ================================================================= |
@@ -67,19 +76,27 @@ public class ReservationMonitor {
                 } catch (InterruptedException ignored) {}
             }
 
-            // Check if the reservation is still valid
-            if(r.isCancelled()){
-                // remove reservation if cancelled
-                reservations.removeFirst();
-            } else if(r.expirationDate().isBefore(LocalDateTime.now())) {
-                // cancel reservation if expired
-                r.cancelReservation();
-                reservations.removeFirst();
+            switch(r.state()){
+                case PENDING -> {
+                    if(r.expirationDate().isBefore(LocalDateTime.now())){
+                        r.cancelReservation();
+                        reservations.removeFirst();
+                    }
+                }
+                case PAID -> {
+                    reservations.removeFirst();
+                    paidReservations.add(r);
+                }
+                case SHIPPED -> paidReservations.remove(r);
+                case CANCELLED -> reservations.removeFirst();
             }
+
+            paidReservations.stream().filter(Reservation::isShipped).forEach(this::alertAdminShippingIssue);
         }
     }
 
     private long localDateTimeToEpochMillis(LocalDateTime time){
         return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
     }
+
 }
