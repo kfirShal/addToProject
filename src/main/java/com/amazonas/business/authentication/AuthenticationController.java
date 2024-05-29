@@ -1,5 +1,6 @@
 package com.amazonas.business.authentication;
 
+import com.amazonas.utils.ReadWriteLock;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.slf4j.Logger;
@@ -24,20 +25,21 @@ public class AuthenticationController {
     //=================================================================
     //TODO: replace this with a database
     //Temporary storage for hashed passwords until we have a database
-    private final Map<String, String> userIdToHashedPassword = new HashMap<>();
+    private final Map<String, String> userIdToHashedPassword;
     //=================================================================
 
     private static final MacAlgorithm alg = Jwts.SIG.HS512;
     private static final String passwordStorageFormat = "{bcrypt}";
-
-    private final ConcurrentMap<String, String> userIdToUUID;
-
+    private final Map<String, String> userIdToUUID;
     private final PasswordEncoder encoder;
+    private final ReadWriteLock lock;
     private SecretKey key;
 
     public AuthenticationController() {
         key = Jwts.SIG.HS512.key().build();
-        userIdToUUID = new ConcurrentHashMap<>();
+        userIdToUUID = new HashMap<>();
+        userIdToHashedPassword = new HashMap<>();
+        lock = new ReadWriteLock();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
@@ -48,7 +50,9 @@ public class AuthenticationController {
 
     public AuthenticationResponse authenticateUser(String userId, String password) {
         log.debug("Authenticating user: {}", userId);
+        lock.acquireRead();
         String hashedPassword = userIdToHashedPassword.get(userId);
+        lock.releaseRead();
 
         // check if the user exists
         if(hashedPassword == null) {
@@ -70,7 +74,9 @@ public class AuthenticationController {
 
     public boolean revokeAuthentication(String userId) {
         log.debug("Revoking authentication for user {}", userId);
+        lock.acquireWrite();
         String uuid = userIdToUUID.remove(userId);
+        lock.releaseWrite();
         return uuid != null;
     }
 
@@ -85,7 +91,9 @@ public class AuthenticationController {
                     .getPayload());
 
             log.trace("Checking if the UUID from the token matches the stored UUID for user {}", userId);
+            lock.acquireRead();
             String uuid = userIdToUUID.get(userId);
+            lock.releaseRead();
             answer = uuid != null && uuid.equals(uuidFromToken);
         } catch (Exception ignored) {
             answer = false;
@@ -99,8 +107,10 @@ public class AuthenticationController {
      */
     public void resetSecretKey() {
         log.debug("Resetting secret key");
+        lock.acquireWrite();
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID.clear();
+        lock.releaseWrite();
     }
 
     private boolean isPasswordsMatch(String password, String hashedPassword) {
@@ -114,7 +124,9 @@ public class AuthenticationController {
 
         //store the UUID and associate it with the user
         log.trace("Storing new UUID for user {}", userId);
+        lock.acquireWrite();
         userIdToUUID.put(userId, uuid);
+        lock.releaseWrite();
 
         return generateJwt(uuid);
     }
@@ -134,6 +146,8 @@ public class AuthenticationController {
         log.debug("Adding user credentials for user {}", userId);
         //TODO: store hashed password in database
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
+        lock.acquireWrite();
         userIdToHashedPassword.put(userId, encodedPassword);
+        lock.releaseWrite();
     }
 }
