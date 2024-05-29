@@ -1,15 +1,37 @@
 package com.amazonas.business.stores;
 
-import com.amazonas.exceptions.AuthenticationFailedException;
+import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.exceptions.InvalidTokenException;
 import com.amazonas.exceptions.NoPermissionException;
+import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.List;
 
-public interface StoresController {
+@Component("storesController")
+public class StoresController {
+    private final PermissionsController pc;
 
-    Store getStore(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException;
-    Collection<Store> getAllStores(String userId, String token) throws NoPermissionException, AuthenticationFailedException;
-    void addStore(String storeId, String storeDescription, Rating storeRating, String userId, String token) throws NoPermissionException, AuthenticationFailedException;
-    void addStorePermission(String storeId, String userId, StoreActions action, String token) throws NoPermissionException, AuthenticationFailedException;
-    void removeStorePermission(String storeId, String userId, StoreActions action, String token) throws NoPermissionException, AuthenticationFailedException;
+    public StoresController(PermissionsController pc){
+        this.pc = pc;
+    }
+
+    public boolean addOwner(String username, String storeId){
+        return false;
+    }
+
+    public Store getStore(String storeID) {
+        return null;
+    }
+
+    public List<Store> getAllStores() {
+        return null;
+    }
+
+    public Store getStore(String storeId, String userID, String token) throws InvalidTokenException, NoPermissionException {
+        return null;
+    }
+
+    public List<Store> getAllStores(String userID, String token) throws InvalidTokenException, NoPermissionException {
+        return null;
+    }
 }

@@ -15,7 +15,7 @@ public class ProductInventory {
     private final GlobalProductTracker tracker;
     private final ConcurrentMap<String, Product> idToProduct;
     private final ConcurrentMap<String, Integer> idToQuantity;
-    private final Set<Product> disabledProducts;
+    private final Set<String> disabledProductsId;
     private final String storeId;
 
     public  ProductInventory(GlobalProductTracker tracker, String storeId){
@@ -23,9 +23,13 @@ public class ProductInventory {
         this.storeId = storeId;
         idToProduct = new ConcurrentHashMap<>();
         idToQuantity = new ConcurrentHashMap<>();
-        disabledProducts = ConcurrentHashMap.newKeySet();
+        disabledProductsId = ConcurrentHashMap.newKeySet();
     }
 
+    public boolean nameExists(String productName){
+        return idToProduct.entrySet().stream()
+                .anyMatch((x -> x.getValue().productName().equalsIgnoreCase(productName)));
+    }
     public void addProduct(Product product) {
         String newId;
         do{
@@ -56,14 +60,14 @@ public class ProductInventory {
         return false;
     }
 
-    public boolean removeProduct(Product product) {
-        log.debug("Removing product {} with id {} from inventory", product.productName(), product.productId());
+    public boolean removeProduct(String productId) {
+        log.debug("Removing product with id {} from inventory", productId);
 
-        if(!disabledProducts.contains(product)){
+        if(!disabledProductsId.contains(productId)){
             return false;
         }
-        idToProduct.remove(product.productId());
-        idToQuantity.remove(product.productId());
+        idToProduct.remove(productId);
+        idToQuantity.remove(productId);
         return true;
     }
 
@@ -82,28 +86,28 @@ public class ProductInventory {
     }
 
     public boolean enableProduct(Product toEnable) {
-        if(disabledProducts.contains(toEnable)){
-            disabledProducts.remove(toEnable);
+        if(disabledProductsId.contains(toEnable)){
+            disabledProductsId.remove(toEnable);
             return true;
         }
         return false;
     }
 
     public boolean disableProduct(Product toDisable) {
-        if(!disabledProducts.contains(toDisable)){
-            disabledProducts.add(toDisable);
+        if(!disabledProductsId.contains(toDisable)){
+            disabledProductsId.add(toDisable.productId());
             return true;
         }
         return false;
     }
 
     public boolean isProductDisabled(Product product) {
-        return disabledProducts.contains(product);
+        return disabledProductsId.contains(product);
     }
 
     public Set<Product> getAllAvailableProducts(){
         return idToProduct.values().stream()
-                .filter(product -> !disabledProducts.contains(product)
+                .filter(product -> !disabledProductsId.contains(product)
                                     && idToQuantity.get(product.productId()) > 0)
                 .collect(Collectors.toSet());
     }

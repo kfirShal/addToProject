@@ -2,10 +2,10 @@ package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,21 +27,47 @@ public class Store {
     private String storeId;
     private String storeDescription;
     private Rating storeRating;
+    private boolean isOpen;
+    private Map<String, OwnerNode> managersList;
+    private OwnerNode ownershipTree;
+    private Map<String, OwnerNode> ownershipList;
 
-    public Store(String storeId, String description, Rating rating, ProductInventory inventory) {
+    public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUserId) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
-
+        this.managersList = new HashMap<>();
+        this.ownershipTree = new OwnerNode(ownerUserId, null);
+        this.ownershipList = new HashMap<>();
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
-
-        Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
-        reserveTimeoutThread.start();
+        isOpen = true;
     }
 
+    public boolean isOpen(){
+        return isOpen;
+    }
+
+    public boolean openStore(){
+        if(isOpen)
+            return false;
+        else{
+            isOpen = true;
+            return true;
+        }
+    }
+    public boolean closeStore(){
+        if(isOpen){
+            isOpen = false;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    //TODO: SHOHAM - Implement this
     public int calculatePrice(List<Pair<Product,Integer>> products){
         //TODO: Implement this
         return 0;
@@ -51,12 +77,26 @@ public class Store {
         return -1;
     }
 
-    public void addProduct(Product toAdd){
-        inventory.addProduct(toAdd);
+    public String addProduct(Product toAdd) throws StoreException {
+        if(isOpen) {
+            if(inventory.nameExists(toAdd.productName())) {
+                inventory.addProduct(toAdd);
+                return "product added";
+            }
+            else
+                return "product name exists";
+        }
+        else {
+            throw new StoreException("store is closed");
+        }
     }
 
-    public  boolean removeProduct(Product toRemove){
-        return inventory.removeProduct(toRemove);
+    public String removeProduct(String productIdToRemove) {
+        if (isOpen) {
+            inventory.removeProduct(productIdToRemove);
+            return "product removed";
+        }
+        else return "product wasnt removed - store closed";
     }
 
     public  boolean updateProduct(Product toUpdate){
@@ -71,6 +111,7 @@ public class Store {
         return inventory.disableProduct(toDisable);
     }
 
+    //TODO: THIS NEEDS TO BE REIMPLEMENTED
     public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
 
         lockAcquire();
@@ -88,6 +129,7 @@ public class Store {
             if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
                 lock.release();
                 return null;
+
             }
         }
 
@@ -99,12 +141,13 @@ public class Store {
         }
 
         // Create the reservation
-        Reservation reservation = new Reservation(userId,
-                new HashMap<>(){{
-                    for (var entry : toReserve.entrySet()) {
-                        put(entry.getKey(), entry.getValue());
-                    }}},
 
+        Reservation reservation = new Reservation(
+                storeId,
+                userId,
+                new HashMap<>(){{
+                    this.putAll(toReserve);
+                }},
                 LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), null); //TODO: Implement the cancel callback
         reservedProducts.put(userId, reservation);
 
@@ -115,6 +158,7 @@ public class Store {
         return reservation;
     }
 
+    //TODO: THIS NEEDS TO BE REIMPLEMENTED
     public void cancelReservation(String userId){
         lockAcquire();
         Reservation reservation = reservedProducts.get(userId);
@@ -181,75 +225,61 @@ public class Store {
         } catch (InterruptedException ignored) {}
     }
 
-    // ================================================================= |
-    // ===================== Reservation Thread ======================== |
-    // ================================================================= |
-
-    private void reservationThreadMain(){
-        long nextWakeUp = Long.MAX_VALUE;
-        Reservation nextExpiringReservation = null;
-        while(true){
-
-            // Wait something to happen
-            do{
-                _wait(10000L);
-            }while(reservedProducts.isEmpty());
-
-            // Find the first reservation that will expire
-            for(var entry : reservedProducts.entrySet()){
-                long expirationTimeMillis = localDateTimeToEpochMillis(entry.getValue().expirationDate());
-                if(expirationTimeMillis <= nextWakeUp){
-                    nextWakeUp = expirationTimeMillis;
-                    nextExpiringReservation = entry.getValue();
-                }
-            }
-
-            // if for some reason there is no reservation
-            // continue to the next iteration
-            if(nextExpiringReservation == null){
-                continue;
-            }
-
-            // Wait until the next reservation expires
-            do{
-                long waitTime = Math.max(nextWakeUp - System.currentTimeMillis(), 1L);
-                _wait(waitTime);
-            } while(System.currentTimeMillis() < nextWakeUp
-                    && !nextExpiringReservation.isPaid()
-                    && !nextExpiringReservation.isCancelled());
-
-            //if the reservation is cancelled, no need to do anything
-            // if not, move to the next step
-            if(! nextExpiringReservation.isCancelled()){
-
-                // if the reservation is paid, remove it
-                if (nextExpiringReservation.isPaid()) {
-                    reservedProducts.remove(nextExpiringReservation.userId());
-                } else {
-
-                    // if the reservation is not paid, cancel it
-                    cancelReservation(nextExpiringReservation.userId());
-                }
-            }
-
-            nextExpiringReservation = null;
-            nextWakeUp = Long.MAX_VALUE;
-        }
-    }
-
-    private void _wait(long waitTime) {
-        synchronized (waitObject) {
-            try {
-                waitObject.wait(waitTime);
-            } catch (InterruptedException ignored) {}
-        }
-    }
-
-    private long localDateTimeToEpochMillis(LocalDateTime time){
-        return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
-    }
-
     public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
         this.reservationTimeoutSeconds = reservationTimeoutSeconds;
+    }
+
+    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                if (!managersList.containsKey(appointedUserId)) {
+                    appointeeNode.addManager(appointedUserId);
+                    managersList.put(appointedUserId, null);
+                }
+            }
+        }
+    }
+
+    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                if (appointeeNode.deleteManager(appointedUserId)) {
+                    managersList.remove(appointedUserId);
+                }
+            }
+        }
+    }
+
+    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                if (!ownershipList.containsKey(appointedUserId)) {
+                    OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
+                    ownershipList.put(appointeeOwnerUserId, appointedNode);
+                }
+            }
+        }
+    }
+
+    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
+        if (appointedUserId != null && appointeeOwnerUserId != null) {
+            // add write acquire lock
+            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+            if (appointeeNode != null) {
+                OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
+                if (deletedOwner != null) {
+                    List<String> appointerChildren = deletedOwner.getAllChildren();
+                    for (String appointerToRemove : appointerChildren) {
+                        ownershipList.remove(appointerToRemove);
+                    }
+                }
+            }
+        }
     }
 }

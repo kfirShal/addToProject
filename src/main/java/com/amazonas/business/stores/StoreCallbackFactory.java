@@ -11,10 +11,12 @@ import java.util.function.Function;
 @Component("storeCallbackFactory")
 public class StoreCallbackFactory {
 
-    private final StoresControllerImpl storesController;
+    private final StoresController storesController;
+    private final ReservationMonitor reservationMonitor;
 
-    public StoreCallbackFactory(StoresControllerImpl storesController) {
+    public StoreCallbackFactory(StoresController storesController, ReservationMonitor reservationMonitor) {
         this.storesController = storesController;
+        this.reservationMonitor = reservationMonitor;
     }
 
     public Function<List<Pair<Product,Integer>>,Integer> calculatePrice(String storeId){
@@ -26,7 +28,11 @@ public class StoreCallbackFactory {
     }
 
     public Function<Map<Product,Integer>, Reservation> makeReservation(String storeId, String userId){
-        return products -> storesController.getStore(storeId).reserveProducts(userId,products);
+        return products -> {
+            Reservation r = storesController.getStore(storeId).reserveProducts(userId,products);
+            reservationMonitor.addReservation(r);
+            return r;
+        };
     }
 
     public Runnable cancelReservation(String storeId, String userId){
