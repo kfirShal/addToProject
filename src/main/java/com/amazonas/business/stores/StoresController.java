@@ -1,10 +1,14 @@
 package com.amazonas.business.stores;
 
+import com.amazonas.business.inventory.Product;
+import com.amazonas.business.market.GlobalSearchRequest;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.exceptions.InvalidTokenException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 @Component("storesController")
@@ -33,5 +37,15 @@ public class StoresController {
 
     public List<Store> getAllStores(String userID, String token) throws InvalidTokenException, NoPermissionException {
         return null;
+    }
+
+    public List<Product> searchProducts(GlobalSearchRequest request) {
+        List<Product> ret = new LinkedList<>();
+        for (Store store : getAllStores()) {
+            if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
+                ret.addAll(store.searchProduct(request));
+            }
+        }
+        return ret;
     }
 }

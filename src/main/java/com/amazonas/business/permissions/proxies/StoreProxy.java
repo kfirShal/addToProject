@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Component("storeProxy")
-public class StoreProxy extends ControllerProxy{
+public class StoreProxy extends ControllerProxy {
 
     private final StoresController real;
 

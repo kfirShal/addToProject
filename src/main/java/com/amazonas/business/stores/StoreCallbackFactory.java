@@ -28,11 +28,7 @@ public class StoreCallbackFactory {
     }
 
     public Function<Map<Product,Integer>, Reservation> makeReservation(String storeId, String userId){
-        return products -> {
-            Reservation r = storesController.getStore(storeId).reserveProducts(userId,products);
-            reservationMonitor.addReservation(r);
-            return r;
-        };
+        return products -> storesController.getStore(storeId).reserveProducts(userId,products);
     }
 
     public Runnable cancelReservation(String storeId, String userId){

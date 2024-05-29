@@ -44,6 +44,9 @@ public class Reservation {
         return state;
     }
 
+    /**
+     * called only by the store or by an appropriate service
+     */
     public void setPaid() {
         if(state == ReservationState.PENDING) {
             state = ReservationState.PAID;
@@ -52,6 +55,9 @@ public class Reservation {
         }
     }
 
+    /**
+     * called only by the store or by an appropriate service
+     */
     public void setShipped() {
         if(state == ReservationState.PAID) {
             state = ReservationState.SHIPPED;
@@ -60,11 +66,17 @@ public class Reservation {
         }
     }
 
-    public void cancelReservation() {
-        if(state.ordinal() >= ReservationState.PAID.ordinal()) {
+    /**
+     * called only by the store or by an appropriate service
+     */
+    public void setCancelled() {
+        if (state.ordinal() >= ReservationState.PAID.ordinal()) {
             throw new IllegalStateException("Reservation is already paid");
         }
         state = ReservationState.CANCELLED;
+    }
+
+    public void cancelReservation() {
         cancelCallback.run();
     }
 
