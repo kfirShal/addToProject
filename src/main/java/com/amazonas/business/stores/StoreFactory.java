@@ -3,13 +3,13 @@ package com.amazonas.business.stores;
 import com.amazonas.business.inventory.ProductInventory;
 import org.springframework.stereotype.Component;
 
-@Component("storesFactory")
-public class StoresFactory {
+@Component("storeFactory")
+public class StoreFactory {
 
     private final ReservationFactory reservationFactory;
     private final ReservationMonitor reservationMonitor;
 
-    public StoresFactory(ReservationFactory reservationFactory, ReservationMonitor reservationMonitor) {
+    public StoreFactory(ReservationFactory reservationFactory, ReservationMonitor reservationMonitor) {
         this.reservationFactory = reservationFactory;
         this.reservationMonitor = reservationMonitor;
     }
