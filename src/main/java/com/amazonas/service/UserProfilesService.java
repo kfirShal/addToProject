@@ -6,13 +6,13 @@ import com.amazonas.business.userProfiles.UsersController;
 import com.amazonas.utils.Response;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("userProfilesService")
 public class UserProfilesService {
 
     private final UsersController usersController;
 
-    public UserProfilesService(UsersController controller) {
-        this.usersController = controller;
+    public UserProfilesService(UsersController usersController) {
+        this.usersController = usersController;
     }
 
     public String register(String email, String userName, String password){

@@ -6,8 +6,10 @@ import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -30,25 +32,23 @@ public class Store {
     private OwnerNode ownershipTree;
     private Map<String, OwnerNode> ownershipList;
 
-    public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUseId) {
+    public Store(String storeId, String description, Rating rating, ProductInventory inventory, String ownerUserId) {
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
         this.managersList = new HashMap<>();
-        this.ownershipTree = new OwnerNode(ownerUseId, null);
+        this.ownershipTree = new OwnerNode(ownerUserId, null);
         this.ownershipList = new HashMap<>();
-
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
-
-        Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
-        reserveTimeoutThread.start();
         isOpen = true;
     }
 
-
+    public boolean isOpen(){
+        return isOpen;
+    }
 
     public boolean openStore(){
         if(isOpen)
@@ -66,6 +66,7 @@ public class Store {
         else
             return false;
     }
+    
     public double calculatePrice(List<Pair<Product,Integer>> products){
         double sum = 0;
         for(Pair<Product,Integer> pair : products){
@@ -112,6 +113,7 @@ public class Store {
         return inventory.disableProduct(toDisable);
     }
 
+    //TODO: THIS NEEDS TO BE REIMPLEMENTED
     public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
 
         lockAcquire();
@@ -129,6 +131,7 @@ public class Store {
             if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
                 lock.release();
                 return null;
+
             }
         }
 
@@ -140,12 +143,13 @@ public class Store {
         }
 
         // Create the reservation
-        Reservation reservation = new Reservation(userId,
-                new HashMap<>(){{
-                    for (var entry : toReserve.entrySet()) {
-                        put(entry.getKey(), entry.getValue());
-                    }}},
 
+        Reservation reservation = new Reservation(
+                storeId,
+                userId,
+                new HashMap<>(){{
+                    this.putAll(toReserve);
+                }},
                 LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), null); //TODO: Implement the cancel callback
         reservedProducts.put(userId, reservation);
 
@@ -156,6 +160,7 @@ public class Store {
         return reservation;
     }
 
+    //TODO: THIS NEEDS TO BE REIMPLEMENTED
     public void cancelReservation(String userId){
         lockAcquire();
         Reservation reservation = reservedProducts.get(userId);
@@ -220,74 +225,6 @@ public class Store {
         try {
             lock.acquire();
         } catch (InterruptedException ignored) {}
-    }
-
-    // ================================================================= |
-    // ===================== Reservation Thread ======================== |
-    // ================================================================= |
-
-    private void reservationThreadMain(){
-        long nextWakeUp = Long.MAX_VALUE;
-        Reservation nextExpiringReservation = null;
-        while(true){
-
-            // Wait something to happen
-            do{
-                _wait(10000L);
-            }while(reservedProducts.isEmpty());
-
-            // Find the first reservation that will expire
-            for(var entry : reservedProducts.entrySet()){
-                long expirationTimeMillis = localDateTimeToEpochMillis(entry.getValue().expirationDate());
-                if(expirationTimeMillis <= nextWakeUp){
-                    nextWakeUp = expirationTimeMillis;
-                    nextExpiringReservation = entry.getValue();
-                }
-            }
-
-            // if for some reason there is no reservation
-            // continue to the next iteration
-            if(nextExpiringReservation == null){
-                continue;
-            }
-
-            // Wait until the next reservation expires
-            do{
-                long waitTime = Math.max(nextWakeUp - System.currentTimeMillis(), 1L);
-                _wait(waitTime);
-            } while(System.currentTimeMillis() < nextWakeUp
-                    && !nextExpiringReservation.isPaid()
-                    && !nextExpiringReservation.isCancelled());
-
-            //if the reservation is cancelled, no need to do anything
-            // if not, move to the next step
-            if(! nextExpiringReservation.isCancelled()){
-
-                // if the reservation is paid, remove it
-                if (nextExpiringReservation.isPaid()) {
-                    reservedProducts.remove(nextExpiringReservation.userId());
-                } else {
-
-                    // if the reservation is not paid, cancel it
-                    cancelReservation(nextExpiringReservation.userId());
-                }
-            }
-
-            nextExpiringReservation = null;
-            nextWakeUp = Long.MAX_VALUE;
-        }
-    }
-
-    private void _wait(long waitTime) {
-        synchronized (waitObject) {
-            try {
-                waitObject.wait(waitTime);
-            } catch (InterruptedException ignored) {}
-        }
-    }
-
-    private long localDateTimeToEpochMillis(LocalDateTime time){
-        return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
     }
 
     public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {

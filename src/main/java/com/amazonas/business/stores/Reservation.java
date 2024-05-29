@@ -4,29 +4,68 @@ import com.amazonas.business.inventory.Product;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
 
 public class Reservation {
+
+    private final String reservationId;
     private final String userId;
     private final Map<Product, Integer> productToQuantity;
     private final LocalDateTime expirationDate;
     private final Runnable cancelCallback;
-
-    private boolean isPaid;
-
-    private boolean isCancelled;
-    private boolean isShipped;
-
+    private ReservationState state;
     public Reservation(
+            String reservationId,
             String userId,
             Map<Product, Integer> productToQuantity,
             LocalDateTime expirationDate, Runnable cancelCallback
     ) {
+        this.reservationId = reservationId;
         this.userId = userId;
         this.productToQuantity = productToQuantity;
         this.expirationDate = expirationDate;
         this.cancelCallback = cancelCallback;
-        this.isPaid = false;
+        state = ReservationState.PENDING;
+    }
+
+    public boolean isPaid() {
+        return state.ordinal() >= ReservationState.PAID.ordinal();
+    }
+
+    public boolean isShipped() {
+        return state == ReservationState.SHIPPED;
+    }
+
+    public boolean isCancelled() {
+        return state == ReservationState.CANCELLED;
+    }
+
+    public ReservationState state() {
+        return state;
+    }
+
+    public void setPaid() {
+        if(state == ReservationState.PENDING) {
+            state = ReservationState.PAID;
+        } else {
+            throw new IllegalStateException("Reservation is not pending");
+        }
+    }
+
+    public void setShipped() {
+        if(state == ReservationState.PAID) {
+            state = ReservationState.SHIPPED;
+        } else {
+            throw new IllegalStateException("Reservation is not paid");
+        }
+    }
+
+    public void cancelReservation() {
+        if(state.ordinal() >= ReservationState.PAID.ordinal()) {
+            throw new IllegalStateException("Reservation is already paid");
+        }
+        state = ReservationState.CANCELLED;
+        cancelCallback.run();
     }
 
     public String userId() {
@@ -41,28 +80,20 @@ public class Reservation {
         return expirationDate;
     }
 
-    public boolean isPaid() {
-        return isPaid;
+    public String reservationId() {
+        return reservationId;
     }
 
-    public void setPaid() {
-        isPaid = true;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Reservation that = (Reservation) o;
+        return Objects.equals(reservationId, that.reservationId) && Objects.equals(userId, that.userId);
     }
 
-    public boolean isShipped() {
-        return isShipped;
-    }
-
-    public void setShipped() {
-        isShipped = true;
-    }
-
-    public void cancelReservation() {
-        isCancelled = true;
-        cancelCallback.run();
-    }
-
-    public boolean isCancelled() {
-        return isCancelled;
+    @Override
+    public int hashCode() {
+        return Objects.hash(reservationId, userId);
     }
 }
