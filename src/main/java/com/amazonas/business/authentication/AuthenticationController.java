@@ -31,7 +31,6 @@ public class AuthenticationController {
     private static final String passwordStorageFormat = "{bcrypt}";
 
     private final ConcurrentMap<String, String> userIdToUUID;
-    private final Set<String> uuids;
 
     private final PasswordEncoder encoder;
     private SecretKey key;
@@ -39,7 +38,6 @@ public class AuthenticationController {
     public AuthenticationController() {
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID = new ConcurrentHashMap<>();
-        uuids = ConcurrentHashMap.newKeySet();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
@@ -73,7 +71,6 @@ public class AuthenticationController {
     public boolean revokeAuthentication(String userId) {
         log.debug("Revoking authentication for user {}", userId);
         String uuid = userIdToUUID.remove(userId);
-        uuids.remove(uuid);
         return uuid != null;
     }
 
@@ -104,7 +101,6 @@ public class AuthenticationController {
         log.debug("Resetting secret key");
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID.clear();
-        uuids.clear();
     }
 
     private boolean isPasswordsMatch(String password, String hashedPassword) {
@@ -112,24 +108,13 @@ public class AuthenticationController {
     }
 
     private String getToken(String userId) {
-
-        //remove the old UUID if it exists
-        String uuid;
-        if((uuid = userIdToUUID.get(userId)) != null) {
-            log.trace("Removing old UUID for user {}", userId);
-            uuids.remove(uuid);
-        }
-
         //generate a unique UUID
         log.trace("Generating new UUID for user {}", userId);
-        do{
-            uuid = UUID.randomUUID().toString();
-        } while (uuids.contains(uuid));
+        String uuid = UUID.randomUUID().toString();
 
         //store the UUID and associate it with the user
         log.trace("Storing new UUID for user {}", userId);
         userIdToUUID.put(userId, uuid);
-        uuids.add(uuid);
 
         return generateJwt(uuid);
     }

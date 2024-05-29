@@ -89,11 +89,11 @@ public class Reservation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reservation that = (Reservation) o;
-        return Objects.equals(reservationId, that.reservationId);
+        return Objects.equals(reservationId, that.reservationId) && Objects.equals(userId, that.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(reservationId);
+        return Objects.hash(reservationId, userId);
     }
 }
