@@ -103,58 +103,94 @@ public class Store {
     //====================================================================== |
 
     public double calculatePrice(List<Pair<Product,Integer>> products){
-        double sum = 0;
-        for(Pair<Product,Integer> pair : products){
-            sum += pair.first().price() * pair.second();
+        try{
+            lock.acquireRead();
+
+            double sum = 0;
+            for(Pair<Product,Integer> pair : products){
+                sum += pair.first().price() * pair.second();
+            }
+            return sum;
+        } finally {
+            lock.releaseRead();
         }
-        return sum;
     }
 
     public List<Product> searchProduct(SearchRequest request) {
-        List<Product> toReturn = new LinkedList<>();
-        for (Product product : inventory.getAllAvailableProducts()) {
 
-            // Check if the product matches the search request
-            if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
-                    || product.rating().ordinal() >= request.getProductRating().ordinal()
-                    || product.productName().toLowerCase().contains(request.getProductName())
-                    || product.category().toLowerCase().contains(request.getProductCategory())
-                    || product.description().toLowerCase().contains(request.getProductName())
-                    || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
-            {
-                toReturn.add(product);
+        try{
+            lock.acquireRead();
+
+            List<Product> toReturn = new LinkedList<>();
+            for (Product product : inventory.getAllAvailableProducts()) {
+
+                // Check if the product matches the search request
+                if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
+                        || product.rating().ordinal() >= request.getProductRating().ordinal()
+                        || product.productName().toLowerCase().contains(request.getProductName())
+                        || product.category().toLowerCase().contains(request.getProductCategory())
+                        || product.description().toLowerCase().contains(request.getProductName())
+                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
+                {
+                    toReturn.add(product);
+                }
             }
+            return toReturn;
+        } finally{
+            lock.releaseRead();
         }
-        return toReturn;
     }
 
     public int availableCount(String productId){
-        return -1;
+
+        try{
+            lock.acquireRead();
+
+            return -1;
+
+        } finally {
+            lock.releaseRead();
+        }
     }
 
     public String addProduct(Product toAdd) throws StoreException {
-        if(isOpen) {
-            if(inventory.nameExists(toAdd.productName())) {
-                inventory.addProduct(toAdd);
-                return "product added";
+        try{
+            lock.acquireWrite();
+
+            if(isOpen) {
+                if(inventory.nameExists(toAdd.productName())) {
+                    inventory.addProduct(toAdd);
+                    return "product added";
+                }
+                else {
+                    return "product name exists";
+                }
             }
             else {
-                return "product name exists";
+                throw new StoreException("store is closed");
             }
-        }
-        else {
-            throw new StoreException("store is closed");
+
+        } finally {
+            lock.releaseWrite();
         }
     }
 
     public String removeProduct(String productIdToRemove) {
-        if (isOpen) {
-            inventory.removeProduct(productIdToRemove);
-            return "product removed";
+        try {
+            lock.acquireWrite();
+
+            if (isOpen) {
+                inventory.removeProduct(productIdToRemove);
+                return "product removed";
+            }
+            else {
+                return "product wasnt removed - store closed";
+            }
+
+        } finally {
+            lock.releaseWrite();
         }
-        else {
-            return "product wasnt removed - store closed";
-        }
+
     }
 
     public  boolean updateProduct(Product toUpdate){
@@ -227,6 +263,7 @@ public class Store {
 
             reservation.setCancelled();
 
+            // Return the reserved products to the inventory
             for(var entry : reservation.productToQuantity().entrySet()){
                 Product product = entry.getKey();
                 int quantity = entry.getValue();
@@ -240,7 +277,12 @@ public class Store {
     }
 
     public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
-        this.reservationTimeoutSeconds = reservationTimeoutSeconds;
+        try{
+            lock.acquireWrite();
+            this.reservationTimeoutSeconds = reservationTimeoutSeconds;
+        } finally {
+            lock.releaseWrite();
+        }
     }
 
 
