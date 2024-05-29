@@ -1,6 +1,7 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.reservations;
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.stores.factories.StoreCallbackFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

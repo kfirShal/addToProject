@@ -1,4 +1,4 @@
-package com.amazonas.business.market;
+package com.amazonas.business.permissions.actions;
 
 public enum MarketActions {
 

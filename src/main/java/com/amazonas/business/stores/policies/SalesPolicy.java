@@ -1,7 +1,6 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.policies;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.stores.purchasePolicy.PurchasePolicy;
 
 public class SalesPolicy {
     private Product product;

@@ -1,10 +1,10 @@
 package com.amazonas.business.permissions;
 
-import com.amazonas.business.market.MarketActions;
+import com.amazonas.business.permissions.actions.MarketActions;
 import com.amazonas.business.permissions.profiles.PermissionsProfile;
 import com.amazonas.business.permissions.profiles.RegisteredUserPermissionsProfile;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
 import com.amazonas.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component

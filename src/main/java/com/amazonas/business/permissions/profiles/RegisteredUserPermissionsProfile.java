@@ -1,16 +1,14 @@
 package com.amazonas.business.permissions.profiles;
 
-import com.amazonas.business.market.MarketActions;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.MarketActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
 import com.amazonas.utils.ReadWriteLock;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class RegisteredUserPermissionsProfile implements PermissionsProfile {
 

@@ -1,6 +1,6 @@
 package com.amazonas.business.inventory;
 
-import com.amazonas.business.stores.Rating;
+import com.amazonas.utils.Rating;
 
 import java.util.HashSet;
 import java.util.Objects;

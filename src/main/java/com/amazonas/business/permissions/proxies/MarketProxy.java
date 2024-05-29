@@ -1,9 +1,6 @@
 package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
-import com.amazonas.business.inventory.Product;
-import com.amazonas.business.market.GlobalSearchRequest;
-import com.amazonas.business.market.MarketActions;
 import com.amazonas.business.market.MarketFacade;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
@@ -12,8 +9,6 @@ import com.amazonas.business.shipping.ShippingService;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component("marketProxy")
 public class MarketProxy extends ControllerProxy {

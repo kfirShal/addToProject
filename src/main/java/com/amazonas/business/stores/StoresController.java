@@ -1,13 +1,12 @@
 package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.market.GlobalSearchRequest;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.exceptions.InvalidTokenException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 

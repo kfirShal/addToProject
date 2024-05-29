@@ -1,6 +1,9 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.factories;
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.stores.StoresController;
+import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.business.stores.reservations.ReservationMonitor;
 import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 

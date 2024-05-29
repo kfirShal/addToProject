@@ -1,4 +1,4 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.reservations;
 
 public enum ReservationState {
     PENDING,
