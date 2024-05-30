@@ -2,6 +2,7 @@ package com.amazonas.business.stores.factories;
 
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.utils.Rating;
 import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.reservations.ReservationFactory;
@@ -23,13 +24,13 @@ public class StoreFactory {
         this.permissionsController = permissionsController;
     }
 
-    public Store get(String ownerUserId, String storeName, String description){
-        return new Store(ownerUserId,
-                UUID.randomUUID().toString(),
+    public Store get(String founderUserId, String storeName, String description){
+        return new Store(UUID.randomUUID().toString(),
                 storeName,
                 description,
                 Rating.NOT_RATED,
                 new ProductInventory(),
+                new AppointmentSystem(founderUserId),
                 reservationFactory,reservationMonitor,
                 permissionsController);
     }

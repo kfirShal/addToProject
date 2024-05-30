@@ -151,23 +151,23 @@ public class AppointmentSystem {
         }
     }
 
-    public StorePosition getRoleOfUser(String userID) {
+    public StoreRole getRoleOfUser(String userID) {
         try {
             appointmentLock.acquireRead();
             if (userID.equals(ownershipTree.getUserID())) {
-                return new StorePosition(userID, StoreRole.STORE_FOUNDER);
+                return StoreRole.STORE_FOUNDER;
             }
             for (String ownerId : ownershipList.keySet()) {
                 if (ownerId.equals(userID)) { //except the founder
-                    return new StorePosition(userID, StoreRole.STORE_OWNER);
+                    return StoreRole.STORE_OWNER;
                 }
             }
             for (String managerId : managersList.keySet()) {
                 if (managerId.equals(userID)) { //except the founder
-                    return new StorePosition(userID, StoreRole.STORE_MANAGER);
+                    return StoreRole.STORE_MANAGER;
                 }
             }
-            return null;
+            return StoreRole.NONE;
         }
         finally {
             appointmentLock.releaseRead();

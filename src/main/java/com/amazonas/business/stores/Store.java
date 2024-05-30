@@ -10,6 +10,7 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.ReservationMonitor;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
@@ -29,28 +30,29 @@ public class Store {
     private final PermissionsController permissionsController;
 
     private final ProductInventory inventory;
-    private final ConcurrentMap<String, Reservation> reservedProducts;
+    private final AppointmentSystem appointmentSystem;
+    private final Map<String, Reservation> reservedProducts;
+    private final List<SalesPolicy> salesPolicies;
     private final ReadWriteLock lock;
 
+    private final String storeName;
+    private final String storeId;
 
-    private String storeId;
-    private String storeName;
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
     private long reservationTimeoutSeconds;
-    private List<SalesPolicy> salesPolicies;
-    AppointmentSystem appointmentSystem;
 
-    public Store(String ownerUserId,
-                 String storeId,
+    public Store(String storeId,
                  String storeName,
                  String description,
                  Rating rating,
                  ProductInventory inventory,
+                 AppointmentSystem appointmentSystem,
                  ReservationFactory reservationFactory,
                  ReservationMonitor reservationMonitor,
                  PermissionsController permissionsController) {
+        this.appointmentSystem = appointmentSystem;
         this.reservationFactory = reservationFactory;
         this.reservationMonitor = reservationMonitor;
         this.inventory = inventory;
@@ -60,8 +62,8 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.reservationTimeoutSeconds = FIVE_MINUTES;
-        this.salesPolicies = new ArrayList<>();
-        reservedProducts = new ConcurrentHashMap<>();
+        this.salesPolicies = new LinkedList<>();
+        reservedProducts = new HashMap<>();
         lock = new ReadWriteLock();
         isOpen = true;
     }
@@ -104,12 +106,23 @@ public class Store {
     }
 
     public void addSalePolicy(SalesPolicy salesPolicy){
-        salesPolicies.add(salesPolicy);
+        try{
+            lock.acquireWrite();
+            salesPolicies.add(salesPolicy);
+        } finally {
+            lock.releaseWrite();
+        }
     }
 
     public void removeSalePolicy(SalesPolicy salesPolicy){
-        salesPolicies.remove(salesPolicy);
+        try{
+            lock.acquireWrite();
+            salesPolicies.remove(salesPolicy);
+        } finally {
+            lock.releaseWrite();
+        }
     }
+
     public boolean isOpen(){
         return isOpen;
     }
@@ -178,7 +191,7 @@ public class Store {
             lock.releaseRead();
         }
     }
-
+    
     public int availableCount(String productId){
 
         try{
@@ -189,6 +202,7 @@ public class Store {
         }
     }
 
+    //TODO: change return type to void and throw exception where needed
     public String addProduct(Product toAdd) throws StoreException {
         try{
             lock.acquireWrite();
@@ -211,8 +225,7 @@ public class Store {
         }
     }
 
-
-
+    //TODO: change return type to void and throw exception where needed
     public String removeProduct(String productIdToRemove) {
         try {
             lock.acquireWrite();
@@ -231,6 +244,7 @@ public class Store {
 
     }
 
+    //TODO: change return type to void and throw exception where needed
     public boolean updateProduct(Product product){
         lock.acquireWrite();
         try {
@@ -240,6 +254,7 @@ public class Store {
         }
      }
 
+    //TODO: change return type to void and throw exception where needed
     public boolean enableProduct(String productId){
         lock.acquireWrite();
         try {
@@ -249,6 +264,7 @@ public class Store {
         }
     }
 
+    //TODO: change return type to void and throw exception where needed
     public boolean disableProduct(String productId){
         lock.acquireWrite();
         try {
@@ -258,10 +274,10 @@ public class Store {
         }
     }
 
-
     //====================================================================== |
     //=========================== RESERVATIONS ============================= |
     //====================================================================== |
+
     @Nullable
     public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
         try{
@@ -338,10 +354,10 @@ public class Store {
         }
     }
 
-
     //====================================================================== |
     //========================= STORE POSITIONS ============================ |
     //====================================================================== |
+
     public void removeOwner(String logged, String username) {
         appointmentSystem.removeOwner(logged,username);
     }
@@ -363,13 +379,17 @@ public class Store {
     //======================= STORE PERMISSIONS ============================ |
     //====================================================================== |
 
-    //TODO: implement store permissions
-    public boolean addPermissionToManager(String managerId, StoreActions action){
+    public boolean addPermissionToManager(String managerId, StoreActions action) throws StoreException {
+
+        StoreRole role = appointmentSystem.getRoleOfUser(managerId);
+
+        if(role != StoreRole.STORE_MANAGER){
+            throw new StoreException("User is not a manager");
+        }
 
         switch(action){
-            case ADD_PRODUCT, REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
-                permissionsController.addPermission(managerId,storeId,action);
-                return true;
+            case ADD_PRODUCT,REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
+                return permissionsController.addPermission(managerId,storeId,action);
             }
             default -> {
                 return false;
@@ -377,11 +397,17 @@ public class Store {
         }
     }
 
-    public boolean removePermissionFromManager(String managerId, StoreActions action){
+    public boolean removePermissionFromManager(String managerId, StoreActions action) throws StoreException {
+
+        StoreRole role = appointmentSystem.getRoleOfUser(managerId);
+
+        if(role != StoreRole.STORE_MANAGER){
+            throw new StoreException("User is not a manager");
+        }
+
         switch(action){
-            case ADD_PRODUCT, REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
-                permissionsController.removePermission(managerId,storeId,action);
-                return true;
+            case ADD_PRODUCT,REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
+                return permissionsController.removePermission(managerId,storeId,action);
             }
             default -> {
                 return false;
@@ -407,10 +433,6 @@ public class Store {
 
     public void setStoreRating(Rating storeRating) {
         this.storeRating = storeRating;
-    }
-
-    public void setStoreId(String storeId) {
-        this.storeId = storeId;
     }
 
     public void setStoreDescription(String storeDescription) {
