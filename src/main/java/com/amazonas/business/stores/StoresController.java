@@ -27,18 +27,22 @@ public class StoresController {
         this.repositoryFacade = repositoryFacade;
         this.storeFactory = storeFactory;
     }
+
     public void addStore(String ownerID,String name, String description) throws StoreException {
         if(doesNameExists(name))
             throw new StoreException("Store name already exists");
         Store toAdd = storeFactory.get(ownerID,name,description);
         repositoryFacade.saveStore(toAdd);
     }
+
     public void openStore(String storeId){
         getStore(storeId).openStore();
     }
+
     public void closeStore(String storeId){
         getStore(storeId);
     }
+
     //TODO: implement this
     private boolean doesNameExists(String name){
         for(Store store : repositoryFacade.getAllStores());
@@ -81,13 +85,13 @@ public class StoresController {
     public void setReservationTimeoutSeconds(String storeId, long time){
         getStore(storeId).setReservationTimeoutSeconds(time);
     }
-    public boolean addPermissionToManager(String storeId,String managerId, StoreActions actions){
+    public boolean addPermissionToManager(String storeId,String managerId, StoreActions actions) throws StoreException {
         return getStore(storeId).addPermissionToManager(managerId,actions);
     }
-    public boolean removePermissionFromManager(String storeId,String managerId, StoreActions actions){
+    public boolean removePermissionFromManager(String storeId,String managerId, StoreActions actions) throws StoreException {
         return getStore(storeId).removePermissionFromManager(managerId,actions);
     }
-    private Store getStore(String storeId){
+    public Store getStore(String storeId){
         return repositoryFacade.getStore(storeId);
     }
 

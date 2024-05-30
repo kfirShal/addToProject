@@ -191,7 +191,7 @@ public class Store {
             lock.releaseRead();
         }
     }
-    
+
     public int availableCount(String productId){
 
         try{
