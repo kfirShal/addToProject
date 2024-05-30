@@ -23,9 +23,10 @@ public class StoreFactory {
         this.permissionsController = permissionsController;
     }
 
-    public Store get(String ownerUserId, String description){
+    public Store get(String ownerUserId, String storeName, String description){
         return new Store(ownerUserId,
                 UUID.randomUUID().toString(),
+                storeName,
                 description,
                 Rating.NOT_RATED,
                 new ProductInventory(),

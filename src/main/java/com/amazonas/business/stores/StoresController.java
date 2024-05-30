@@ -27,8 +27,10 @@ public class StoresController {
         this.repositoryFacade = repositoryFacade;
         this.storeFactory = storeFactory;
     }
-    public void addStore(String ownerID,String description){
-        Store toAdd = storeFactory.get(ownerID,description);
+    public void addStore(String ownerID,String name, String description) throws StoreException {
+        if(doesNameExists(name))
+            throw new StoreException("Store name already exists");
+        Store toAdd = storeFactory.get(ownerID,name,description);
         repositoryFacade.saveStore(toAdd);
     }
     public void openStore(String storeId){
@@ -36,6 +38,11 @@ public class StoresController {
     }
     public void closeStore(String storeId){
         getStore(storeId);
+    }
+    //TODO: implement this
+    private boolean doesNameExists(String name){
+        for(Store store : repositoryFacade.getAllStores());
+        return false;
     }
 
     public void addProduct(String storeId,Product toAdd) throws StoreException {
