@@ -15,9 +15,6 @@ class UsersControllerTest {
     void setUp() {
          usersController = new UsersController();
          usersController.register("testEmail", "testUserName", "testPassword@");
-
-
-
     }
 
     @AfterEach
