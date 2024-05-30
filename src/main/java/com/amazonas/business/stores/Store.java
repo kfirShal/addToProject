@@ -14,10 +14,7 @@ import com.amazonas.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -39,6 +36,7 @@ public class Store {
     private Map<String, OwnerNode> managersList;
     private OwnerNode ownershipTree;
     private Map<String, OwnerNode> ownershipList;
+    private List<SalesPolicy> salesPolicies;
 
     public Store(String ownerUserId,
                  String storeId,
@@ -57,6 +55,7 @@ public class Store {
         this.managersList = new HashMap<>();
         this.ownershipTree = new OwnerNode(ownerUserId, null);
         this.ownershipList = new HashMap<>();
+        this.salesPolicies = new ArrayList<>();
         reservedProducts = new ConcurrentHashMap<>();
         lock = new ReadWriteLock();
         isOpen = true;
@@ -100,6 +99,13 @@ public class Store {
         }
     }
 
+    public void addSalePolicy(SalesPolicy salesPolicy){
+        salesPolicies.add(salesPolicy);
+    }
+    public void removeSalePolicy(SalesPolicy salesPolicy){
+        salesPolicies.remove(salesPolicy);
+    }
+
     public boolean isOpen(){
         return isOpen;
     }
@@ -114,12 +120,33 @@ public class Store {
 
             double sum = 0;
             for(Pair<Product,Integer> pair : products){
+
                 sum += pair.first().price() * pair.second();
             }
             return sum;
         } finally {
             lock.releaseRead();
         }
+    }
+
+    private double applyDiscount(Pair<Product,Integer> pair){
+        Product product = pair.first();
+        Integer quantity = pair.second();
+        int maxQuantity = 0;
+        int maxDiscount = 0;
+        for(SalesPolicy salesPolicy: salesPolicies){
+            if(salesPolicy.getProductID().equals(product.productId())){
+                if(maxQuantity <= salesPolicy.getProductQuantity()) {
+                    maxQuantity = salesPolicy.getProductQuantity();
+                    maxDiscount = salesPolicy.getDiscount();
+                }
+            }
+        }
+        if(maxQuantity == 0){
+            return product.price() * quantity;
+        }
+        return product.price() * (100 - maxDiscount)*0.01;
+
     }
 
     public List<Product> searchProduct(SearchRequest request) {
