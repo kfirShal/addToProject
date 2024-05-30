@@ -32,14 +32,12 @@ public class Store {
     private final ConcurrentMap<String, Reservation> reservedProducts;
     private final ReadWriteLock lock;
 
+
     private String storeId;
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
     private long reservationTimeoutSeconds;
-    private Map<String, OwnerNode> managersList;
-    private OwnerNode ownershipTree;
-    private Map<String, OwnerNode> ownershipList;
     private List<SalesPolicy> salesPolicies;
 
     public Store(String ownerUserId,
@@ -58,9 +56,6 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.reservationTimeoutSeconds = FIVE_MINUTES;
-        this.managersList = new HashMap<>();
-        this.ownershipTree = new OwnerNode(ownerUserId, null);
-        this.ownershipList = new HashMap<>();
         this.salesPolicies = new ArrayList<>();
         reservedProducts = new ConcurrentHashMap<>();
         lock = new ReadWriteLock();
@@ -334,64 +329,6 @@ public class Store {
             this.reservationTimeoutSeconds = reservationTimeoutSeconds;
         } finally {
             lock.releaseWrite();
-        }
-    }
-
-    //====================================================================== |
-    //========================= STORE POSITIONS ============================ |
-    //====================================================================== |
-
-    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
-        if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-            if (appointeeNode != null) {
-                if (!managersList.containsKey(appointedUserId)) {
-                    appointeeNode.addManager(appointedUserId);
-                    managersList.put(appointedUserId, null);
-                }
-            }
-        }
-    }
-
-    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
-        if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-            if (appointeeNode != null) {
-                if (appointeeNode.deleteManager(appointedUserId)) {
-                    managersList.remove(appointedUserId);
-                }
-            }
-        }
-    }
-
-    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
-        if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-            if (appointeeNode != null) {
-                if (!ownershipList.containsKey(appointedUserId)) {
-                    OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
-                    ownershipList.put(appointeeOwnerUserId, appointedNode);
-                }
-            }
-        }
-    }
-
-    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
-        if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
-            OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-            if (appointeeNode != null) {
-                OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
-                if (deletedOwner != null) {
-                    List<String> appointerChildren = deletedOwner.getAllChildren();
-                    for (String appointerToRemove : appointerChildren) {
-                        ownershipList.remove(appointerToRemove);
-                    }
-                }
-            }
         }
     }
 
