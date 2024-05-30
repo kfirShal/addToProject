@@ -1,4 +1,4 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.storePositions;
 
 import java.util.Iterator;
 import java.util.LinkedList;
