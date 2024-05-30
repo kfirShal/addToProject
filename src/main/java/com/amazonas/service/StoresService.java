@@ -1,5 +1,6 @@
 package com.amazonas.service;
 
+import com.amazonas.business.inventory.Product;
 import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.StoresController;
 import com.amazonas.exceptions.StoreException;
@@ -22,6 +23,18 @@ public class StoresService {
         catch (StoreException e){
             return Response.getErrorResponse(e).toJson();
         }
+
+    }
+    public String openStore(String storeId){
+        return new Response(controller.openStore(storeId)).toJson();
+    }
+    public String closeStore(String storeId){
+        return new Response(controller.closeStore(storeId)).toJson();
+    }
+    public void addProduct(String storeId, Product toAdd) throws StoreException {
+        controller.addProduct(storeId,toAdd);
+    }
+    public void updateProduct(){
 
     }
     public StoresService(StoresController storeProxy) {
