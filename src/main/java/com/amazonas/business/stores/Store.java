@@ -20,6 +20,7 @@ public class Store {
     private final ProductInventory inventory;
     private final ConcurrentMap<String, Reservation> reservedProducts;
     private final Semaphore lock;
+    private final Semaphore appointmentLock;
     private final Object waitObject = new Object();
 
     private String storeId;
@@ -42,6 +43,7 @@ public class Store {
 
         reservedProducts = new ConcurrentHashMap<>();
         lock = new Semaphore(1,true);
+        appointmentLock = new Semaphore(1, true);
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
         reserveTimeoutThread.start();
@@ -291,9 +293,15 @@ public class Store {
         this.reservationTimeoutSeconds = reservationTimeoutSeconds;
     }
 
+    private void appointmentLockAcquire() {
+        try {
+            appointmentLock.acquire();
+        } catch (InterruptedException ignored) {}
+    }
+
     public void addManager(String appointeeOwnerUserId, String appointedUserId) {
         if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
+            appointmentLockAcquire();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (!managersList.containsKey(appointedUserId)) {
@@ -301,24 +309,26 @@ public class Store {
                     managersList.put(appointedUserId, null);
                 }
             }
+            appointmentLock.release();
         }
     }
 
     public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
         if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
+            appointmentLockAcquire();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (appointeeNode.deleteManager(appointedUserId)) {
                     managersList.remove(appointedUserId);
                 }
             }
+            appointmentLock.release();
         }
     }
 
     public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
         if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
+            appointmentLockAcquire();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (!ownershipList.containsKey(appointedUserId)) {
@@ -326,12 +336,13 @@ public class Store {
                     ownershipList.put(appointeeOwnerUserId, appointedNode);
                 }
             }
+            appointmentLock.release();
         }
     }
 
     public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
         if (appointedUserId != null && appointeeOwnerUserId != null) {
-            // add write acquire lock
+            appointmentLockAcquire();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
@@ -342,6 +353,7 @@ public class Store {
                     }
                 }
             }
+            appointmentLock.release();
         }
     }
 }
