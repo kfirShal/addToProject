@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
                                  //TODO: Uncomment the MongoRepository
-public interface MongoCollection<T>  extends MongoRepository<T,String> {
+public interface MongoCollection<T>  /*extends MongoRepository<T,String>*/ {
 
     //TODO: REMOVE THE INTERFACE METHODS
 
