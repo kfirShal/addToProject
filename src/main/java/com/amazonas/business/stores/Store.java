@@ -337,6 +337,26 @@ public class Store {
     }
 
     //====================================================================== |
+    //========================= STORE POSITIONS ============================ |
+    //====================================================================== |
+
+    public void removeOwner(String logged, String username) {
+        appointmentSystem.removeOwner(logged,username);
+    }
+
+    public void removeManager(String logged, String username) {
+        appointmentSystem.removeManager(logged,username);
+    }
+
+    public void addManager(String logged, String username) {
+        appointmentSystem.addManager(logged,username);
+    }
+
+    public void addOwner(String logged, String username) {
+        appointmentSystem.addOwner(logged,username);
+    }
+
+    //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
     //====================================================================== |
 
@@ -393,21 +413,5 @@ public class Store {
 
     public void setStoreDescription(String storeDescription) {
         this.storeDescription = storeDescription;
-    }
-
-    public void removeOwner(String logged, String username) {
-        appointmentSystem.removeOwner(logged,username);
-    }
-
-    public void removeManager(String logged, String username) {
-        appointmentSystem.removeManager(logged,username);
-    }
-
-    public void addManager(String logged, String username) {
-        appointmentSystem.addManager(logged,username);
-    }
-
-    public void addOwner(String logged, String username) {
-        appointmentSystem.addOwner(logged,username);
     }
 }
