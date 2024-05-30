@@ -202,18 +202,16 @@ public class Store {
         }
     }
 
-    //TODO: change return type to void and throw exception where needed
-    public String addProduct(Product toAdd) throws StoreException {
+    public void addProduct(Product toAdd) throws StoreException {
         try{
             lock.acquireWrite();
 
             if(isOpen) {
                 if(inventory.nameExists(toAdd.productName())) {
                     inventory.addProduct(toAdd);
-                    return "product added";
                 }
                 else {
-                    return "product name exists";
+                    throw new StoreException("product name exists");
                 }
             }
             else {
@@ -225,17 +223,19 @@ public class Store {
         }
     }
 
-    //TODO: change return type to void and throw exception where needed
-    public String removeProduct(String productIdToRemove) {
+    public void removeProduct(String productIdToRemove) throws StoreException {
         try {
             lock.acquireWrite();
 
             if (isOpen) {
-                inventory.removeProduct(productIdToRemove);
-                return "product removed";
+                boolean check = inventory.removeProduct(productIdToRemove);
+                if(!check){
+                    //product wasn't removed
+                    throw new StoreException("product wasn't removed - no product in system");
+                }
             }
             else {
-                return "product wasnt removed - store closed";
+                throw new StoreException("product wasn't removed - store closed");
             }
 
         } finally {
@@ -244,31 +244,28 @@ public class Store {
 
     }
 
-    //TODO: change return type to void and throw exception where needed
-    public boolean updateProduct(Product product){
+    public void updateProduct(Product product){
         lock.acquireWrite();
         try {
-            return inventory.updateProduct(product);
+            inventory.updateProduct(product);
         } finally {
             lock.releaseWrite();
         }
      }
 
-    //TODO: change return type to void and throw exception where needed
-    public boolean enableProduct(String productId){
+    public void enableProduct(String productId){
         lock.acquireWrite();
         try {
-            return inventory.enableProduct(productId);
+            inventory.enableProduct(productId);
         } finally {
             lock.releaseWrite();
         }
     }
 
-    //TODO: change return type to void and throw exception where needed
-    public boolean disableProduct(String productId){
+    public void disableProduct(String productId){
         lock.acquireWrite();
         try {
-            return inventory.disableProduct(productId);
+            inventory.disableProduct(productId);
         } finally {
             lock.releaseWrite();
         }

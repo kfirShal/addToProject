@@ -43,9 +43,12 @@ public class StoresController {
         getStore(storeId);
     }
 
-    //TODO: implement this
     private boolean doesNameExists(String name){
-        for(Store store : repositoryFacade.getAllStores());
+        //TODO: replace this with a database query
+        for(Store store : repositoryFacade.getAllStores()){
+            if(store.getStoreName().equals(name))
+                return true;
+        }
         return false;
     }
 
