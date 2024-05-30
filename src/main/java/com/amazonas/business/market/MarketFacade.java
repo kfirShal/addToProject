@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Component("marketFacade")
 public class MarketFacade {
-    
+
     private final Map<PaymentMethod, Boolean> paymentMethods;
     private final Map<PaymentService, Boolean> paymentServices;
     private final Map<ShippingService, Boolean> shippingServices;

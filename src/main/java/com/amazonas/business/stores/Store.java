@@ -151,9 +151,7 @@ public class Store {
 
         try{
             lock.acquireRead();
-
-            return -1;
-
+            return inventory.getQuantity(productId);
         } finally {
             lock.releaseRead();
         }
@@ -199,16 +197,31 @@ public class Store {
 
     }
 
-    public  boolean updateProduct(Product toUpdate){
-        return inventory.updateProduct(toUpdate);
+    public boolean updateProduct(Product product){
+        lock.acquireWrite();
+        try {
+            return inventory.updateProduct(product);
+        } finally {
+            lock.releaseWrite();
+        }
+     }
+
+    public boolean enableProduct(String productId){
+        lock.acquireWrite();
+        try {
+            return inventory.enableProduct(productId);
+        } finally {
+            lock.releaseWrite();
+        }
     }
 
-    public boolean enableProduct(Product toEnable){
-        return inventory.enableProduct(toEnable);
-    }
-
-    public boolean disableProduct(Product toDisable){
-        return inventory.disableProduct(toDisable);
+    public boolean disableProduct(String productId){
+        lock.acquireWrite();
+        try {
+            return inventory.disableProduct(productId);
+        } finally {
+            lock.releaseWrite();
+        }
     }
 
     //====================================================================== |
@@ -228,18 +241,18 @@ public class Store {
 
             // Check if the products are available
             for (var entry : toReserve.entrySet()) {
-                Product product = entry.getKey();
+                String productId = entry.getKey().productId();
                 int quantity = entry.getValue();
-                if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
+                if (inventory.isProductDisabled(productId) && inventory.getQuantity(productId) < quantity) {
                     return null;
                 }
             }
 
             // Reserve the products
             for (var entry : toReserve.entrySet()) {
-                Product product = entry.getKey();
+                String productId = entry.getKey().productId();
                 int quantity = entry.getValue();
-                inventory.setQuantity(product, inventory.getQuantity(product) - quantity);
+                inventory.setQuantity(productId, inventory.getQuantity(productId) - quantity);
             }
 
             // Create the reservation
@@ -290,7 +303,6 @@ public class Store {
             lock.releaseWrite();
         }
     }
-
 
     //====================================================================== |
     //========================= STORE POSITIONS ============================ |
