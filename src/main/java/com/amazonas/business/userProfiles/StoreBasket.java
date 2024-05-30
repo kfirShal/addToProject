@@ -3,7 +3,7 @@ package com.amazonas.business.userProfiles;
 
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.stores.Reservation;
+import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.utils.Pair;
 
 import java.util.HashMap;

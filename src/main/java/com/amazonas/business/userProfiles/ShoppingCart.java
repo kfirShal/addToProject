@@ -1,8 +1,7 @@
 package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.stores.Reservation;
-import com.amazonas.business.stores.ReservationFactory;
+import com.amazonas.business.stores.reservations.Reservation;
 
 import java.util.HashMap;
 import java.util.List;
