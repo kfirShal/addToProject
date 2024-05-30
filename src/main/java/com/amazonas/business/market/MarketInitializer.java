@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component("marketFacade")
-public class MarketFacade {
+public class MarketInitializer {
 
     private final Map<PaymentMethod, Boolean> paymentMethods;
     private final Map<PaymentService, Boolean> paymentServices;
@@ -23,7 +23,7 @@ public class MarketFacade {
     private final PaymentService currentPaymentService;
     private final ShippingService currentShippingService;
 
-    public MarketFacade() {
+    public MarketInitializer() {
         paymentMethods = new HashMap<>();
         paymentServices = new HashMap<>();
         shippingServices = new HashMap<>();
@@ -76,29 +76,6 @@ public class MarketFacade {
     }
 
     public void updatePaymentMethod(PaymentMethod paymentMethod) throws NoPermissionException, AuthenticationFailedException {
-
-    }
-
-    public void addShippingService(ShippingService newShoppingService) {
-        shippingServicesLock.lock();  // block until condition holds
-        try {
-            shippingServices.put(newShoppingService, true);
-        } finally {
-            shippingServicesLock.unlock();
-        }
-    }
-
-    public void removeShippingService(ShippingService oldShoppingService) {
-        shippingServicesLock.lock();  // block until condition holds
-        try {
-            shippingServices.remove(oldShoppingService);
-        } finally {
-            shippingServicesLock.unlock();
-        }
-    }
-
-
-    public void updateShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
 
     }
 

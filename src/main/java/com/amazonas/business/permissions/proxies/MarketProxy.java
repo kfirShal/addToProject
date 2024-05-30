@@ -1,7 +1,7 @@
 package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
-import com.amazonas.business.market.MarketFacade;
+import com.amazonas.business.market.MarketInitializer;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.permissions.PermissionsController;
@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 @Component("marketProxy")
 public class MarketProxy extends ControllerProxy {
 
-    private final MarketFacade real;
+    private final MarketInitializer real;
 
-    public MarketProxy(MarketFacade marketFacade, PermissionsController perm, AuthenticationController auth) {
+    public MarketProxy(MarketInitializer marketInitializer, PermissionsController perm, AuthenticationController auth) {
         super(perm,auth);
-        this.real = marketFacade;
+        this.real = marketInitializer;
     }
     
     public void addShippingService(ShippingService shippingService) throws NoPermissionException, AuthenticationFailedException {
