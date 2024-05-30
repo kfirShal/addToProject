@@ -122,14 +122,13 @@ public class Store {
     //============================= PRODUCTS =============================== |
     //====================================================================== |
 
-    public double calculatePrice(List<Pair<Product,Integer>> products){
+    public double calculatePrice(Map<Product,Integer> products){
         try{
             lock.acquireRead();
 
             double sum = 0;
-            for(Pair<Product,Integer> pair : products){
-
-                sum += pair.first().price() * pair.second();
+            for(var entry : products.entrySet()){
+                sum += entry.getKey().price() * entry.getValue();
             }
             return sum;
         } finally {

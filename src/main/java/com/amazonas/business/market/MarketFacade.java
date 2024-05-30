@@ -1,13 +1,8 @@
 package com.amazonas.business.market;
 
-import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentMethod;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.shipping.ShippingService;
-import com.amazonas.business.stores.Store;
-import com.amazonas.business.stores.StoresController;
-import com.amazonas.business.transactions.TransactionsController;
-import com.amazonas.business.userProfiles.UsersController;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;

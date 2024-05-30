@@ -1,6 +1,6 @@
 package com.amazonas.business.userProfiles;
 
-import com.amazonas.business.stores.StoreCallbackFactory;
+import com.amazonas.business.stores.factories.StoreCallbackFactory;
 import org.springframework.stereotype.Component;
 
 @Component("storeBasketFactory")

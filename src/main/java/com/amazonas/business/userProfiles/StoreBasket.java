@@ -7,6 +7,7 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.utils.Pair;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -15,13 +16,15 @@ public class StoreBasket {
     private final Map<String, Pair<Product, Integer>> products; // productId --> <Product,Quantity>
 
     private final Function<Map<Product,Integer>, Reservation> makeReservation;
+    private final Function<Map<Product, Integer>, Double> calculatePrice;
     private final Runnable cancelReservation;
 
     public StoreBasket (Function<Map<Product,Integer>, Reservation> makeReservation,
-                        Runnable cancelReservation){
+                        Runnable cancelReservation, Function<Map<Product,Integer>, Double> calculatePrice){
 
         this.cancelReservation = cancelReservation;
         this.makeReservation = makeReservation;
+        this.calculatePrice = calculatePrice;
         products = new HashMap<>();
     }
 
@@ -103,5 +106,9 @@ public class StoreBasket {
 
     public Reservation reserveBasket() {
         return makeReservation.apply(getProductsMap());
+    }
+
+    public double getTotalPrice() {
+        return calculatePrice.apply(getProductsMap());
     }
 }

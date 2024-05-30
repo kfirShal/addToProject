@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UsersControllerImplTest {
+class UsersControllerTest {
 
-    private UsersControllerImpl usersController;
+    private UsersController usersController;
     @BeforeEach
     void setUp() {
-         usersController = new UsersControllerImpl();
+         usersController = new UsersController();
          usersController.register("testEmail", "testUserName", "testPassword@");
 
 

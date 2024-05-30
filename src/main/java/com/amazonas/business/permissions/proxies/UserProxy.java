@@ -1,10 +1,7 @@
 package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
-import com.amazonas.business.inventory.Product;
 import com.amazonas.business.permissions.PermissionsController;
-import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.business.userProfiles.User;
 import com.amazonas.business.userProfiles.UsersController;
 import org.springframework.stereotype.Component;
 

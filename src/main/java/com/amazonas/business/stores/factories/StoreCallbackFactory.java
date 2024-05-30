@@ -22,7 +22,7 @@ public class StoreCallbackFactory {
         this.reservationMonitor = reservationMonitor;
     }
 
-    public Function<List<Pair<Product,Integer>>, Double> calculatePrice(String storeId){
+    public Function<Map<Product,Integer>, Double> calculatePrice(String storeId){
         return products -> storesController.getStore(storeId).calculatePrice(products);
     }
 

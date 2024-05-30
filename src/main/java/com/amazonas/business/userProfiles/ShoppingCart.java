@@ -4,15 +4,18 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.stores.reservations.Reservation;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ShoppingCart {
 
+    private final StoreBasketFactory storeBasketFactory;
+    private final String userId;
     private Map<String,StoreBasket> baskets; // storeName --> StoreBasket
 
-    public ShoppingCart(){
-         baskets = new HashMap<>();
+    public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
+        this.storeBasketFactory = storeBasketFactory;
+        this.userId = userId;
+        baskets = new HashMap<>();
     }
 
     public StoreBasket getBasket(String storeName){
@@ -23,16 +26,8 @@ public class ShoppingCart {
     }
 
     public void addProduct(String storeName,Product product, int quantity) {
-        if(baskets.containsKey(storeName)){
-            StoreBasket basket = baskets.get(storeName);
-            basket.addProduct(product,quantity);
-        }
-        else{
-            //TODO: add the makeReservation and cancelReservation instead of null
-            StoreBasket newBasket = new StoreBasket(null,null);
-            newBasket.addProduct(product,quantity);
-            baskets.put(storeName,newBasket);
-        }
+        StoreBasket basket = baskets.computeIfAbsent(storeName, _ -> storeBasketFactory.get(storeName,userId));
+        basket.addProduct(product,quantity);
     }
 
     public void removeProduct(String storeName, String productId){
@@ -51,7 +46,6 @@ public class ShoppingCart {
         try{
             StoreBasket basket = getBasket(storeName);
             basket.changeProductQuantity(productId,quantity);
-
         }
         catch(Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -88,6 +82,19 @@ public class ShoppingCart {
     }
 
     public Map<String, Reservation> reserveCart(){
-        return null;
+        Map<String, Reservation> reservations = new HashMap<>();
+        for(var entry : baskets.entrySet()){
+            Reservation r = entry.getValue().reserveBasket();
+            reservations.put(entry.getKey(),r);
+        }
+        return reservations;
+    }
+
+    public double getTotalPrice() {
+        double totalPrice = 0;
+        for (var entry : baskets.entrySet()) {
+            totalPrice += entry.getValue().getTotalPrice();
+        }
+        return totalPrice;
     }
 }
