@@ -4,17 +4,17 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.stores.policies.SalesPolicy;
 import com.amazonas.business.stores.search.SearchRequest;
-import com.amazonas.business.stores.storePositions.OwnerNode;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.ReservationMonitor;
+import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
-import org.springframework.security.core.parameters.P;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,6 +39,7 @@ public class Store {
     private boolean isOpen;
     private long reservationTimeoutSeconds;
     private List<SalesPolicy> salesPolicies;
+    AppointmentSystem appointmentSystem;
 
     public Store(String ownerUserId,
                  String storeId,
@@ -114,6 +115,7 @@ public class Store {
     //====================================================================== |
     //============================= PRODUCTS =============================== |
     //====================================================================== |
+
 
     public double calculatePrice(List<Pair<Product,Integer>> products){
         try{
@@ -206,6 +208,8 @@ public class Store {
             lock.releaseWrite();
         }
     }
+
+
 
     public String removeProduct(String productIdToRemove) {
         try {
@@ -389,5 +393,21 @@ public class Store {
 
     public void setStoreDescription(String storeDescription) {
         this.storeDescription = storeDescription;
+    }
+
+    public void removeOwner(String logged, String username) {
+        appointmentSystem.removeOwner(logged,username);
+    }
+
+    public void removeManager(String logged, String username) {
+        appointmentSystem.removeManager(logged,username);
+    }
+
+    public void addManager(String logged, String username) {
+        appointmentSystem.addManager(logged,username);
+    }
+
+    public void addOwner(String logged, String username) {
+        appointmentSystem.addOwner(logged,username);
     }
 }

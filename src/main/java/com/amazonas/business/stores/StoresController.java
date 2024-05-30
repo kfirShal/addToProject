@@ -8,7 +8,9 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.exceptions.InvalidTokenException;
 import com.amazonas.exceptions.NoPermissionException;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.RepositoryFacade;
+import com.amazonas.utils.JsonUtils;
 import com.amazonas.utils.Rating;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +36,24 @@ public class StoresController {
     }
     public void closeStore(String storeId){
         getStore(storeId);
+    }
+
+    public void addProduct(String storeId,Product toAdd) throws StoreException {
+        getStore(storeId).addProduct(toAdd);
+    }
+
+    public void updateProduct(String storeId,Product toUpdate) throws StoreException {
+        getStore(storeId).updateProduct(toUpdate);
+    }
+
+    public void removeProduct(String storeId,String productId) throws StoreException {
+        getStore(storeId).removeProduct(productId);
+    }
+    public void disableProduct(String storeId,String productId){
+        getStore(storeId).disableProduct(productId);
+    }
+    public void enableProduct(String storeId,String productId){
+        getStore(storeId).enableProduct(productId);
     }
 
     public void addOwner(String username, String storeId, String logged){
