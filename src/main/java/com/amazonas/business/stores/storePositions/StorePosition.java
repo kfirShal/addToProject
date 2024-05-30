@@ -1,4 +1,3 @@
 package com.amazonas.business.stores.storePositions;
 
-public class StorePosition {
-}
+public record StorePosition(String userId, StoreRole role) { }
