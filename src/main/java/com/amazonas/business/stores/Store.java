@@ -34,6 +34,7 @@ public class Store {
 
 
     private String storeId;
+    private String storeName;
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
@@ -43,6 +44,7 @@ public class Store {
 
     public Store(String ownerUserId,
                  String storeId,
+                 String storeName,
                  String description,
                  Rating rating,
                  ProductInventory inventory,
@@ -53,6 +55,7 @@ public class Store {
         this.reservationMonitor = reservationMonitor;
         this.inventory = inventory;
         this.storeId = storeId;
+        this.storeName = storeName;
         this.storeDescription = description;
         this.storeRating = rating;
         this.permissionsController = permissionsController;
@@ -66,7 +69,6 @@ public class Store {
     //====================================================================== |
     //============================= MANAGEMENT ============================= |
     //====================================================================== |
-
     public boolean openStore(){
 
         try{
@@ -104,18 +106,18 @@ public class Store {
     public void addSalePolicy(SalesPolicy salesPolicy){
         salesPolicies.add(salesPolicy);
     }
+
     public void removeSalePolicy(SalesPolicy salesPolicy){
         salesPolicies.remove(salesPolicy);
     }
-
     public boolean isOpen(){
         return isOpen;
     }
 
+
     //====================================================================== |
     //============================= PRODUCTS =============================== |
     //====================================================================== |
-
 
     public double calculatePrice(List<Pair<Product,Integer>> products){
         try{
@@ -256,10 +258,10 @@ public class Store {
         }
     }
 
+
     //====================================================================== |
     //=========================== RESERVATIONS ============================= |
     //====================================================================== |
-
     @Nullable
     public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
         try{
@@ -336,10 +338,10 @@ public class Store {
         }
     }
 
+
     //====================================================================== |
     //========================= STORE POSITIONS ============================ |
     //====================================================================== |
-
     public void removeOwner(String logged, String username) {
         appointmentSystem.removeOwner(logged,username);
     }
@@ -356,12 +358,12 @@ public class Store {
         appointmentSystem.addOwner(logged,username);
     }
 
+
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
     //====================================================================== |
 
     //TODO: implement store permissions
-
     public boolean addPermissionToManager(String managerId, StoreActions action){
 
         switch(action){
@@ -387,10 +389,10 @@ public class Store {
         }
     }
 
+
     //====================================================================== |
     //========================= GETTERS SETTERS ============================ |
     //====================================================================== |
-
     public Rating getStoreRating() {
         return storeRating;
     }
@@ -413,5 +415,9 @@ public class Store {
 
     public void setStoreDescription(String storeDescription) {
         this.storeDescription = storeDescription;
+    }
+
+    public String getStoreName() {
+        return storeName;
     }
 }
