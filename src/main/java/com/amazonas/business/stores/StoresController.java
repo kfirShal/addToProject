@@ -5,6 +5,7 @@ import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.exceptions.InvalidTokenException;
 import com.amazonas.exceptions.NoPermissionException;
+import com.amazonas.repository.RepositoryFacade;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -13,9 +14,11 @@ import java.util.List;
 @Component("storesController")
 public class StoresController {
     private final PermissionsController pc;
+    private final RepositoryFacade repositoryFacade;
 
-    public StoresController(PermissionsController pc){
+    public StoresController(PermissionsController pc, RepositoryFacade repositoryFacade){
         this.pc = pc;
+        this.repositoryFacade = repositoryFacade;
     }
 
     public boolean addOwner(String username, String storeId){

@@ -2,6 +2,8 @@ package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
+import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.search.SearchRequest;
 import com.amazonas.business.stores.storePositions.OwnerNode;
 import com.amazonas.business.stores.reservations.Reservation;
@@ -23,6 +25,7 @@ public class Store {
     private static final int FIVE_MINUTES = 5 * 60;
     private final ReservationFactory reservationFactory;
     private final ReservationMonitor reservationMonitor;
+    private final PermissionsController permissionsController;
 
     private final ProductInventory inventory;
     private final ConcurrentMap<String, Reservation> reservedProducts;
@@ -44,13 +47,15 @@ public class Store {
                  Rating rating,
                  ProductInventory inventory,
                  ReservationFactory reservationFactory,
-                 ReservationMonitor reservationMonitor) {
+                 ReservationMonitor reservationMonitor,
+                 PermissionsController permissionsController) {
         this.reservationFactory = reservationFactory;
         this.reservationMonitor = reservationMonitor;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
+        this.permissionsController = permissionsController;
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.managersList = new HashMap<>();
         this.ownershipTree = new OwnerNode(ownerUserId, null);
@@ -311,9 +316,9 @@ public class Store {
 
             // Return the reserved products to the inventory
             for(var entry : reservation.productToQuantity().entrySet()){
-                Product product = entry.getKey();
+                String productId = entry.getKey().productId();
                 int quantity = entry.getValue();
-                inventory.setQuantity(product, inventory.getQuantity(product) + quantity);
+                inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
             }
 
             reservedProducts.remove(reservation.userId());
@@ -387,6 +392,20 @@ public class Store {
                 }
             }
         }
+    }
+
+    //====================================================================== |
+    //======================= STORE PERMISSIONS ============================ |
+    //====================================================================== |
+
+    //TODO: implement store permissions
+
+    public boolean addPermissionToManager(String managerId, StoreActions action){
+        return false;
+    }
+
+    public boolean removePermissionFromManager(String managerId, StoreActions action){
+        return false;
     }
 
     //====================================================================== |
