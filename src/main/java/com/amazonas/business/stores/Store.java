@@ -14,6 +14,7 @@ import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.parameters.P;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -401,11 +402,28 @@ public class Store {
     //TODO: implement store permissions
 
     public boolean addPermissionToManager(String managerId, StoreActions action){
-        return false;
+
+        switch(action){
+            case ADD_PRODUCT, REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
+                permissionsController.addPermission(managerId,storeId,action);
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     public boolean removePermissionFromManager(String managerId, StoreActions action){
-        return false;
+        switch(action){
+            case ADD_PRODUCT, REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
+                permissionsController.removePermission(managerId,storeId,action);
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     //====================================================================== |

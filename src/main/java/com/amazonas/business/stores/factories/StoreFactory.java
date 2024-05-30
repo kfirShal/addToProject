@@ -8,6 +8,8 @@ import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.ReservationMonitor;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component("storeFactory")
 public class StoreFactory {
 
@@ -21,11 +23,11 @@ public class StoreFactory {
         this.permissionsController = permissionsController;
     }
 
-    public Store get(String ownerUserId, String storeId, String description, Rating rating){
+    public Store get(String ownerUserId, String description){
         return new Store(ownerUserId,
-                storeId,
+                UUID.randomUUID().toString(),
                 description,
-                rating,
+                Rating.NOT_RATED,
                 new ProductInventory(),
                 reservationFactory,reservationMonitor,
                 permissionsController);
