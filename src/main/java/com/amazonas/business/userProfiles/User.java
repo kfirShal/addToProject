@@ -5,7 +5,6 @@ import com.amazonas.business.payment.PaymentMethod;
 public abstract class User {
 
     private String initialId;
-    private ShoppingCart cart;
     private PaymentMethod paymentMethod;
 
     public User(String initialId){
