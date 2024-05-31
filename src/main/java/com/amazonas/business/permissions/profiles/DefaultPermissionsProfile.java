@@ -1,8 +1,8 @@
 package com.amazonas.business.permissions.profiles;
 
-import com.amazonas.business.market.MarketActions;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.MarketActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package com.amazonas.business.userProfiles;
+package com.amazonas.business.permissions.actions;
 
 public enum UserActions {
 

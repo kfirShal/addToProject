@@ -1,7 +1,6 @@
-package com.amazonas.business.market;
+package com.amazonas.business.stores.search;
 
-import com.amazonas.business.stores.Rating;
-import com.amazonas.business.stores.SearchRequest;
+import com.amazonas.utils.Rating;
 
 import java.util.List;
 

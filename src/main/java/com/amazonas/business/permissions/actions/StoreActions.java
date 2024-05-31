@@ -1,4 +1,4 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.permissions.actions;
 
 public enum StoreActions {
     VIEW_STORE,

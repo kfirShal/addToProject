@@ -2,176 +2,439 @@ package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
+import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.stores.search.SearchRequest;
+import com.amazonas.business.stores.storePositions.OwnerNode;
+import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.business.stores.reservations.ReservationFactory;
+import com.amazonas.business.stores.reservations.ReservationMonitor;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
+import com.amazonas.utils.Rating;
+import com.amazonas.utils.ReadWriteLock;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
 
 public class Store {
 
     private static final int FIVE_MINUTES = 5 * 60;
+    private final ReservationFactory reservationFactory;
+    private final ReservationMonitor reservationMonitor;
+    private final PermissionsController permissionsController;
 
-    private long reservationTimeoutSeconds;
     private final ProductInventory inventory;
     private final ConcurrentMap<String, Reservation> reservedProducts;
-    private final Semaphore lock;
-    private final Object waitObject = new Object();
+    private final ReadWriteLock lock;
+    private final ReadWriteLock appointmentLock;
+
 
     private String storeId;
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
+    private long reservationTimeoutSeconds;
+    private Map<String, OwnerNode> managersList;
+    private OwnerNode ownershipTree;
+    private Map<String, OwnerNode> ownershipList;
+    private List<SalesPolicy> salesPolicies;
 
-    public Store(String storeId, String description, Rating rating, ProductInventory inventory) {
-        this.reservationTimeoutSeconds = FIVE_MINUTES;
+    public Store(String ownerUserId,
+                 String storeId,
+                 String description,
+                 Rating rating,
+                 ProductInventory inventory,
+                 ReservationFactory reservationFactory,
+                 ReservationMonitor reservationMonitor,
+                 PermissionsController permissionsController) {
+        this.reservationFactory = reservationFactory;
+        this.reservationMonitor = reservationMonitor;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeDescription = description;
         this.storeRating = rating;
-
+        this.permissionsController = permissionsController;
+        this.reservationTimeoutSeconds = FIVE_MINUTES;
+        this.managersList = new HashMap<>();
+        this.ownershipTree = new OwnerNode(ownerUserId, null);
+        this.ownershipList = new HashMap<>();
+        this.salesPolicies = new ArrayList<>();
         reservedProducts = new ConcurrentHashMap<>();
-        lock = new Semaphore(1,true);
-
-        Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
-        reserveTimeoutThread.start();
+        lock = new ReadWriteLock();
+        appointmentLock = new ReadWriteLock();
         isOpen = true;
     }
 
+    //====================================================================== |
+    //============================= MANAGEMENT ============================= |
+    //====================================================================== |
+
     public boolean openStore(){
-        if(isOpen)
-            return false;
-        else{
-            isOpen = true;
-            return true;
+
+        try{
+            lock.acquireWrite();
+
+            if(isOpen) {
+                return false;
+            } else{
+                isOpen = true;
+                return true;
+            }
+        } finally {
+            lock.releaseWrite();
         }
     }
+
     public boolean closeStore(){
-        if(isOpen){
-            isOpen = false;
-            return true;
+        try{
+
+            lock.acquireWrite();
+
+            if(isOpen){
+                isOpen = false;
+                return true;
+            }
+            else {
+                return false;
+            }
+
+        }finally {
+            lock.releaseWrite();
         }
-        else
-            return false;
-    }
-    public int calculatePrice(List<Pair<Product,Integer>> products){
-        //TODO: Implement this
-        return 0;
     }
 
-    public int availableCount(String productId){
-        return -1;
+    public void addSalePolicy(SalesPolicy salesPolicy){
+        salesPolicies.add(salesPolicy);
+    }
+    public void removeSalePolicy(SalesPolicy salesPolicy){
+        salesPolicies.remove(salesPolicy);
     }
 
-    public void addProduct(Product toAdd){
-        inventory.addProduct(toAdd);
+    public boolean isOpen(){
+        return isOpen;
     }
 
-    public  boolean removeProduct(Product toRemove){
-        return inventory.removeProduct(toRemove);
-    }
+    //====================================================================== |
+    //============================= PRODUCTS =============================== |
+    //====================================================================== |
 
-    public  boolean updateProduct(Product toUpdate){
-        return inventory.updateProduct(toUpdate);
-    }
+    public double calculatePrice(Map<Product,Integer> products){
+        try{
+            lock.acquireRead();
 
-    public boolean enableProduct(Product toEnable){
-        return inventory.enableProduct(toEnable);
-    }
-
-    public boolean disableProduct(Product toDisable){
-        return inventory.disableProduct(toDisable);
-    }
-
-    public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
-
-        lockAcquire();
-
-        // Check if the user already has a reservation
-        // If so, cancel it
-        if(reservedProducts.containsKey(userId)){
-            cancelReservation(userId);
+            double sum = 0;
+            for(var entry : products.entrySet()){
+                sum += entry.getKey().price() * entry.getValue();
+            }
+            return sum;
+        } finally {
+            lock.releaseRead();
         }
+    }
 
-        // Check if the products are available
-        for (var entry : toReserve.entrySet()) {
-            Product product = entry.getKey();
-            int quantity = entry.getValue();
-            if (inventory.isProductDisabled(product) && inventory.getQuantity(product) < quantity) {
-                lock.release();
-                return null;
+    private double applyDiscount(Pair<Product,Integer> pair){
+        Product product = pair.first();
+        Integer quantity = pair.second();
+        int maxQuantity = 0;
+        int maxDiscount = 0;
+        for(SalesPolicy salesPolicy: salesPolicies){
+            if(salesPolicy.getProductID().equals(product.productId())){
+                if(maxQuantity <= salesPolicy.getProductQuantity()) {
+                    maxQuantity = salesPolicy.getProductQuantity();
+                    maxDiscount = salesPolicy.getDiscount();
+                }
             }
         }
-
-        // Reserve the products
-        for (var entry : toReserve.entrySet()) {
-            Product product = entry.getKey();
-            int quantity = entry.getValue();
-            inventory.setQuantity(product, inventory.getQuantity(product) - quantity);
+        if(maxQuantity == 0){
+            return product.price() * quantity;
         }
+        return product.price() * (100 - maxDiscount)*0.01;
 
-        // Create the reservation
-        Reservation reservation = new Reservation(userId,
-                new HashMap<>(){{
-                    for (var entry : toReserve.entrySet()) {
-                        put(entry.getKey(), entry.getValue());
-                    }}},
-
-                LocalDateTime.now().plusSeconds(reservationTimeoutSeconds), null); //TODO: Implement the cancel callback
-        reservedProducts.put(userId, reservation);
-
-        lock.release();
-        synchronized (waitObject) {
-            waitObject.notifyAll();
-        }
-        return reservation;
-    }
-
-    public void cancelReservation(String userId){
-        lockAcquire();
-        Reservation reservation = reservedProducts.get(userId);
-        if(reservation == null){
-            return;
-        }
-        for(var entry : reservation.productToQuantity().entrySet()){
-            Product product = entry.getKey();
-            int quantity = entry.getValue();
-            inventory.setQuantity(product, inventory.getQuantity(product) + quantity);
-        }
-        reservedProducts.remove(reservation.userId());
-        lock.release();
-        synchronized (waitObject) {
-            waitObject.notifyAll();
-        }
     }
 
     public List<Product> searchProduct(SearchRequest request) {
-        List<Product> toReturn = new LinkedList<>();
-        for (Product product : inventory.getAllAvailableProducts()) {
 
-            // Check if the product matches the search request
-            if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
-                    || product.rating().ordinal() >= request.getProductRating().ordinal()
-                    || product.productName().toLowerCase().contains(request.getProductName())
-                    || product.category().toLowerCase().contains(request.getProductCategory())
-                    || product.description().toLowerCase().contains(request.getProductName())
-                    || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
-            {
-                toReturn.add(product);
+        try{
+            lock.acquireRead();
+
+            List<Product> toReturn = new LinkedList<>();
+            for (Product product : inventory.getAllAvailableProducts()) {
+
+                // Check if the product matches the search request
+                if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
+                        || product.rating().ordinal() >= request.getProductRating().ordinal()
+                        || product.productName().toLowerCase().contains(request.getProductName())
+                        || product.category().toLowerCase().contains(request.getProductCategory())
+                        || product.description().toLowerCase().contains(request.getProductName())
+                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
+                {
+                    toReturn.add(product);
+                }
+            }
+            return toReturn;
+        } finally{
+            lock.releaseRead();
+        }
+    }
+
+    public int availableCount(String productId){
+
+        try{
+            lock.acquireRead();
+            return inventory.getQuantity(productId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public String addProduct(Product toAdd) throws StoreException {
+        try{
+            lock.acquireWrite();
+
+            if(isOpen) {
+                if(inventory.nameExists(toAdd.productName())) {
+                    inventory.addProduct(toAdd);
+                    return "product added";
+                }
+                else {
+                    return "product name exists";
+                }
+            }
+            else {
+                throw new StoreException("store is closed");
+            }
+
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public String removeProduct(String productIdToRemove) {
+        try {
+            lock.acquireWrite();
+
+            if (isOpen) {
+                inventory.removeProduct(productIdToRemove);
+                return "product removed";
+            }
+            else {
+                return "product wasnt removed - store closed";
+            }
+
+        } finally {
+            lock.releaseWrite();
+        }
+
+    }
+
+    public boolean updateProduct(Product product){
+        lock.acquireWrite();
+        try {
+            return inventory.updateProduct(product);
+        } finally {
+            lock.releaseWrite();
+        }
+     }
+
+    public boolean enableProduct(String productId){
+        lock.acquireWrite();
+        try {
+            return inventory.enableProduct(productId);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public boolean disableProduct(String productId){
+        lock.acquireWrite();
+        try {
+            return inventory.disableProduct(productId);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    //====================================================================== |
+    //=========================== RESERVATIONS ============================= |
+    //====================================================================== |
+
+    @Nullable
+    public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
+        try{
+            lock.acquireWrite();
+
+            // Check if the user already has a reservation
+            // If so, cancel it
+            if(reservedProducts.containsKey(userId)){
+                cancelReservation(userId);
+            }
+
+            // Check if the products are available
+            for (var entry : toReserve.entrySet()) {
+                String productId = entry.getKey().productId();
+                int quantity = entry.getValue();
+                if (inventory.isProductDisabled(productId) && inventory.getQuantity(productId) < quantity) {
+                    return null;
+                }
+            }
+
+            // Reserve the products
+            for (var entry : toReserve.entrySet()) {
+                String productId = entry.getKey().productId();
+                int quantity = entry.getValue();
+                inventory.setQuantity(productId, inventory.getQuantity(productId) - quantity);
+            }
+
+            // Create the reservation
+            Reservation reservation = reservationFactory.get(
+                    storeId,
+                    userId,
+                    toReserve,
+                    LocalDateTime.now().plusSeconds(reservationTimeoutSeconds));
+
+            reservedProducts.put(userId, reservation);
+            reservationMonitor.addReservation(reservation);
+
+            return reservation;
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void cancelReservation(String userId){
+        try{
+            lock.acquireWrite();
+
+            Reservation reservation = reservedProducts.get(userId);
+            if(reservation == null){
+                return;
+            }
+
+            reservation.setCancelled();
+
+            // Return the reserved products to the inventory
+            for(var entry : reservation.productToQuantity().entrySet()){
+                String productId = entry.getKey().productId();
+                int quantity = entry.getValue();
+                inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
+            }
+
+            reservedProducts.remove(reservation.userId());
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
+        try{
+            lock.acquireWrite();
+            this.reservationTimeoutSeconds = reservationTimeoutSeconds;
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+
+    //====================================================================== |
+    //========================= STORE POSITIONS ============================ |
+    //====================================================================== |
+
+
+    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
+        try {
+            appointmentLock.acquireWrite();
+            if (appointedUserId != null && appointeeOwnerUserId != null) {
+                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+                if (appointeeNode != null) {
+                    if (!managersList.containsKey(appointedUserId)) {
+                        appointeeNode.addManager(appointedUserId);
+                        managersList.put(appointedUserId, null);
+                    }
+                }
             }
         }
-        return toReturn;
+        finally {
+            appointmentLock.releaseWrite();
+        }
     }
 
-    public void setStoreRating(Rating storeRating) {
-        this.storeRating = storeRating;
+    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
+        try {
+            appointmentLock.acquireWrite();
+            if (appointedUserId != null && appointeeOwnerUserId != null) {
+                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+                if (appointeeNode != null) {
+                    if (appointeeNode.deleteManager(appointedUserId)) {
+                        managersList.remove(appointedUserId);
+                    }
+                }
+            }
+        }
+        finally {
+            appointmentLock.releaseWrite();
+        }
     }
+
+    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
+        try {
+            appointmentLock.acquireWrite();
+            if (appointedUserId != null && appointeeOwnerUserId != null) {
+                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+                if (appointeeNode != null) {
+                    if (!ownershipList.containsKey(appointedUserId)) {
+                        OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
+                        ownershipList.put(appointeeOwnerUserId, appointedNode);
+                    }
+                }
+            }
+        }
+        finally {
+            appointmentLock.releaseWrite();
+        }
+    }
+
+    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
+        try {
+            appointmentLock.acquireWrite();
+            if (appointedUserId != null && appointeeOwnerUserId != null) {
+                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
+                if (appointeeNode != null) {
+                    OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
+                    if (deletedOwner != null) {
+                        List<String> appointerChildren = deletedOwner.getAllChildren();
+                        for (String appointerToRemove : appointerChildren) {
+                            ownershipList.remove(appointerToRemove);
+                        }
+                    }
+                }
+            }
+        }
+        finally {
+            appointmentLock.releaseWrite();
+        }
+    }
+
+    //====================================================================== |
+    //======================= STORE PERMISSIONS ============================ |
+    //====================================================================== |
+
+    //TODO: implement store permissions
+
+    public boolean addPermissionToManager(String managerId, StoreActions action){
+        return false;
+    }
+
+    public boolean removePermissionFromManager(String managerId, StoreActions action){
+        return false;
+    }
+
+    //====================================================================== |
+    //========================= GETTERS SETTERS ============================ |
+    //====================================================================== |
 
     public Rating getStoreRating() {
         return storeRating;
@@ -181,93 +444,19 @@ public class Store {
         return storeId;
     }
 
-    public void setStoreId(String storeId) {
-        this.storeId = storeId;
-    }
-
     public String getStoreDescription() {
         return storeDescription;
     }
 
+    public void setStoreRating(Rating storeRating) {
+        this.storeRating = storeRating;
+    }
+
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+    }
+
     public void setStoreDescription(String storeDescription) {
         this.storeDescription = storeDescription;
-    }
-
-    private void lockAcquire() {
-        try {
-            lock.acquire();
-        } catch (InterruptedException ignored) {}
-    }
-
-    // ================================================================= |
-    // ===================== Reservation Thread ======================== |
-    // ================================================================= |
-
-    private void reservationThreadMain(){
-        long nextWakeUp = Long.MAX_VALUE;
-        Reservation nextExpiringReservation = null;
-        while(true){
-
-            // Wait something to happen
-            do{
-                _wait(10000L);
-            }while(reservedProducts.isEmpty());
-
-            // Find the first reservation that will expire
-            for(var entry : reservedProducts.entrySet()){
-                long expirationTimeMillis = localDateTimeToEpochMillis(entry.getValue().expirationDate());
-                if(expirationTimeMillis <= nextWakeUp){
-                    nextWakeUp = expirationTimeMillis;
-                    nextExpiringReservation = entry.getValue();
-                }
-            }
-
-            // if for some reason there is no reservation
-            // continue to the next iteration
-            if(nextExpiringReservation == null){
-                continue;
-            }
-
-            // Wait until the next reservation expires
-            do{
-                long waitTime = Math.max(nextWakeUp - System.currentTimeMillis(), 1L);
-                _wait(waitTime);
-            } while(System.currentTimeMillis() < nextWakeUp
-                    && !nextExpiringReservation.isPaid()
-                    && !nextExpiringReservation.isCancelled());
-
-            //if the reservation is cancelled, no need to do anything
-            // if not, move to the next step
-            if(! nextExpiringReservation.isCancelled()){
-
-                // if the reservation is paid, remove it
-                if (nextExpiringReservation.isPaid()) {
-                    reservedProducts.remove(nextExpiringReservation.userId());
-                } else {
-
-                    // if the reservation is not paid, cancel it
-                    cancelReservation(nextExpiringReservation.userId());
-                }
-            }
-
-            nextExpiringReservation = null;
-            nextWakeUp = Long.MAX_VALUE;
-        }
-    }
-
-    private void _wait(long waitTime) {
-        synchronized (waitObject) {
-            try {
-                waitObject.wait(waitTime);
-            } catch (InterruptedException ignored) {}
-        }
-    }
-
-    private long localDateTimeToEpochMillis(LocalDateTime time){
-        return time.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
-    }
-
-    public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
-        this.reservationTimeoutSeconds = reservationTimeoutSeconds;
     }
 }

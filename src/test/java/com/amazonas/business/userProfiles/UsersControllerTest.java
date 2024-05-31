@@ -1,19 +1,19 @@
 package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.stores.Rating;
+import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UsersControllerImplTest {
+class UsersControllerTest {
 
-    private UsersControllerImpl usersController;
+    private UsersController usersController;
     @BeforeEach
     void setUp() {
-         usersController = new UsersControllerImpl();
+         usersController = new UsersController();
          usersController.register("testEmail", "testUserName", "testPassword@");
 
 

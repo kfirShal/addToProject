@@ -1,46 +1,57 @@
 package com.amazonas.business.permissions.profiles;
 
-import com.amazonas.business.market.MarketActions;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.MarketActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
+import com.amazonas.utils.ReadWriteLock;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class RegisteredUserPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
     private final PermissionsProfile defaultProfile;
-    private final ConcurrentMap<String,Set<StoreActions>> storeIdToAllowedStoreActions;
+    private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
+    private final ReadWriteLock lock;
+
 
     public RegisteredUserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
         this.userId = userId;
-        storeIdToAllowedStoreActions = new ConcurrentHashMap<>();
-        allowedUserActions = ConcurrentHashMap.newKeySet();
-        allowedMarketActions = ConcurrentHashMap.newKeySet();
+        storeIdToAllowedStoreActions = new HashMap<>();
+        allowedUserActions = new HashSet<>();
+        allowedMarketActions = new HashSet<>();
+        lock = new ReadWriteLock();
     }
 
     @Override
     public boolean addStorePermission(String storeId, StoreActions action) {
+        lock.acquireWrite();
         Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.computeIfAbsent(storeId, _ -> new HashSet<>());
-        return allowedActions.add(action);
+        boolean output = allowedActions.add(action);
+        lock.releaseWrite();
+        return output;
     }
 
     @Override
     public boolean removeStorePermission(String storeId, StoreActions action) {
+        boolean result;
+        lock.acquireWrite();
         Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
-        if (allowedActions == null) {
-            return false;
+        if (allowedActions != null) {
+            result = allowedActions.remove(action);
+            if (allowedActions.isEmpty()) {
+                storeIdToAllowedStoreActions.remove(storeId);
+            }
+        } else {
+            result = false;
         }
-        boolean result = allowedActions.remove(action);
-        if (allowedActions.isEmpty()) {
-            storeIdToAllowedStoreActions.remove(storeId);
-        }
+        lock.releaseWrite();
         return result;
     }
 
@@ -49,7 +60,10 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedUserActions.add(action);
+        lock.acquireWrite();
+        boolean result = allowedUserActions.add(action);
+        lock.releaseWrite();
+        return result;
     }
 
     @Override
@@ -57,7 +71,10 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedUserActions.remove(action);
+        lock.acquireWrite();
+        boolean result = allowedUserActions.remove(action);
+        lock.releaseWrite();
+        return result;
     }
 
     @Override
@@ -65,7 +82,10 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedMarketActions.add(action);
+        lock.acquireWrite();
+        boolean result = allowedMarketActions.add(action);
+        lock.releaseWrite();
+        return result;
     }
 
     @Override
@@ -73,7 +93,10 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return false;
         }
-        return allowedMarketActions.remove(action);
+        lock.acquireWrite();
+        boolean result = allowedMarketActions.remove(action);
+        lock.releaseWrite();
+        return result;
     }
 
     @Override
@@ -81,7 +104,10 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return true;
         }
-        return allowedUserActions.contains(action);
+        lock.acquireRead();
+        boolean result = allowedUserActions.contains(action);
+        lock.releaseRead();
+        return result;
     }
 
     @Override
@@ -89,14 +115,20 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
         if(defaultProfile.hasPermission(action)) {
             return true;
         }
-        return allowedMarketActions.contains(action);
+        lock.acquireRead();
+        boolean result = allowedMarketActions.contains(action);
+        lock.releaseRead();
+        return result;
 
     }
 
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
+        lock.acquireRead();
         Set<StoreActions> allowedActions = storeIdToAllowedStoreActions.get(storeId);
-        return allowedActions != null && allowedActions.contains(action);
+        boolean result = allowedActions != null && allowedActions.contains(action);
+        lock.releaseRead();
+        return result;
     }
 
     @Override
