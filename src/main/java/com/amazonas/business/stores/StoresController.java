@@ -51,7 +51,10 @@ public class StoresController {
         }
         return false;
     }
-
+/*
+    public boolean storeContainsProduct(String storeId,String productId){
+        repositoryFacade.getStore(storeId).searchProduct()
+    }*/
     public void addProduct(String storeId,Product toAdd) throws StoreException {
         getStore(storeId).addProduct(toAdd);
     }
