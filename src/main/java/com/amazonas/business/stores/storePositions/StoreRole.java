@@ -1,4 +1,4 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.storePositions;
 
 public enum StoreRole {
     STORE_FOUNDER,

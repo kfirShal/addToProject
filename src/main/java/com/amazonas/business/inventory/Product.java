@@ -1,6 +1,6 @@
 package com.amazonas.business.inventory;
 
-import com.amazonas.business.stores.Rating;
+import com.amazonas.utils.Rating;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -125,7 +125,9 @@ public class Product implements Cloneable {
             clone.category = category;
             clone.description = description;
             clone.rating = rating;
-            clone.keyWords = (HashSet<String>)((HashSet<String>) keyWords).clone();
+            clone.keyWords =  new HashSet<>(){{
+                keyWords.forEach(clone::addKeyWords);
+            }};
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();

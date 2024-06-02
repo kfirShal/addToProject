@@ -1,6 +1,9 @@
-package com.amazonas.business.stores;
+package com.amazonas.business.stores.factories;
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.stores.StoresController;
+import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.business.stores.reservations.ReservationMonitor;
 import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
@@ -11,13 +14,15 @@ import java.util.function.Function;
 @Component("storeCallbackFactory")
 public class StoreCallbackFactory {
 
-    private final StoresControllerImpl storesController;
+    private final StoresController storesController;
+    private final ReservationMonitor reservationMonitor;
 
-    public StoreCallbackFactory(StoresControllerImpl storesController) {
+    public StoreCallbackFactory(StoresController storesController, ReservationMonitor reservationMonitor) {
         this.storesController = storesController;
+        this.reservationMonitor = reservationMonitor;
     }
 
-    public Function<List<Pair<Product,Integer>>,Integer> calculatePrice(String storeId){
+    public Function<Map<Product,Integer>, Double> calculatePrice(String storeId){
         return products -> storesController.getStore(storeId).calculatePrice(products);
     }
 

@@ -1,8 +1,9 @@
-package com.amazonas.business.market;
+package com.amazonas.business.permissions.actions;
 
 public enum MarketActions {
 
     // general actions
+    CREATE_STORE,
     SEARCH_PRODUCTS,
     MAKE_PURCHASE,
     SHUTDOWN,
@@ -27,12 +28,5 @@ public enum MarketActions {
     UPDATE_PAYMENT_METHOD,
     ENABLE_PAYMENT_METHOD,
     DISABLE_PAYMENT_METHOD,
-
-
-
-
-
-
-
 
 }

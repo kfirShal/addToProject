@@ -1,4 +1,4 @@
-package com.amazonas.business.stores.purchasePolicy;
+package com.amazonas.business.stores.policies;
 
 public class minPolicy {
     private int quantity;
