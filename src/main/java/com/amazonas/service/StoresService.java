@@ -10,8 +10,6 @@ import com.amazonas.utils.JsonUtils;
 import com.amazonas.utils.Response;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.locks.Condition;
-
 @Component
 public class StoresService {
 
@@ -21,75 +19,108 @@ public class StoresService {
         this.controller = storeProxy;
     }
 
-    public String addStore(String storeJson){
+    public String addStore(String storeJson) {
         StoreCreationRequest toAdd = JsonUtils.deserialize(storeJson, StoreCreationRequest.class);
         try {
             controller.addStore(toAdd.ownerId(), toAdd.storeName(), toAdd.description());
             return new Response(true).toJson();
-        }
-        catch (StoreException e){
+        } catch (StoreException e) {
             return Response.getErrorResponse(e).toJson();
         }
-
     }
-    public String openStore(String storeId){
+
+    public String openStore(String storeId) {
         return new Response(controller.openStore(storeId)).toJson();
     }
-    public String closeStore(String storeId){
+
+    public String closeStore(String storeId) {
         return new Response(controller.closeStore(storeId)).toJson();
     }
-    public void addProduct(String storeId, String toAddJson) throws StoreException {
-        Product toAdd = JsonUtils.deserialize(toAddJson,Product.class);
-        controller.addProduct(storeId,toAdd);
-        //TODO: RETURN RESPONSE
+
+    public String addProduct(String storeId, String toAddJson) {
+        try {
+            Product toAdd = JsonUtils.deserialize(toAddJson, Product.class);
+            controller.addProduct(storeId, toAdd);
+            return new Response(true).toJson();
+        } catch (StoreException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
     }
-    public void updateProduct(String storeId,String toUpdateJson) throws StoreException {
-        Product toUpdate = JsonUtils.deserialize(toUpdateJson,Product.class);
-        controller.updateProduct(storeId,toUpdate);
-        //TODO: RETURN RESPONSE
+
+    public String updateProduct(String storeId, String toUpdateJson) {
+        try {
+            Product toUpdate = JsonUtils.deserialize(toUpdateJson, Product.class);
+            controller.updateProduct(storeId, toUpdate);
+            return new Response(true).toJson();
+        } catch (StoreException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
     }
-    public void removeProduct(String storeId,String toRemoveJson) throws StoreException {
-        controller.removeProduct(storeId,toRemoveJson);
-        //TODO: RETURN RESPONSE
+
+    public String removeProduct(String storeId, String toRemoveJson) {
+        try {
+            controller.removeProduct(storeId, toRemoveJson);
+            return new Response(true).toJson();
+        } catch (StoreException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
     }
-    public void disableProduct(String storeId,String productId){
-        controller.disableProduct(storeId,productId);
-        //TODO: RETURN RESPONSE
+
+    public String disableProduct(String storeId, String productId) {
+        controller.disableProduct(storeId, productId);
+        return new Response(true).toJson();
     }
-    public void enableProduct(String storeId,String productId){
-        controller.enableProduct(storeId,productId);
-        //TODO: RETURN RESPONSE
+
+    public String enableProduct(String storeId, String productId) {
+        controller.enableProduct(storeId, productId);
+        return new Response(true).toJson();
     }
-    public void addOwner(String username, String storeId,String logged){
-        controller.addOwner(username,storeId,logged);
-        //TODO: RETURN RESPONSE
+
+    public String addOwner(String username, String storeId, String logged) {
+        controller.addOwner(username, storeId, logged);
+        return new Response(true).toJson();
     }
-    public void addManager(String logged, String storeId,String username){
-        controller.addManager(logged,storeId,username);
-        //TODO: RETURN RESPONSE
+
+    public String addManager(String logged, String storeId, String username) {
+        controller.addManager(logged, storeId, username);
+        return new Response(true).toJson();
     }
-    public void removeOwner(String username,String storeId,String logged){
-        controller.removeOwner(username,storeId,logged);
-        //TODO: RETURN RESPONSE
+
+    public String removeOwner(String username, String storeId, String logged) {
+        controller.removeOwner(username, storeId, logged);
+        return new Response(true).toJson();
     }
-    public void removeManager(String logged,String storeId,String username){
-        controller.removeManager(logged,storeId,username);
-        //TODO: RETURN RESPONSE
+
+    public String removeManager(String logged, String storeId, String username) {
+        controller.removeManager(logged, storeId, username);
+        return new Response(true).toJson();
     }
-    public void cancelReservation(String storeId, String username){
-        controller.cancelReservation(storeId,username);
-        //TODO: RETURN RESPONSE
+
+    public String cancelReservation(String storeId, String username) {
+        controller.cancelReservation(storeId, username);
+        return new Response(true).toJson();
     }
-    public void setReservationTimeoutSeconds(String storeId, long time){
+
+    public String setReservationTimeoutSeconds(String storeId, long time) {
         controller.setReservationTimeoutSeconds(storeId, time);
-        //TODO: RETURN RESPONSE
+        return new Response(true).toJson();
     }
-    public boolean addPermissionToManager(String storeId,String managerId, StoreActions actions) throws StoreException {
-        return controller.addPermissionToManager(storeId,managerId,actions);
-        //TODO: RETURN RESPONSE
+
+    public String addPermissionToManager(String storeId, String managerId, StoreActions actions) {
+        try {
+            boolean result = controller.addPermissionToManager(storeId, managerId, actions);
+            return new Response(result).toJson();
+        } catch (StoreException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
     }
-    public boolean removePermissionFromManager(String storeId,String managerId, StoreActions actions) throws StoreException{
-        return controller.removePermissionFromManager(storeId,managerId,actions);
-        //TODO: RETURN RESPONSE
+
+    public String removePermissionFromManager(String storeId, String managerId, StoreActions actions) {
+        try {
+            boolean result = controller.removePermissionFromManager(storeId, managerId, actions);
+            return new Response(result).toJson();
+        } catch (StoreException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
     }
 }
