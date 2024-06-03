@@ -4,11 +4,13 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.stores.policies.SalesPolicy;
 import com.amazonas.business.stores.search.SearchRequest;
-import com.amazonas.business.stores.storePositions.OwnerNode;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.ReservationMonitor;
+import com.amazonas.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
@@ -28,51 +30,47 @@ public class Store {
     private final PermissionsController permissionsController;
 
     private final ProductInventory inventory;
-    private final ConcurrentMap<String, Reservation> reservedProducts;
+    private final AppointmentSystem appointmentSystem;
+    private final Map<String, Reservation> reservedProducts;
+    private final List<SalesPolicy> salesPolicies;
     private final ReadWriteLock lock;
-    private final ReadWriteLock appointmentLock;
 
+    private final String storeName;
+    private final String storeId;
 
-    private String storeId;
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
     private long reservationTimeoutSeconds;
-    private Map<String, OwnerNode> managersList;
-    private OwnerNode ownershipTree;
-    private Map<String, OwnerNode> ownershipList;
-    private List<SalesPolicy> salesPolicies;
 
-    public Store(String ownerUserId,
-                 String storeId,
+    public Store(String storeId,
+                 String storeName,
                  String description,
                  Rating rating,
                  ProductInventory inventory,
+                 AppointmentSystem appointmentSystem,
                  ReservationFactory reservationFactory,
                  ReservationMonitor reservationMonitor,
                  PermissionsController permissionsController) {
+        this.appointmentSystem = appointmentSystem;
         this.reservationFactory = reservationFactory;
         this.reservationMonitor = reservationMonitor;
         this.inventory = inventory;
         this.storeId = storeId;
+        this.storeName = storeName;
         this.storeDescription = description;
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.reservationTimeoutSeconds = FIVE_MINUTES;
-        this.managersList = new HashMap<>();
-        this.ownershipTree = new OwnerNode(ownerUserId, null);
-        this.ownershipList = new HashMap<>();
-        this.salesPolicies = new ArrayList<>();
-        reservedProducts = new ConcurrentHashMap<>();
+        this.salesPolicies = new LinkedList<>();
+        reservedProducts = new HashMap<>();
         lock = new ReadWriteLock();
-        appointmentLock = new ReadWriteLock();
         isOpen = true;
     }
 
     //====================================================================== |
     //============================= MANAGEMENT ============================= |
     //====================================================================== |
-
     public boolean openStore(){
 
         try{
@@ -108,15 +106,27 @@ public class Store {
     }
 
     public void addSalePolicy(SalesPolicy salesPolicy){
-        salesPolicies.add(salesPolicy);
+        try{
+            lock.acquireWrite();
+            salesPolicies.add(salesPolicy);
+        } finally {
+            lock.releaseWrite();
+        }
     }
+
     public void removeSalePolicy(SalesPolicy salesPolicy){
-        salesPolicies.remove(salesPolicy);
+        try{
+            lock.acquireWrite();
+            salesPolicies.remove(salesPolicy);
+        } finally {
+            lock.releaseWrite();
+        }
     }
 
     public boolean isOpen(){
         return isOpen;
     }
+
 
     //====================================================================== |
     //============================= PRODUCTS =============================== |
@@ -191,17 +201,16 @@ public class Store {
         }
     }
 
-    public String addProduct(Product toAdd) throws StoreException {
+    public void addProduct(Product toAdd) throws StoreException {
         try{
             lock.acquireWrite();
 
             if(isOpen) {
                 if(inventory.nameExists(toAdd.productName())) {
                     inventory.addProduct(toAdd);
-                    return "product added";
                 }
                 else {
-                    return "product name exists";
+                    throw new StoreException("product name exists");
                 }
             }
             else {
@@ -213,16 +222,19 @@ public class Store {
         }
     }
 
-    public String removeProduct(String productIdToRemove) {
+    public void removeProduct(String productIdToRemove) throws StoreException {
         try {
             lock.acquireWrite();
 
             if (isOpen) {
-                inventory.removeProduct(productIdToRemove);
-                return "product removed";
+                boolean check = inventory.removeProduct(productIdToRemove);
+                if(!check){
+                    //product wasn't removed
+                    throw new StoreException("product wasn't removed - no product in system");
+                }
             }
             else {
-                return "product wasnt removed - store closed";
+                throw new StoreException("product wasn't removed - store closed");
             }
 
         } finally {
@@ -231,28 +243,28 @@ public class Store {
 
     }
 
-    public boolean updateProduct(Product product){
+    public void updateProduct(Product product){
         lock.acquireWrite();
         try {
-            return inventory.updateProduct(product);
+            inventory.updateProduct(product);
         } finally {
             lock.releaseWrite();
         }
      }
 
-    public boolean enableProduct(String productId){
+    public void enableProduct(String productId){
         lock.acquireWrite();
         try {
-            return inventory.enableProduct(productId);
+            inventory.enableProduct(productId);
         } finally {
             lock.releaseWrite();
         }
     }
 
-    public boolean disableProduct(String productId){
+    public void disableProduct(String productId){
         lock.acquireWrite();
         try {
-            return inventory.disableProduct(productId);
+            inventory.disableProduct(productId);
         } finally {
             lock.releaseWrite();
         }
@@ -338,104 +350,71 @@ public class Store {
         }
     }
 
-
     //====================================================================== |
     //========================= STORE POSITIONS ============================ |
     //====================================================================== |
 
-
-    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
-        try {
-            appointmentLock.acquireWrite();
-            if (appointedUserId != null && appointeeOwnerUserId != null) {
-                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-                if (appointeeNode != null) {
-                    if (!managersList.containsKey(appointedUserId)) {
-                        appointeeNode.addManager(appointedUserId);
-                        managersList.put(appointedUserId, null);
-                    }
-                }
-            }
-        }
-        finally {
-            appointmentLock.releaseWrite();
-        }
+    public void removeOwner(String logged, String username) {
+        appointmentSystem.removeOwner(logged,username);
     }
 
-    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
-        try {
-            appointmentLock.acquireWrite();
-            if (appointedUserId != null && appointeeOwnerUserId != null) {
-                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-                if (appointeeNode != null) {
-                    if (appointeeNode.deleteManager(appointedUserId)) {
-                        managersList.remove(appointedUserId);
-                    }
-                }
-            }
-        }
-        finally {
-            appointmentLock.releaseWrite();
-        }
+    public void removeManager(String logged, String username) {
+        appointmentSystem.removeManager(logged,username);
     }
 
-    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
-        try {
-            appointmentLock.acquireWrite();
-            if (appointedUserId != null && appointeeOwnerUserId != null) {
-                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-                if (appointeeNode != null) {
-                    if (!ownershipList.containsKey(appointedUserId)) {
-                        OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
-                        ownershipList.put(appointeeOwnerUserId, appointedNode);
-                    }
-                }
-            }
-        }
-        finally {
-            appointmentLock.releaseWrite();
-        }
+    public void addManager(String logged, String username) {
+        appointmentSystem.addManager(logged,username);
     }
 
-    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
-        try {
-            appointmentLock.acquireWrite();
-            if (appointedUserId != null && appointeeOwnerUserId != null) {
-                OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
-                if (appointeeNode != null) {
-                    OwnerNode deletedOwner = appointeeNode.deleteOwner(appointedUserId);
-                    if (deletedOwner != null) {
-                        List<String> appointerChildren = deletedOwner.getAllChildren();
-                        for (String appointerToRemove : appointerChildren) {
-                            ownershipList.remove(appointerToRemove);
-                        }
-                    }
-                }
-            }
-        }
-        finally {
-            appointmentLock.releaseWrite();
-        }
+    public void addOwner(String logged, String username) {
+        appointmentSystem.addOwner(logged,username);
     }
+
 
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
     //====================================================================== |
 
-    //TODO: implement store permissions
+    public boolean addPermissionToManager(String managerId, StoreActions action) throws StoreException {
 
-    public boolean addPermissionToManager(String managerId, StoreActions action){
-        return false;
+        StoreRole role = appointmentSystem.getRoleOfUser(managerId);
+
+        if(role != StoreRole.STORE_MANAGER){
+            throw new StoreException("User is not a manager");
+        }
+
+        switch(action){
+            case ADD_PRODUCT,REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
+                return permissionsController.addPermission(managerId,storeId,action);
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
-    public boolean removePermissionFromManager(String managerId, StoreActions action){
-        return false;
+    public boolean removePermissionFromManager(String managerId, StoreActions action) throws StoreException {
+
+        StoreRole role = appointmentSystem.getRoleOfUser(managerId);
+
+        if(role != StoreRole.STORE_MANAGER){
+            throw new StoreException("User is not a manager");
+        }
+
+        switch(action){
+            case ADD_PRODUCT,REMOVE_PRODUCT,UPDATE_PRODUCT,ENABLE_PRODUCT,DISABLE_PRODUCT-> {
+                return permissionsController.removePermission(managerId,storeId,action);
+            }
+            default -> {
+                return false;
+            }
+        }
     }
+
 
     //====================================================================== |
     //========================= GETTERS SETTERS ============================ |
     //====================================================================== |
-
     public Rating getStoreRating() {
         return storeRating;
     }
@@ -452,11 +431,11 @@ public class Store {
         this.storeRating = storeRating;
     }
 
-    public void setStoreId(String storeId) {
-        this.storeId = storeId;
-    }
-
     public void setStoreDescription(String storeDescription) {
         this.storeDescription = storeDescription;
+    }
+
+    public String getStoreName() {
+        return storeName;
     }
 }

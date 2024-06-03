@@ -2,11 +2,14 @@ package com.amazonas.business.stores.factories;
 
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.utils.Rating;
 import com.amazonas.business.stores.Store;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.ReservationMonitor;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component("storeFactory")
 public class StoreFactory {
@@ -21,12 +24,13 @@ public class StoreFactory {
         this.permissionsController = permissionsController;
     }
 
-    public Store get(String ownerUserId, String storeId, String description, Rating rating){
-        return new Store(ownerUserId,
-                storeId,
+    public Store get(String founderUserId, String storeName, String description){
+        return new Store(UUID.randomUUID().toString(),
+                storeName,
                 description,
-                rating,
+                Rating.NOT_RATED,
                 new ProductInventory(),
+                new AppointmentSystem(founderUserId),
                 reservationFactory,reservationMonitor,
                 permissionsController);
     }
