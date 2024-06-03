@@ -4,7 +4,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.amazonas.business.stores.Rating.FOUR_STARS;
+
+import static com.amazonas.utils.Rating.FOUR_STARS;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTest {
@@ -16,9 +17,6 @@ class ProductTest {
         pTest = new Product("1", "Shirt", 50, "Shirts", "black" ,FOUR_STARS);
     }
 
-    @AfterEach
-    void tearDown() {
-    }
 
 
     @Test
