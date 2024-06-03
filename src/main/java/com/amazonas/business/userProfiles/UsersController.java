@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component("usersController")
 public class UsersController {
@@ -79,6 +81,7 @@ public class UsersController {
                 throw new RuntimeException("This user name is already exists in the system");
             }
 
+
             if (!isValidPassword(password)) {
                 throw new IllegalArgumentException("Password must contain at least one uppercase letter and one special character.");
             }
@@ -87,6 +90,7 @@ public class UsersController {
             RegisteredUser newRegisteredUser = new RegisteredUser(userName,email);
             registeredUsers.put(userName,newRegisteredUser);
             carts.put(userName,shoppingCartFactory.get(userName));
+
         }
         finally {
             lock.releaseWrite();
@@ -121,7 +125,7 @@ public class UsersController {
             ShoppingCart cartOfGuest = carts.get(guestInitialId);
             carts.remove(guestInitialId);
             ShoppingCart cartOfUser = carts.get(userName);
-            ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
+            ShoppingCart mergedShoppingCart = cartOfUser != null ? cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest):cartOfGuest;
             carts.put(userName,mergedShoppingCart);
             RegisteredUser loggedInUser = getRegisteredUser(userName);
             onlineRegisteredUsers.put(userName,loggedInUser);
@@ -269,6 +273,15 @@ public class UsersController {
     private boolean isValidPassword(String password) {
         String passwordPattern = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+$";
         return password.matches(passwordPattern);
+    }
+    private boolean isValidEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+        Pattern emailPattern = Pattern.compile(emailRegex);
+        Matcher matcher = emailPattern.matcher(email);
+        return matcher.matches();
     }
 
     public void makePurchase(String userId) throws PurchaseFailedException {
