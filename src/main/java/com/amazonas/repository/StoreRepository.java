@@ -12,5 +12,4 @@ public class StoreRepository extends AbstractCachingRepository<Store> {
         super(repo);
     }
 
-    // Add methods specific to Store here
 }
