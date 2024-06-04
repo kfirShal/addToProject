@@ -1,8 +1,6 @@
 package com.amazonas.service;
 
-import com.amazonas.business.market.MarketFacade;
 import com.amazonas.business.permissions.proxies.MarketProxy;
-import com.amazonas.business.transactions.TransactionsController;
 import org.springframework.stereotype.Component;
 
 @Component

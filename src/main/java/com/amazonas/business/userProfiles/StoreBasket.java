@@ -17,12 +17,11 @@ public class StoreBasket {
 
     private final Function<Map<Product,Integer>, Reservation> makeReservation;
     private final Function<Map<Product, Integer>, Double> calculatePrice;
-    private final Runnable cancelReservation;
 
-    public StoreBasket (Function<Map<Product,Integer>, Reservation> makeReservation,
-                        Runnable cancelReservation, Function<Map<Product,Integer>, Double> calculatePrice){
+    public StoreBasket (Function<Map<Product,Integer>,
+                        Reservation> makeReservation,
+                        Function<Map<Product,Integer>,Double> calculatePrice){
 
-        this.cancelReservation = cancelReservation;
         this.makeReservation = makeReservation;
         this.calculatePrice = calculatePrice;
         products = new HashMap<>();

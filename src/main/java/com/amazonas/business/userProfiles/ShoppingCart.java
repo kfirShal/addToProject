@@ -2,9 +2,12 @@ package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.exceptions.PurchaseFailedException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ShoppingCart {
 
@@ -57,8 +60,6 @@ public class ShoppingCart {
     }
 
     public ShoppingCart mergeGuestCartWithRegisteredCart(ShoppingCart cartOfGuest) {
-
-
         for (Map.Entry<String, StoreBasket> entry : cartOfGuest.getBaskets().entrySet()) {
             String storeId = entry.getKey();
             StoreBasket guestBasket = entry.getValue();
@@ -81,20 +82,29 @@ public class ShoppingCart {
         return baskets.containsKey(storeName);
     }
 
-    public Map<String, Reservation> reserveCart(){
-        Map<String, Reservation> reservations = new HashMap<>();
-        for(var entry : baskets.entrySet()){
-            Reservation r = entry.getValue().reserveBasket();
-            reservations.put(entry.getKey(),r);
-        }
-        return reservations;
-    }
-
     public double getTotalPrice() {
         double totalPrice = 0;
         for (var entry : baskets.entrySet()) {
             totalPrice += entry.getValue().getTotalPrice();
         }
         return totalPrice;
+    }
+
+    public Map<String, Reservation> reserveCart() throws PurchaseFailedException {
+        Map<String, Reservation> reservations = new HashMap<>();
+        for(var entry : baskets.entrySet()){
+            Reservation r = entry.getValue().reserveBasket();
+
+            // If the reservation is null it means that the reservation failed,
+            // so we need to cancel all the reservations that were made so far
+            if (r == null){
+                reservations.values().forEach(Reservation::cancelReservation);
+                throw new PurchaseFailedException("Could not reserve some of the products in the cart.");
+            }
+
+            // reservation was successful
+            reservations.put(entry.getKey(),r);
+        }
+        return reservations;
     }
 }

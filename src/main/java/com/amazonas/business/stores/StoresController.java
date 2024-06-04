@@ -85,9 +85,6 @@ public class StoresController {
     public void removeManager(String logged, String storeId,String username){
         getStore(storeId).removeManager(logged,username);
     }
-    public void cancelReservation(String storeId, String username){
-        getStore(storeId).cancelReservation(username);
-    }
     public void setReservationTimeoutSeconds(String storeId, long time){
         getStore(storeId).setReservationTimeoutSeconds(time);
     }

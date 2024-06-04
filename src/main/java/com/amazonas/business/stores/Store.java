@@ -8,10 +8,13 @@ import com.amazonas.business.stores.policies.SalesPolicy;
 import com.amazonas.business.stores.search.SearchRequest;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
-import com.amazonas.business.stores.reservations.ReservationMonitor;
+import com.amazonas.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.business.stores.storePositions.StoreRole;
+import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.StoreException;
+import com.amazonas.repository.RepositoryFacade;
+import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import com.amazonas.utils.ReadWriteLock;
@@ -19,19 +22,16 @@ import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class Store {
 
     private static final int FIVE_MINUTES = 5 * 60;
     private final ReservationFactory reservationFactory;
-    private final ReservationMonitor reservationMonitor;
+    private final PendingReservationMonitor pendingReservationMonitor;
     private final PermissionsController permissionsController;
-
+    private final TransactionRepository repository;
     private final ProductInventory inventory;
     private final AppointmentSystem appointmentSystem;
-    private final Map<String, Reservation> reservedProducts;
     private final List<SalesPolicy> salesPolicies;
     private final ReadWriteLock lock;
 
@@ -50,20 +50,21 @@ public class Store {
                  ProductInventory inventory,
                  AppointmentSystem appointmentSystem,
                  ReservationFactory reservationFactory,
-                 ReservationMonitor reservationMonitor,
-                 PermissionsController permissionsController) {
+                 PendingReservationMonitor pendingReservationMonitor,
+                 PermissionsController permissionsController,
+                 TransactionRepository transactionRepository) {
         this.appointmentSystem = appointmentSystem;
         this.reservationFactory = reservationFactory;
-        this.reservationMonitor = reservationMonitor;
+        this.pendingReservationMonitor = pendingReservationMonitor;
         this.inventory = inventory;
         this.storeId = storeId;
         this.storeName = storeName;
         this.storeDescription = description;
         this.storeRating = rating;
         this.permissionsController = permissionsController;
+        this.repository = transactionRepository;
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.salesPolicies = new LinkedList<>();
-        reservedProducts = new HashMap<>();
         lock = new ReadWriteLock();
         isOpen = true;
     }
@@ -127,6 +128,51 @@ public class Store {
         return isOpen;
     }
 
+    //====================================================================== |
+    //========================== PAID ORDERS =============================== |
+    //====================================================================== |
+
+    public Collection<Transaction> getPendingShipmentOrders(){
+        try{
+            lock.acquireRead();
+            return repository.getWaitingShipment(storeId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public void setShipped(String transactionId){
+        try{
+            lock.acquireWrite();
+            Transaction transaction = repository.get(transactionId);
+            transaction.setShipped();
+            repository.save(transactionId, transaction);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void setDelivered(String transactionId){
+        try{
+            lock.acquireWrite();
+            Transaction transaction = repository.get(transactionId);
+            transaction.setDelivered();
+            repository.save(transactionId, transaction);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void setCancelled(String transactionId){
+        try{
+            lock.acquireWrite();
+            Transaction transaction = repository.get(transactionId);
+            transaction.setCancelled();
+            repository.save(transactionId, transaction);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
 
     //====================================================================== |
     //============================= PRODUCTS =============================== |
@@ -176,7 +222,6 @@ public class Store {
 
         try{
             lock.acquireRead();
-
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
 
@@ -281,15 +326,9 @@ public class Store {
     //====================================================================== |
 
     @Nullable
-    public Reservation reserveProducts(String userId, Map<Product,Integer> toReserve){
+    public Reservation reserveProducts(Map<Product,Integer> toReserve){
         try{
             lock.acquireWrite();
-
-            // Check if the user already has a reservation
-            // If so, cancel it
-            if(reservedProducts.containsKey(userId)){
-                cancelReservation(userId);
-            }
 
             // Check if the products are available
             for (var entry : toReserve.entrySet()) {
@@ -310,12 +349,10 @@ public class Store {
             // Create the reservation
             Reservation reservation = reservationFactory.get(
                     storeId,
-                    userId,
                     toReserve,
                     LocalDateTime.now().plusSeconds(reservationTimeoutSeconds));
 
-            reservedProducts.put(userId, reservation);
-            reservationMonitor.addReservation(reservation);
+            pendingReservationMonitor.addReservation(reservation);
 
             return reservation;
         } finally {
@@ -323,14 +360,9 @@ public class Store {
         }
     }
 
-    public void cancelReservation(String userId){
+    public void cancelReservation(Reservation reservation){
         try{
             lock.acquireWrite();
-
-            Reservation reservation = reservedProducts.get(userId);
-            if(reservation == null){
-                return;
-            }
 
             reservation.setCancelled();
 
@@ -341,7 +373,6 @@ public class Store {
                 inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
             }
 
-            reservedProducts.remove(reservation.userId());
         } finally {
             lock.releaseWrite();
         }

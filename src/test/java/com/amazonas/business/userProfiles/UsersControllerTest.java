@@ -1,36 +1,87 @@
 package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
+import com.amazonas.business.payment.PaymentService;
+import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.business.transactions.Transaction;
+import com.amazonas.exceptions.PurchaseFailedException;
+import com.amazonas.repository.RepositoryFacade;
+import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class UsersControllerTest {
 
     private UsersController usersController;
+    private Product product;
+
+    @Mock
+    private RepositoryFacade repositoryFacade;
+    private ShoppingCartFactory shoppingCartFactory;
+    private  StoreBasketFactory storeBasketFactory;
+    private StoreBasket mockBasket;
+    private TransactionsController transactionsController;
+    private PaymentService paymentService;
+
     @BeforeEach
     void setUp() {
-         usersController = new UsersController();
-         usersController.register("testEmail", "testUserName", "testPassword@");
+
+        transactionsController = mock(TransactionsController.class);
+        storeBasketFactory = mock(StoreBasketFactory.class);
+        shoppingCartFactory = mock(ShoppingCartFactory.class);
+        repositoryFacade = mock(RepositoryFacade.class);
+        paymentService = mock(PaymentService.class);
+        usersController = new UsersController(repositoryFacade, transactionsController, paymentService, shoppingCartFactory);
+        usersController.register("testEmail@gmail.com", "testUserName", "testPassword@");
+        usersController.register("testEmail2@gmail.com", "testUserName2", "testPassword@2");
+        product = new Product("productId", "name", 100, "category", "5", Rating.NOT_RATED);
+        ShoppingCart mockCart = mock(ShoppingCart.class);
+        when(shoppingCartFactory.get("testUserName2")).thenReturn(mockCart);
+        mockBasket = mock(StoreBasket.class);
+        HashMap<String, Pair<Product, Integer>> map = new HashMap<>(){{
+            put("productId", new Pair<>(product, 1));
+        }};
+        when(mockBasket.getProducts()).thenReturn(map);
+        when(storeBasketFactory.get("testStoreName","testUserName2")).thenReturn(mockBasket);
+        usersController.loginToRegistered("testUserName2", "testUserName2");
     }
 
     @AfterEach
     void tearDown() {
+
         usersController = null;
     }
 
     @Test
     void registerSuccess() {
-        usersController.register("testEmail1", "testUserName1", "testPassword1@");
+        usersController.register("testEmail1@gmail.com", "testUserName1", "testPassword1@");
         assertNotNull(usersController.getRegisteredUser("testUserName1"));
     }
     @Test
-    void registerFailure() {
-
-        assertThrows(RuntimeException.class, () -> usersController.register("testEmail", "testUserName", "testPassword@"));
+    void registerFailureUserNameAlreadyExists() {
+        //username already exists
+        assertThrows(IllegalArgumentException.class, () -> usersController.register("testEmail7@gmail.com", "testUserName", "testPassword7@"));
+    }
+    @Test
+    void registerFailureIllegalPassword() {
+        assertThrows(IllegalArgumentException.class, () -> usersController.register("testEmailr@gmail.com", "testUserName", "testPassword7"));
+    }
+    @Test
+    void registerFailureEmailAlreadyExists() {
+        assertThrows(IllegalArgumentException.class, () -> usersController.register("testEmail@gmail.com", "testUserName1", "testPassword7@"));
+    }
+    @Test
+    void registerFailureIllegalEmail() {
+        assertThrows(IllegalArgumentException.class, () -> usersController.register("testEmail7@gmaicom", "testUserName2", "testPassword7@"));
     }
 
 
@@ -43,12 +94,12 @@ class UsersControllerTest {
     @Test
     void loginToRegisteredSuccess() {
         String guestId = usersController.enterAsGuest();
-        usersController.register("testEmail1", "testUserName1", "testPassword1@");
+        usersController.register("testEmail1@gmail.com", "testUserName1", "testPassword1@");
         usersController.loginToRegistered(guestId, "testUserName1");
         assertNotNull(usersController.getOnlineUser("testUserName1"));
     }
     @Test
-    void loginToRegisteredFailure() {
+    void loginToRegisteredFailureUserNotRegistered() {
         String guestId = usersController.enterAsGuest();
         assertThrows(RuntimeException.class, () -> usersController.loginToRegistered(guestId, "testUserName1"));
         assertNull(usersController.getOnlineUser(guestId));
@@ -62,7 +113,7 @@ class UsersControllerTest {
         assertNull(usersController.getOnlineUser(guestId));
     }
     @Test
-    void logoutFailure() {
+    void logoutFailureUserNotRegistered() {
         String guestId = usersController.enterAsGuest();
         assertThrows(RuntimeException.class, () -> usersController.logout(guestId));
     }
@@ -74,7 +125,7 @@ class UsersControllerTest {
         assertNull(usersController.getGuest(guestId));
     }
     @Test
-    void logoutAsGuestFailure() {
+    void logoutAsGuestFailureUserNotGuest() {
         assertThrows(RuntimeException.class, () -> usersController.logoutAsGuest("wrongId"));
     }
 
@@ -85,26 +136,40 @@ class UsersControllerTest {
 
     }
     @Test
-    void getCartFailure() {
+    void getCartFailureWrongId() {
         assertThrows(RuntimeException.class, () -> usersController.getCart("wrongId"));
     }
 
     @Test
     void addProductToCartSuccess() {
-        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5", Rating.NOT_RATED), 1);
-        assertEquals(1, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
+
+        usersController.addProductToCart("testUserName2", "testStoreName", product, 1);
+        int test = usersController.getCart("testUserName2").getBasket("testStoreName").getProducts().size();
+        assertEquals(1, test);
     }
     @Test
-    void addProductToCartFailure() {
+    void addProductToCartFailureCartNotExists() {
         assertThrows(RuntimeException.class, () -> usersController.addProductToCart("testUserName1", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), 1));
+    }
+    @Test
+    void addProductToCartFailureIllegalQuantity() {
+        assertThrows(RuntimeException.class, () -> usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), -1));
     }
 
     @Test
     void removeProductFromCartSuccess() {
-        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), 1);
-        assertEquals(1, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
-        usersController.RemoveProductFromCart("testUserName", "testStoreName", "productId");
-        assertEquals(0, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
+
+        //add product to cart
+        usersController.addProductToCart("testUserName2", "testStoreName", product, 1);
+
+        //remove product from cart
+        ShoppingCart mockCart = mock(ShoppingCart.class);
+        when(mockCart.getBasket("testUserName2")).thenReturn(mockBasket);
+        when(mockBasket.isProductExists("productId")).thenReturn(true);
+        usersController.RemoveProductFromCart("testUserName2", "testStoreName", "productId");
+        when(mockBasket.getProducts()).thenReturn(new HashMap<>());
+        int test = usersController.getCart("testUserName2").getBasket("testStoreName").getProducts().size();
+        assertEquals(0, test);
 
     }
     @Test
@@ -114,13 +179,48 @@ class UsersControllerTest {
 
     @Test
     void changeProductQuantitySuccess() {
-        usersController.addProductToCart("testUserName", "testStoreName", new Product("productId","name",100,"category","5",Rating.NOT_RATED), 1);
-        assertEquals(1, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().size());
-        usersController.changeProductQuantity("testUserName", "testStoreName", "productId", 5);
-        assertEquals(5, usersController.getCart("testUserName").getBasket("testStoreName").getProducts().get("productId").second());
+        //add product to cart
+        usersController.addProductToCart("testUserName2", "testStoreName", product, 1);
+        //change product quantity
+        ShoppingCart mockCart = mock(ShoppingCart.class);
+        when(mockCart.getBasket("testUserName2")).thenReturn(mockBasket);
+        when(mockBasket.getProductWithQuantity("productId")).thenReturn(new Pair<>(product, 1));
+        HashMap<String, Pair<Product, Integer>> newMap = new HashMap<>(){{
+            put("productId", new Pair<>(product,5));
+        }};
+        when(mockBasket.getProducts()).thenReturn(newMap);
+        usersController.changeProductQuantity("testUserName2", "testStoreName", "productId", 5);
+        int test = usersController.getCart("testUserName2").getBasket("testStoreName").getProducts().get("productId").second();
+        assertEquals(5, test);
     }
     @Test
     void changeProductQuantityFailure() {
         assertThrows(RuntimeException.class, () -> usersController.changeProductQuantity("testUserName", "testStoreName", "productId", 5));
     }
-}
+
+
+
+    @Test
+    void makePurchaseSuccess() throws PurchaseFailedException {
+        //add product to cart
+        usersController.addProductToCart("testUserName2", "testStoreName", product, 1);
+        //prepare mocks
+        ShoppingCart mockCart = mock(ShoppingCart.class);
+        Reservation reservation = mock(Reservation.class);
+        User user = usersController.getRegisteredUser("testUserName2");
+        when(repositoryFacade.getUser("testUserName2")).thenReturn(user);
+        Map<String, Reservation> reservations = new HashMap<>(){
+            {
+                put("testStoreName", reservation);
+            }
+        };
+        Transaction transaction = mock(Transaction.class);
+        when(mockCart.reserveCart()).thenReturn(reservations);
+        when(paymentService.charge(user.getPaymentMethod(),100)).thenReturn(true);
+        when(shippingService.ship(transaction)).thenReturn(true);
+        doNothing().when(transactionsController).documentTransaction(transaction);
+        //make purchase
+        usersController.makePurchase("testUserName2");
+        verify(transactionsController, times(1));
+
+    }}
