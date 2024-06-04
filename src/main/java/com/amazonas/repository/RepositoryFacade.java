@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component("repositoryFacade")
@@ -93,7 +94,9 @@ public class RepositoryFacade {
             userLock.releaseWrite();
         }
     }
-
+    public Collection<Store> getAllStores(){
+        return storeCache.values();
+    }
     public void saveAllUsers(Collection<User> users) {
         userLock.acquireWrite();
         try {
