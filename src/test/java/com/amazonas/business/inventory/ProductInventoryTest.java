@@ -1,147 +1,96 @@
 package com.amazonas.business.inventory;
 
+import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
 
-import static com.amazonas.business.stores.Rating.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-class ProductInventoryTest {
+public class ProductInventoryTest {
 
-    private GlobalProductTracker tracker;
     private ProductInventory inventory;
-    private Product product;
 
     @BeforeEach
-    void setUp() {
-        tracker = mock(GlobalProductTracker.class);
-        inventory = new ProductInventory(tracker, "StoreA");
-        product = new Product("1", "Shirt", 50, "Shirts", "black", FOUR_STARS);
+    public void setUp() {
+        inventory = new ProductInventory();
     }
 
     @Test
-    void addProduct() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
+    public void testAddProduct() {
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
 
-        assertTrue(inventory.getAllAvailableProducts().contains(product));
-        verify(tracker).addProduct(anyString(), eq("StoreA"));
+        assertTrue(inventory.nameExists("Product1"));
     }
 
     @Test
-    void updateProduct() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
+    public void testUpdateProduct() {
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
 
-        Product updatedProduct = new Product(product.productId(), "New Shirt", 60, "Shirts", "blue", FIVE_STARS);
-        boolean result = inventory.updateProduct(updatedProduct);
+        String productId = product.productId();
+        Product updatedProduct = new Product(productId, "UpdatedProduct", 200.0, "UpdatedCategory", "UpdatedDescription", Rating.FOUR_STARS);
 
-        assertTrue(result);
-        assertEquals("New Shirt", product.productName());
-        assertEquals(60, product.price());
-        assertEquals("blue", product.description());
+        assertTrue(inventory.updateProduct(updatedProduct));
+        assertEquals("UpdatedProduct", inventory.idToProduct.get(productId).productName());
     }
 
     @Test
-    void removeProduct() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
+    public void testRemoveProduct() {
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
-        inventory.disableProduct(product);
 
-        boolean result = inventory.removeProduct(product);
+        String productId = product.productId();
+        inventory.disableProduct(productId);
 
-        assertTrue(result);
-        assertFalse(inventory.getAllAvailableProducts().contains(product));
+        assertTrue(inventory.removeProduct(productId));
+        assertFalse(inventory.idToProduct.containsKey(productId));
     }
 
     @Test
-    void setQuantity() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
+    public void testSetAndGetQuantity() {
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
-        inventory.setQuantity(product, 10);
 
-        assertEquals(10, inventory.getQuantity(product));
+        String productId = product.productId();
+        inventory.setQuantity(productId, 10);
+
+        assertEquals(10, inventory.getQuantity(productId));
     }
 
     @Test
-    void getQuantity() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
+    public void testEnableAndDisableProduct() {
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
-        inventory.setQuantity(product, 10);
 
-        int quantity = inventory.getQuantity(product);
+        String productId = product.productId();
+        assertTrue(inventory.disableProduct(productId));
+        assertTrue(inventory.isProductDisabled(productId));
 
-        assertEquals(10, quantity);
-    }
-
-
-    @Test
-    void enableProduct() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
-        inventory.addProduct(product);
-        inventory.disableProduct(product);
-
-        boolean result = inventory.enableProduct(product);
-
-        assertTrue(result);
-        assertFalse(inventory.isProductDisabled(product));
+        assertTrue(inventory.enableProduct(productId));
+        assertFalse(inventory.isProductDisabled(productId));
     }
 
     @Test
-    void disableProduct() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
-        inventory.addProduct(product);
-
-        boolean result = inventory.disableProduct(product);
-
-        assertTrue(result);
-        assertTrue(inventory.isProductDisabled(product));
-    }
-
-    @Test
-    void isProductDisabled() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
-        inventory.addProduct(product);
-        inventory.disableProduct(product);
-
-        boolean result = inventory.isProductDisabled(product);
-
-        assertTrue(result);
-    }
-
-    @Test
-    void getAllAvailableProducts() {
-        when(tracker.productExists(anyString())).thenReturn(false);
-
-        Product product2 = new Product("2", "Pants", 70, "Pants", "blue", THREE_STARS);
-        Product product3 = new Product("3", "Shoes", 120, "Shoes", "red", FIVE_STARS);
-
-        inventory.addProduct(product);
+    public void testGetAllAvailableProducts() {
+        Product product1 = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
+        Product product2 = new Product(null, "Product2", 150.0, "Category2", "Description2", Rating.FOUR_STARS);
+        inventory.addProduct(product1);
         inventory.addProduct(product2);
-        inventory.addProduct(product3);
 
-        inventory.setQuantity(product, 10);
-        inventory.setQuantity(product2, 0);
-        inventory.setQuantity(product3, 5);
+        String productId1 = product1.productId();
+        String productId2 = product2.productId();
 
-        inventory.disableProduct(product3);
+        inventory.setQuantity(productId1, 10);
+        inventory.setQuantity(productId2, 0);
+
+        inventory.disableProduct(productId2);
 
         Set<Product> availableProducts = inventory.getAllAvailableProducts();
-
         assertEquals(1, availableProducts.size());
-        assertTrue(availableProducts.contains(product));
+        assertTrue(availableProducts.contains(product1));
         assertFalse(availableProducts.contains(product2));
-        assertFalse(availableProducts.contains(product3));
     }
 }
