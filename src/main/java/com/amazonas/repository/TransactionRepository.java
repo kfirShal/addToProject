@@ -1,10 +1,9 @@
 package com.amazonas.repository;
 
 import com.amazonas.business.transactions.Transaction;
-import com.amazonas.business.userProfiles.User;
+import com.amazonas.business.transactions.TransactionState;
 import com.amazonas.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.repository.mongoCollections.TransactionMongoCollection;
-import com.amazonas.repository.mongoCollections.UserMongoCollection;
 import com.amazonas.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     private final Map<String, List<Transaction>> storeIdToTransactions;
     //=================================================================
 
-    private final Map<String, Transaction> transactionCache;
+    private final Map<String, Transaction> transactionIdToTransaction;
     private final ReadWriteLock transactionLock;
 
     ReadWriteLock lock = new ReadWriteLock();
@@ -34,12 +33,22 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
         super(repo);
         userIdToTransactions = new HashMap<>();
         storeIdToTransactions = new HashMap<>();
-        transactionCache = new HashMap<>();
+        transactionIdToTransaction = new HashMap<>();
         transactionLock = new ReadWriteLock();
     }
 
     public Collection<Transaction> getWaitingShipment(String storeId) {
-        return null;
+
+        //TODO: replace this with a database query
+
+        try {
+            lock.acquireRead();
+            log.debug("Getting waiting shipment transactions for store {}", storeId);
+            return transactionIdToTransaction.values().stream()
+                    .filter(t -> t.state() == TransactionState.PENDING_SHIPMENT).toList();
+        } finally {
+            lock.releaseRead();
+        }
     }
 
     public void documentTransaction(Transaction transaction){
@@ -48,12 +57,13 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
             log.debug("Documenting transaction for user {} in store {}", transaction.userId(), transaction.storeId());
             userIdToTransactions.computeIfAbsent(transaction.userId(), _ -> new LinkedList<>()).add(transaction);
             storeIdToTransactions.computeIfAbsent(transaction.storeId(), _ -> new LinkedList<>()).add(transaction);
+            transactionIdToTransaction.put(transaction.transactionId(), transaction);
         } finally {
             lock.releaseWrite();
         }
     }
 
-    public List<Transaction> getTransactionByUser(String userId){
+    public List<Transaction> getTransactionHistoryByUser(String userId){
         try {
             lock.acquireRead();
             log.debug("Getting transactions for user {}", userId);
@@ -63,7 +73,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
         }
     }
 
-    public List<Transaction> getTransactionByStore(String storeId){
+    public List<Transaction> getTransactionHistoryByStore(String storeId){
         try {
             lock.acquireRead();
             log.debug("Getting transactions for store {}", storeId);
@@ -76,17 +86,16 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     public Transaction getTransaction(String transactionId) {
         transactionLock.acquireRead();
         try {
-            return transactionCache.get(transactionId);
+            return transactionIdToTransaction.get(transactionId);
         } finally {
             transactionLock.releaseRead();
         }
     }
 
-
     public void saveTransaction(Transaction transaction) {
         transactionLock.acquireWrite();
         try {
-            transactionCache.put(transaction.transactionId(), transaction);
+            transactionIdToTransaction.put(transaction.transactionId(), transaction);
         } finally {
             transactionLock.releaseWrite();
         }
@@ -95,7 +104,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     public void saveAllTransactions(Collection<Transaction> transactions) {
         transactionLock.acquireWrite();
         try {
-            transactions.forEach(transaction -> transactionCache.put(transaction.transactionId(), transaction));
+            transactions.forEach(transaction -> this.transactionIdToTransaction.put(transaction.transactionId(), transaction));
         } finally {
             transactionLock.releaseWrite();
         }

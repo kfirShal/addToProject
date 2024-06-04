@@ -5,6 +5,7 @@ import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.PurchaseFailedException;
+import com.amazonas.repository.ReservationRepository;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.repository.UserRepository;
 import com.amazonas.utils.ReadWriteLock;
@@ -18,7 +19,8 @@ import java.util.regex.Pattern;
 @Component("usersController")
 public class UsersController {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
     private final TransactionRepository transactionRepository;
     private final PaymentService paymentService;
     private final ShoppingCartFactory shoppingCartFactory;
@@ -32,19 +34,21 @@ public class UsersController {
     private String guestInitialId;
 
     public UsersController(UserRepository userRepository,
+                           ReservationRepository reservationRepository,
                            TransactionRepository transactionRepository,
                            PaymentService paymentService,
                            ShoppingCartFactory shoppingCartFactory) {
 
+        this.userRepository = userRepository;
+        this.paymentService = paymentService;
+        this.shoppingCartFactory = shoppingCartFactory;
+        this.reservationRepository = reservationRepository;
         this.guests = new HashMap<>();
         this.registeredUsers = new HashMap<>();
         this.onlineRegisteredUsers = new HashMap<>();
         this.carts = new HashMap<>();
-        this.repository = userRepository;
-        this.transactionRepository = transactionRepository;
-        this.paymentService = paymentService;
-        this.shoppingCartFactory = shoppingCartFactory;
         lock = new ReadWriteLock();
+        this.transactionRepository = transactionRepository;
     }
 
 
@@ -244,7 +248,6 @@ public class UsersController {
     }
 
     public User getUser(String userId) {
-
         try{
             lock.acquireRead();
             if(registeredUsers.containsKey(userId)){
@@ -263,7 +266,6 @@ public class UsersController {
             lock.releaseRead();
 
         }
-
     }
 
     //This method checks if the password contains at least one uppercase letter and one special character.
@@ -287,13 +289,13 @@ public class UsersController {
 
     public void startPurchase(String userId) throws PurchaseFailedException {
         Map<String, Reservation> reservations = carts.get(userId).reserveCart();
-        reservations.values().forEach(r -> repository.saveReservation(userId,r));
+        reservations.values().forEach(r -> reservationRepository.saveReservation(userId,r));
     }
 
     public void payForPurchase(String userId) throws PurchaseFailedException {
-        User user = repository.getUser(userId);
+        User user = userRepository.getUser(userId);
         ShoppingCart cart = carts.get(userId);
-        List<Reservation> reservations = repository.getReservations(userId);
+        List<Reservation> reservations = reservationRepository.getReservations(userId);
 
         // charge the user
         if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
