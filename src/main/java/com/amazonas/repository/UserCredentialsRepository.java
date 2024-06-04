@@ -1,55 +1,47 @@
 package com.amazonas.repository;
 
 import com.amazonas.business.authentication.UserCredentials;
-import com.amazonas.business.permissions.profiles.PermissionsProfile;
-import com.amazonas.business.userProfiles.User;
 import com.amazonas.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.repository.mongoCollections.UserCredentialsMongoCollection;
-import com.amazonas.repository.mongoCollections.UserMongoCollection;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class UserCredentialsRepository extends AbstractCachingRepository<UserCredentials> {
 
-    private final Map<String, PermissionsProfile> permissionsProfileCache;
+    //=================================================================
+    //TODO: replace this with a database
+    //Temporary storage for hashed passwords until we have a database
+    private final Map<String, String> userIdToHashedPassword;
+    //=================================================================
+
     private final ReadWriteLock permissionsProfileLock;
 
     public UserCredentialsRepository(UserCredentialsMongoCollection repo) {
         super(repo);
-        permissionsProfileCache = new HashMap<>();
+        userIdToHashedPassword = new HashMap<>();
         permissionsProfileLock = new ReadWriteLock();
     }
 
-    public PermissionsProfile getPermissionsProfile(String profileId) {
+
+    public String getHashedPassword(String userId) {
         permissionsProfileLock.acquireRead();
         try {
-            return permissionsProfileCache.get(profileId);
+            return userIdToHashedPassword.get(userId);
         } finally {
             permissionsProfileLock.releaseRead();
         }
     }
 
-    public void savePermissionsProfile(PermissionsProfile profile) {
+    public void saveHashedPassword(String userId, String encodedPassword) {
         permissionsProfileLock.acquireWrite();
         try {
-            permissionsProfileCache.put(profile.getUserId(), profile);
+            userIdToHashedPassword.put(userId, encodedPassword);
         } finally {
             permissionsProfileLock.releaseWrite();
         }
     }
-
-    public void saveAllPermissionsProfiles(Collection<PermissionsProfile> profiles) {
-        permissionsProfileLock.acquireWrite();
-        try {
-            profiles.forEach(profile -> permissionsProfileCache.put(profile.getUserId(), profile));
-        } finally {
-            permissionsProfileLock.releaseWrite();
-        }
-    }
-
 }

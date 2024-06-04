@@ -1,5 +1,6 @@
 package com.amazonas.business.authentication;
 
+import com.amazonas.repository.UserCredentialsRepository;
 import com.amazonas.utils.ReadWriteLock;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
@@ -12,21 +13,14 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class AuthenticationController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
-    //=================================================================
-    //TODO: replace this with a database
-    //Temporary storage for hashed passwords until we have a database
-    private final Map<String, String> userIdToHashedPassword;
-    //=================================================================
+    private final UserCredentialsRepository repository;
 
     private static final MacAlgorithm alg = Jwts.SIG.HS512;
     private static final String passwordStorageFormat = "{bcrypt}";
@@ -35,10 +29,10 @@ public class AuthenticationController {
     private final ReadWriteLock lock;
     private SecretKey key;
 
-    public AuthenticationController() {
+    public AuthenticationController(UserCredentialsRepository userCredentialsRepository) {
+        this.repository = userCredentialsRepository;
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID = new HashMap<>();
-        userIdToHashedPassword = new HashMap<>();
         lock = new ReadWriteLock();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
@@ -50,9 +44,7 @@ public class AuthenticationController {
 
     public AuthenticationResponse authenticateUser(String userId, String password) {
         log.debug("Authenticating user: {}", userId);
-        lock.acquireRead();
-        String hashedPassword = userIdToHashedPassword.get(userId);
-        lock.releaseRead();
+        String hashedPassword = repository.getHashedPassword(userId);
 
         // check if the user exists
         if(hashedPassword == null) {
@@ -139,15 +131,9 @@ public class AuthenticationController {
                 .compact();
     }
 
-    /**
-     * Temporary method to add user credentials until we have a database
-     */
     public void addUserCredentials(String userId, String password) {
         log.debug("Adding user credentials for user {}", userId);
-        //TODO: store hashed password in database
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
-        lock.acquireWrite();
-        userIdToHashedPassword.put(userId, encodedPassword);
-        lock.releaseWrite();
+        repository.saveHashedPassword(userId, encodedPassword);
     }
 }

@@ -5,14 +5,12 @@ import com.amazonas.business.permissions.profiles.PermissionsProfile;
 import com.amazonas.business.permissions.profiles.RegisteredUserPermissionsProfile;
 import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.permissions.actions.UserActions;
+import com.amazonas.repository.PermissionsProfileRepository;
 import com.amazonas.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component
@@ -22,15 +20,15 @@ public class PermissionsController {
 
     private final PermissionsProfile defaultProfile;
     private final PermissionsProfile guestProfile;
-    private final Map<String, PermissionsProfile> userIdToPermissionsProfile;
     private final ReadWriteLock lock;
+    private final PermissionsProfileRepository repository;
 
     public PermissionsController(PermissionsProfile defaultRegisteredUserPermissionsProfile,
-                                 PermissionsProfile guestPermissionsProfile) {
+                                 PermissionsProfile guestPermissionsProfile, PermissionsProfileRepository permissionsProfileRepository) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
-        userIdToPermissionsProfile = new HashMap<>();
         lock = new ReadWriteLock();
+        this.repository = permissionsProfileRepository;
     }
     
     public boolean addPermission(String userId, UserActions action) {
@@ -121,24 +119,25 @@ public class PermissionsController {
     }
 
     private void registerUser(String userId, PermissionsProfile profile , String failMessage) {
-        lock.acquireWrite();
-        if(userIdToPermissionsProfile.containsKey(userId)) {
+        try{
+            lock.acquireWrite();
+            repository.addUser(userId, profile);
+        } finally{
             lock.releaseWrite();
-            log.error(failMessage);
-            throw new IllegalArgumentException(failMessage);
         }
-        userIdToPermissionsProfile.put(userId, profile);
-        lock.releaseWrite();
     }
 
     private void removeUser(String userId, String failMessage) {
-        lock.acquireWrite();
-        var removed = userIdToPermissionsProfile.remove(userId);
-        lock.releaseWrite();
+        try{
+            lock.acquireWrite();
+            var removed = repository.removeUser(userId);
 
-        if(removed == null) {
-            log.error(failMessage);
-            throw new IllegalArgumentException(failMessage);
+            if(removed == null) {
+                log.error(failMessage);
+                throw new IllegalArgumentException(failMessage);
+            }
+        } finally {
+            lock.releaseWrite();
         }
     }
 
@@ -146,7 +145,7 @@ public class PermissionsController {
     private PermissionsProfile getPermissionsProfile(String userId) {
         log.trace("Fetching permissions profile for user {}", userId);
         lock.acquireRead();
-        PermissionsProfile profile = userIdToPermissionsProfile.get(userId);
+        PermissionsProfile profile = repository.getProfile(userId);
         lock.releaseRead();
         if(profile == null) {
             log.error("User not registered");
