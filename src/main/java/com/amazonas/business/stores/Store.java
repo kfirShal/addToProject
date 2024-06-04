@@ -13,7 +13,6 @@ import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.StoreException;
-import com.amazonas.repository.RepositoryFacade;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;

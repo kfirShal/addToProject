@@ -96,11 +96,6 @@ public class StoresService {
         return new Response(true).toJson();
     }
 
-    public String cancelReservation(String storeId, String username) {
-        controller.cancelReservation(storeId, username);
-        return new Response(true).toJson();
-    }
-
     public String setReservationTimeoutSeconds(String storeId, long time) {
         controller.setReservationTimeoutSeconds(storeId, time);
         return new Response(true).toJson();

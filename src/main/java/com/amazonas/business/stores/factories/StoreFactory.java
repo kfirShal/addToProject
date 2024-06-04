@@ -3,7 +3,6 @@ package com.amazonas.business.stores.factories;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.repository.RepositoryFacade;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Rating;
 import com.amazonas.business.stores.Store;

@@ -5,7 +5,6 @@ import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.PurchaseFailedException;
-import com.amazonas.repository.RepositoryFacade;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.AfterEach;

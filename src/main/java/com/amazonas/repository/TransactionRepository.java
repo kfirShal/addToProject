@@ -24,6 +24,9 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     private final Map<String, List<Transaction>> storeIdToTransactions;
     //=================================================================
 
+    private final Map<String, Transaction> transactionCache;
+    private final ReadWriteLock transactionLock;
+
     ReadWriteLock lock = new ReadWriteLock();
 
 
@@ -31,6 +34,8 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
         super(repo);
         userIdToTransactions = new HashMap<>();
         storeIdToTransactions = new HashMap<>();
+        transactionCache = new HashMap<>();
+        transactionLock = new ReadWriteLock();
     }
 
     public Collection<Transaction> getWaitingShipment(String storeId) {
@@ -65,6 +70,34 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
             return storeIdToTransactions.getOrDefault(storeId, new LinkedList<>());
         } finally {
             lock.releaseRead();
+        }
+    }
+
+    public Transaction getTransaction(String transactionId) {
+        transactionLock.acquireRead();
+        try {
+            return transactionCache.get(transactionId);
+        } finally {
+            transactionLock.releaseRead();
+        }
+    }
+
+
+    public void saveTransaction(Transaction transaction) {
+        transactionLock.acquireWrite();
+        try {
+            transactionCache.put(transaction.transactionId(), transaction);
+        } finally {
+            transactionLock.releaseWrite();
+        }
+    }
+
+    public void saveAllTransactions(Collection<Transaction> transactions) {
+        transactionLock.acquireWrite();
+        try {
+            transactions.forEach(transaction -> transactionCache.put(transaction.transactionId(), transaction));
+        } finally {
+            transactionLock.releaseWrite();
         }
     }
 

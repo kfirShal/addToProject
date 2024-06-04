@@ -1,38 +1,31 @@
 package com.amazonas.business.stores;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.factories.StoreFactory;
-import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
-import com.amazonas.exceptions.InvalidTokenException;
-import com.amazonas.exceptions.NoPermissionException;
 import com.amazonas.exceptions.StoreException;
-import com.amazonas.repository.RepositoryFacade;
-import com.amazonas.utils.JsonUtils;
-import com.amazonas.utils.Rating;
+import com.amazonas.repository.StoreRepository;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 @Component("storesController")
 public class StoresController {
-    private final RepositoryFacade repositoryFacade;
     private final StoreFactory storeFactory;
+    private final StoreRepository repository;
 
-    public StoresController(RepositoryFacade repositoryFacade, StoreFactory storeFactory){
-        this.repositoryFacade = repositoryFacade;
+    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository){
         this.storeFactory = storeFactory;
+        this.repository = storeRepository;
     }
 
     public void addStore(String ownerID,String name, String description) throws StoreException {
         if(doesNameExists(name))
             throw new StoreException("Store name already exists");
         Store toAdd = storeFactory.get(ownerID,name,description);
-        repositoryFacade.saveStore(toAdd);
+        repository.saveStore(toAdd);
     }
 
     public boolean openStore(String storeId){
@@ -45,16 +38,9 @@ public class StoresController {
 
     private boolean doesNameExists(String name){
         //TODO: replace this with a database query
-        for(Store store : repositoryFacade.getAllStores()){
-            if(store.getStoreName().equals(name))
-                return true;
-        }
-        return false;
+        return repository.storeNameExists(name);
     }
-/*
-    public boolean storeContainsProduct(String storeId,String productId){
-        repositoryFacade.getStore(storeId).searchProduct()
-    }*/
+
     public void addProduct(String storeId,Product toAdd) throws StoreException {
         getStore(storeId).addProduct(toAdd);
     }
@@ -95,12 +81,12 @@ public class StoresController {
         return getStore(storeId).removePermissionFromManager(managerId,actions);
     }
     public Store getStore(String storeId){
-        return repositoryFacade.getStore(storeId);
+        return repository.getStore(storeId);
     }
 
     public List<Product> searchProducts(GlobalSearchRequest request) {
         List<Product> ret = new LinkedList<>();
-        for (Store store : repositoryFacade.getAllStores()) {
+        for (Store store : repository.getAllStores()) {
             if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
                 ret.addAll(store.searchProduct(request));
             }

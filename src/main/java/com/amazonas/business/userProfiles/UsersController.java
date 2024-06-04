@@ -5,8 +5,8 @@ import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.PurchaseFailedException;
-import com.amazonas.repository.RepositoryFacade;
 import com.amazonas.repository.TransactionRepository;
+import com.amazonas.repository.UserRepository;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 @Component("usersController")
 public class UsersController {
 
-    private final RepositoryFacade repository;
+    private final UserRepository repository;
     private final TransactionRepository transactionRepository;
     private final PaymentService paymentService;
     private final ShoppingCartFactory shoppingCartFactory;
@@ -31,7 +31,7 @@ public class UsersController {
     private final ReadWriteLock lock;
     private String guestInitialId;
 
-    public UsersController(RepositoryFacade repositoryFacade,
+    public UsersController(UserRepository userRepository,
                            TransactionRepository transactionRepository,
                            PaymentService paymentService,
                            ShoppingCartFactory shoppingCartFactory) {
@@ -40,7 +40,7 @@ public class UsersController {
         this.registeredUsers = new HashMap<>();
         this.onlineRegisteredUsers = new HashMap<>();
         this.carts = new HashMap<>();
-        this.repository = repositoryFacade;
+        this.repository = userRepository;
         this.transactionRepository = transactionRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;
