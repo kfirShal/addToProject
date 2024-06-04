@@ -3,16 +3,14 @@ package com.amazonas.repository;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.permissions.profiles.PermissionsProfile;
 import com.amazonas.business.stores.Store;
+import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.User;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component("repositoryFacade")
 public class RepositoryFacade {
@@ -22,11 +20,13 @@ public class RepositoryFacade {
     private final Map<String, Store> storeCache;
     private final Map<String, PermissionsProfile> permissionsProfileCache;
     private final Map<String, Transaction> transactionCache;
+    private final Map<String, List<Reservation>> reservationCache;
     private final ReadWriteLock userLock;
     private final ReadWriteLock productLock;
     private final ReadWriteLock storeLock;
     private final ReadWriteLock permissionsProfileLock;
     private final ReadWriteLock transactionLock;
+    private final ReadWriteLock reservationLock;
 
     public RepositoryFacade() {
         userCache = new HashMap<>();
@@ -34,11 +34,13 @@ public class RepositoryFacade {
         storeCache = new HashMap<>();
         permissionsProfileCache = new HashMap<>();
         transactionCache = new HashMap<>();
+        reservationCache = new HashMap<>();
         userLock = new ReadWriteLock();
         productLock = new ReadWriteLock();
         storeLock = new ReadWriteLock();
         permissionsProfileLock = new ReadWriteLock();
         transactionLock = new ReadWriteLock();
+        reservationLock = new ReadWriteLock();
     }
 
     public User getUser(String userId) {
@@ -175,6 +177,33 @@ public class RepositoryFacade {
             transactions.forEach(transaction -> transactionCache.put(transaction.transactionId(), transaction));
         } finally {
             transactionLock.releaseWrite();
+        }
+    }
+
+    public void saveReservation(String userId, Reservation reservation) {
+        reservationLock.acquireWrite();
+        try {
+            reservationCache.computeIfAbsent(userId, _ -> new LinkedList<>()).add(reservation);
+        } finally {
+            reservationLock.releaseWrite();
+        }
+    }
+
+    public List<Reservation> getReservations(String userId){
+        reservationLock.acquireRead();
+        try {
+            return reservationCache.getOrDefault(userId, Collections.emptyList());
+        } finally {
+            reservationLock.releaseRead();
+        }
+    }
+
+    public void removeReservation(String userId, Reservation reservation) {
+        reservationLock.acquireWrite();
+        try {
+            reservationCache.getOrDefault(userId, Collections.emptyList()).remove(reservation);
+        } finally {
+            reservationLock.releaseWrite();
         }
     }
 }

@@ -14,7 +14,7 @@ public class StoreBasketFactory {
     }
 
     public StoreBasket get(String storeId, String userId){
-        return new StoreBasket(storeCallbackFactory.makeReservation(storeId, userId),
-                                storeCallbackFactory.cancelReservation(storeId, userId), storeCallbackFactory.calculatePrice(storeId));
+        return new StoreBasket(storeCallbackFactory.makeReservation(storeId),
+                                storeCallbackFactory.calculatePrice(storeId));
     }
 }

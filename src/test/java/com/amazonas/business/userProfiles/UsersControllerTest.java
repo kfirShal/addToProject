@@ -34,7 +34,6 @@ class UsersControllerTest {
     private StoreBasket mockBasket;
     private TransactionsController transactionsController;
     private PaymentService paymentService;
-    private ShippingService shippingService;
 
     @BeforeEach
     void setUp() {
@@ -44,8 +43,7 @@ class UsersControllerTest {
         shoppingCartFactory = mock(ShoppingCartFactory.class);
         repositoryFacade = mock(RepositoryFacade.class);
         paymentService = mock(PaymentService.class);
-        shippingService = mock(ShippingService.class);
-        usersController = new UsersController(repositoryFacade, transactionsController, paymentService, shippingService, shoppingCartFactory);
+        usersController = new UsersController(repositoryFacade, transactionsController, paymentService, shoppingCartFactory);
         usersController.register("testEmail@gmail.com", "testUserName", "testPassword@");
         usersController.register("testEmail2@gmail.com", "testUserName2", "testPassword@2");
         product = new Product("productId", "name", 100, "category", "5", Rating.NOT_RATED);

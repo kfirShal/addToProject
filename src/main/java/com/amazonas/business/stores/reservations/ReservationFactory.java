@@ -15,23 +15,16 @@ public class ReservationFactory {
 
     public ReservationFactory(StoreCallbackFactory storeCallbackFactory) {
         this.storeCallbackFactory = storeCallbackFactory;
-        loadIdGenerator();
-    }
-
-    //TODO: load id generator from database
-    private void loadIdGenerator(){
-
     }
 
     public Reservation get(String storeId,
-                           String userId,
                            Map<Product, Integer> productToQuantity,
                            LocalDateTime expirationDate){
         return new Reservation(
                 UUID.randomUUID().toString(),
-                userId,
+                storeId,
                 productToQuantity,
                 expirationDate,
-                storeCallbackFactory.cancelReservation(storeId, userId));
+                storeCallbackFactory.cancelReservation(storeId));
     }
 }

@@ -19,23 +19,23 @@ import java.util.regex.Pattern;
 @Component("usersController")
 public class UsersController {
 
-    private final Map<String, ShoppingCart> carts;
     private final RepositoryFacade repository;
     private final TransactionsController transactionsController;
     private final PaymentService paymentService;
-    private final ShippingService shippingService;
     private final ShoppingCartFactory shoppingCartFactory;
-    private final ReadWriteLock lock;
+
+    private final Map<String, ShoppingCart> carts;
     private final Map<String,Guest> guests;
     private final Map<String,RegisteredUser> registeredUsers;
     private final Map<String,User> onlineRegisteredUsers;
 
+    private final ReadWriteLock lock;
     private String guestInitialId;
 
     public UsersController(RepositoryFacade repositoryFacade,
                            TransactionsController transactionsController,
                            PaymentService paymentService,
-                           ShippingService shippingService, ShoppingCartFactory shoppingCartFactory) {
+                           ShoppingCartFactory shoppingCartFactory) {
 
         this.guests = new HashMap<>();
         this.registeredUsers = new HashMap<>();
@@ -44,7 +44,6 @@ public class UsersController {
         this.repository = repositoryFacade;
         this.transactionsController = transactionsController;
         this.paymentService = paymentService;
-        this.shippingService = shippingService;
         this.shoppingCartFactory = shoppingCartFactory;
         lock = new ReadWriteLock();
     }
@@ -204,7 +203,6 @@ public class UsersController {
         finally {
             lock.releaseWrite();
         }
-
     }
 
     
@@ -284,66 +282,40 @@ public class UsersController {
         return matcher.matches();
     }
 
-    public void makePurchase(String userId) throws PurchaseFailedException {
-        try{
-            lock.acquireWrite();
-            User user = repository.getUser(userId);
-            ShoppingCart cart = carts.get(userId);
-            Map<String,Reservation> reservations = cart.reserveCart();
+    // =============================================================================== |
+    // ================================ PURCHASE ===================================== |
+    // =============================================================================== |
 
-            // check if any stores returned null, meaning that the request products are not available
-            if(anyReservationFailed(reservations)){
-                cancelReservations(reservations);
-                throw new PurchaseFailedException("A product in the cart is not available in the store.");
-            }
-
-            // charge the user
-            if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
-                cancelReservations(reservations);
-                throw new PurchaseFailedException("Payment failed");
-            }
-
-            // mark the reservations as paid
-            for(var entry : reservations.entrySet()){
-                entry.getValue().setPaid();
-            }
-
-            // document the transactions
-            LocalDateTime transactionTime = LocalDateTime.now();
-            List<Transaction> transactions = new LinkedList<>();
-            for (var entry : reservations.entrySet()) {
-                String transactionId = UUID.randomUUID().toString();
-                Transaction t = new Transaction(transactionId,
-                        entry.getKey(),
-                        userId,
-                        user.getPaymentMethod(),
-                        transactionTime,
-                        entry.getValue().productToQuantity());
-                transactions.add(t);
-                transactionsController.documentTransaction(t);
-            }
-
-            // ship the products
-            for(Transaction t : transactions){
-                if(shippingService.ship(t)){
-                    reservations.get(t.storeId()).setShipped();
-                } //TODO: what to do if shipping failed?
-            }
-
-        }
-        finally {
-            lock.releaseWrite();
-        }
-
+    public void startPurchase(String userId) throws PurchaseFailedException {
+        ShoppingCart cart = carts.get(userId);
+        Map<String,Reservation> reservations = cart.reserveCart();
     }
 
-    private boolean anyReservationFailed(Map<String, Reservation> reservations) {
-        return reservations.entrySet().stream().anyMatch(entry -> entry.getValue() == null);
-    }
+    public void payForPurchase(String userId) throws PurchaseFailedException {
+        User user = repository.getUser(userId);
+        ShoppingCart cart = carts.get(userId);
+        List<Reservation> reservations = repository.getReservations(userId);
 
-    private void cancelReservations(Map<String,Reservation> reservations){
-        reservations.entrySet().stream()
-                .filter(entry -> entry.getValue() != null)
-                .forEach(entry -> entry.getValue().cancelReservation());
+        // charge the user
+        if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
+            reservations.forEach(Reservation::cancelReservation);
+            throw new PurchaseFailedException("Payment failed");
+        }
+
+        // mark the reservations as paid
+        reservations.forEach(Reservation::setPaid);
+
+        // document the transactions
+        LocalDateTime transactionTime = LocalDateTime.now();
+        for (var reservation : reservations) {
+            String transactionId = UUID.randomUUID().toString();
+            Transaction t = new Transaction(transactionId,
+                    reservation.storeId(),
+                    userId,
+                    user.getPaymentMethod(),
+                    transactionTime,
+                    reservation.productToQuantity());
+            transactionsController.documentTransaction(t);
+        }
     }
 }

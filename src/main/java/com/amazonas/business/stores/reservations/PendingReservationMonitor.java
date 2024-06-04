@@ -6,21 +6,17 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Component("reservationMonitor")
-public class ReservationMonitor {
+public class PendingReservationMonitor {
 
     private final Object waitObject;
 
     private final ConcurrentLinkedDeque<Pair<Reservation, LocalDateTime>> reservations;
-    private final Set<Reservation> paidReservations;
 
-    public ReservationMonitor() {
+    public PendingReservationMonitor() {
         reservations = new ConcurrentLinkedDeque<>();
-        paidReservations = ConcurrentHashMap.newKeySet();
         waitObject = new Object();
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
@@ -32,11 +28,6 @@ public class ReservationMonitor {
             reservations.add(Pair.of(reservation, reservation.expirationDate()));
             waitObject.notify();
         }
-    }
-
-    //TODO: alert admin of reservations that are paid but not shipped
-    private void alertAdminShippingIssue(Reservation r){
-
     }
 
     // ================================================================= |
@@ -78,20 +69,13 @@ public class ReservationMonitor {
 
             switch(r.state()){
                 case PENDING -> {
-                    if(r.expirationDate().isBefore(LocalDateTime.now())){
+                    if(r.isExpired()){
                         r.cancelReservation();
                         reservations.removeFirst();
                     }
                 }
-                case PAID -> {
-                    reservations.removeFirst();
-                    paidReservations.add(r);
-                }
-                case SHIPPED -> paidReservations.remove(r);
-                case CANCELLED -> reservations.removeFirst();
+                case PAID, CANCELLED -> reservations.removeFirst();
             }
-
-            paidReservations.stream().filter(Reservation::isShipped).forEach(this::alertAdminShippingIssue);
         }
     }
 
