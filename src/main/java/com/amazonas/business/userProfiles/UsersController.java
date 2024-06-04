@@ -318,4 +318,9 @@ public class UsersController {
             transactionRepository.documentTransaction(t);
         }
     }
+
+    public void cancelPurchase(String userId) {
+        List<Reservation> reservations = reservationRepository.getReservations(userId);
+        reservations.forEach(Reservation::cancelReservation);
+    }
 }
