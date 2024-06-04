@@ -147,23 +147,29 @@ public class Store {
     }
 
     private double applyDiscount(Pair<Product,Integer> pair){
-        Product product = pair.first();
-        Integer quantity = pair.second();
-        int maxQuantity = 0;
-        int maxDiscount = 0;
-        for(SalesPolicy salesPolicy: salesPolicies){
-            if(salesPolicy.getProductID().equals(product.productId())){
-                if(maxQuantity <= salesPolicy.getProductQuantity()) {
-                    maxQuantity = salesPolicy.getProductQuantity();
-                    maxDiscount = salesPolicy.getDiscount();
+
+        try{
+            lock.acquireRead();
+
+            Product product = pair.first();
+            Integer quantity = pair.second();
+            int maxQuantity = 0;
+            int maxDiscount = 0;
+            for(SalesPolicy salesPolicy: salesPolicies){
+                if(salesPolicy.getProductID().equals(product.productId())){
+                    if(maxQuantity <= salesPolicy.getProductQuantity()) {
+                        maxQuantity = salesPolicy.getProductQuantity();
+                        maxDiscount = salesPolicy.getDiscount();
+                    }
                 }
             }
+            if(maxQuantity == 0){
+                return product.price() * quantity;
+            }
+            return product.price() * (100 - maxDiscount)*0.01;
+        } finally {
+            lock.releaseRead();
         }
-        if(maxQuantity == 0){
-            return product.price() * quantity;
-        }
-        return product.price() * (100 - maxDiscount)*0.01;
-
     }
 
     public List<Product> searchProduct(SearchRequest request) {
@@ -354,6 +360,8 @@ public class Store {
     //========================= STORE POSITIONS ============================ |
     //====================================================================== |
 
+    // Synchronization is done in the AppointmentSystem class
+
     public void removeOwner(String logged, String username) {
         appointmentSystem.removeOwner(logged,username);
     }
@@ -374,6 +382,8 @@ public class Store {
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
     //====================================================================== |
+
+    // Synchronization is done in the PermissionsController class
 
     public boolean addPermissionToManager(String managerId, StoreActions action) throws StoreException {
 
@@ -411,10 +421,10 @@ public class Store {
         }
     }
 
-
     //====================================================================== |
     //========================= GETTERS SETTERS ============================ |
     //====================================================================== |
+
     public Rating getStoreRating() {
         return storeRating;
     }

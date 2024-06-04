@@ -35,12 +35,12 @@ public class StoresController {
         repositoryFacade.saveStore(toAdd);
     }
 
-    public void openStore(String storeId){
-        getStore(storeId).openStore();
+    public boolean openStore(String storeId){
+        return getStore(storeId).openStore();
     }
 
-    public void closeStore(String storeId){
-        getStore(storeId);
+    public boolean closeStore(String storeId){
+        return getStore(storeId).closeStore();
     }
 
     private boolean doesNameExists(String name){
@@ -51,7 +51,10 @@ public class StoresController {
         }
         return false;
     }
-
+/*
+    public boolean storeContainsProduct(String storeId,String productId){
+        repositoryFacade.getStore(storeId).searchProduct()
+    }*/
     public void addProduct(String storeId,Product toAdd) throws StoreException {
         getStore(storeId).addProduct(toAdd);
     }
