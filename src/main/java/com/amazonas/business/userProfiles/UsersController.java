@@ -2,12 +2,11 @@ package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentService;
-import com.amazonas.business.shipping.ShippingService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
-import com.amazonas.business.transactions.TransactionsController;
 import com.amazonas.exceptions.PurchaseFailedException;
 import com.amazonas.repository.RepositoryFacade;
+import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,7 @@ import java.util.regex.Pattern;
 public class UsersController {
 
     private final RepositoryFacade repository;
-    private final TransactionsController transactionsController;
+    private final TransactionRepository transactionRepository;
     private final PaymentService paymentService;
     private final ShoppingCartFactory shoppingCartFactory;
 
@@ -33,7 +32,7 @@ public class UsersController {
     private String guestInitialId;
 
     public UsersController(RepositoryFacade repositoryFacade,
-                           TransactionsController transactionsController,
+                           TransactionRepository transactionRepository,
                            PaymentService paymentService,
                            ShoppingCartFactory shoppingCartFactory) {
 
@@ -42,7 +41,7 @@ public class UsersController {
         this.onlineRegisteredUsers = new HashMap<>();
         this.carts = new HashMap<>();
         this.repository = repositoryFacade;
-        this.transactionsController = transactionsController;
+        this.transactionRepository = transactionRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;
         lock = new ReadWriteLock();
@@ -314,7 +313,7 @@ public class UsersController {
                     userId,
                     transactionTime,
                     reservation.productToQuantity());
-            transactionsController.documentTransaction(t);
+            transactionRepository.documentTransaction(t);
         }
     }
 }

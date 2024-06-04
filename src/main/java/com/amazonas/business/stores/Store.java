@@ -11,7 +11,10 @@ import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.business.stores.storePositions.StoreRole;
+import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.StoreException;
+import com.amazonas.repository.RepositoryFacade;
+import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import com.amazonas.utils.ReadWriteLock;
@@ -26,7 +29,7 @@ public class Store {
     private final ReservationFactory reservationFactory;
     private final PendingReservationMonitor pendingReservationMonitor;
     private final PermissionsController permissionsController;
-
+    private final TransactionRepository repository;
     private final ProductInventory inventory;
     private final AppointmentSystem appointmentSystem;
     private final List<SalesPolicy> salesPolicies;
@@ -48,7 +51,8 @@ public class Store {
                  AppointmentSystem appointmentSystem,
                  ReservationFactory reservationFactory,
                  PendingReservationMonitor pendingReservationMonitor,
-                 PermissionsController permissionsController) {
+                 PermissionsController permissionsController,
+                 TransactionRepository transactionRepository) {
         this.appointmentSystem = appointmentSystem;
         this.reservationFactory = reservationFactory;
         this.pendingReservationMonitor = pendingReservationMonitor;
@@ -58,6 +62,7 @@ public class Store {
         this.storeDescription = description;
         this.storeRating = rating;
         this.permissionsController = permissionsController;
+        this.repository = transactionRepository;
         this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.salesPolicies = new LinkedList<>();
         lock = new ReadWriteLock();
@@ -123,6 +128,51 @@ public class Store {
         return isOpen;
     }
 
+    //====================================================================== |
+    //========================== PAID ORDERS =============================== |
+    //====================================================================== |
+
+    public Collection<Transaction> getPendingShipmentOrders(){
+        try{
+            lock.acquireRead();
+            return repository.getWaitingShipment(storeId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public void setShipped(String transactionId){
+        try{
+            lock.acquireWrite();
+            Transaction transaction = repository.get(transactionId);
+            transaction.setShipped();
+            repository.save(transactionId, transaction);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void setDelivered(String transactionId){
+        try{
+            lock.acquireWrite();
+            Transaction transaction = repository.get(transactionId);
+            transaction.setDelivered();
+            repository.save(transactionId, transaction);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void setCancelled(String transactionId){
+        try{
+            lock.acquireWrite();
+            Transaction transaction = repository.get(transactionId);
+            transaction.setCancelled();
+            repository.save(transactionId, transaction);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
 
     //====================================================================== |
     //============================= PRODUCTS =============================== |
@@ -166,7 +216,6 @@ public class Store {
 
         try{
             lock.acquireRead();
-
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
 

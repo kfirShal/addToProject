@@ -2,10 +2,8 @@ package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentService;
-import com.amazonas.business.shipping.ShippingService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
-import com.amazonas.business.transactions.TransactionsController;
 import com.amazonas.exceptions.PurchaseFailedException;
 import com.amazonas.repository.RepositoryFacade;
 import com.amazonas.utils.Pair;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.springframework.boot.autoconfigure.pulsar.PulsarProperties;
 
 import java.util.HashMap;
 import java.util.Map;
