@@ -145,7 +145,7 @@ public class Store {
             lock.acquireWrite();
             Transaction transaction = repository.getTransaction(transactionId);
             transaction.setShipped();
-            repository.save(transactionId, transaction);
+            repository.saveTransaction(transaction);
         } finally {
             lock.releaseWrite();
         }
@@ -156,7 +156,7 @@ public class Store {
             lock.acquireWrite();
             Transaction transaction = repository.getTransaction(transactionId);
             transaction.setDelivered();
-            repository.save(transactionId, transaction);
+            repository.saveTransaction(transaction);
         } finally {
             lock.releaseWrite();
         }
@@ -167,7 +167,7 @@ public class Store {
             lock.acquireWrite();
             Transaction transaction = repository.getTransaction(transactionId);
             transaction.setCancelled();
-            repository.save(transactionId, transaction);
+            repository.saveTransaction(transaction);
         } finally {
             lock.releaseWrite();
         }

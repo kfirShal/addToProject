@@ -16,19 +16,4 @@ public abstract class AbstractCachingRepository<T> {
         this.repo = repo;
     }
 
-    public void save(String id, T object) {
-        cache.put(id, object);
-    }
-
-    public void saveAll(Map<String, T> objects) {
-        cache.putAll(objects);
-    }
-
-    public T get(String id) {
-        return cache.get(id);
-    }
-
-    public List<T> getAll() {
-        return List.copyOf(cache.values());
-    }
 }
