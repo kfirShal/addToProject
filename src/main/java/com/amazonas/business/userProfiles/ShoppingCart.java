@@ -2,6 +2,7 @@ package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.exceptions.PurchaseFailedException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +90,7 @@ public class ShoppingCart {
         return totalPrice;
     }
 
-    public Map<String, Reservation> reserveCart(){
+    public Map<String, Reservation> reserveCart() throws PurchaseFailedException {
         Map<String, Reservation> reservations = new HashMap<>();
         for(var entry : baskets.entrySet()){
             Reservation r = entry.getValue().reserveBasket();
@@ -98,6 +99,7 @@ public class ShoppingCart {
             // so we need to cancel all the reservations that were made so far
             if (r == null){
                 reservations.values().forEach(Reservation::cancelReservation);
+                throw new PurchaseFailedException("Could not reserve some of the products in the cart.");
             }
 
             // reservation was successful

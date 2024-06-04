@@ -287,8 +287,8 @@ public class UsersController {
     // =============================================================================== |
 
     public void startPurchase(String userId) throws PurchaseFailedException {
-        ShoppingCart cart = carts.get(userId);
-        Map<String,Reservation> reservations = cart.reserveCart();
+        Map<String, Reservation> reservations = carts.get(userId).reserveCart();
+        reservations.values().forEach(r -> repository.saveReservation(userId,r));
     }
 
     public void payForPurchase(String userId) throws PurchaseFailedException {
@@ -312,7 +312,6 @@ public class UsersController {
             Transaction t = new Transaction(transactionId,
                     reservation.storeId(),
                     userId,
-                    user.getPaymentMethod(),
                     transactionTime,
                     reservation.productToQuantity());
             transactionsController.documentTransaction(t);
