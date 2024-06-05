@@ -34,7 +34,7 @@ class AppointmentSystemTest {
 
     @org.junit.jupiter.api.Test
     void givenLegalOwnerIdWhenAddManagerThenSuccess() {
-        assertTrue(appointmentSystem.addOwner("25489", "12345"));
+        assertTrue(appointmentSystem.addOwner("25489","12345"));
         boolean result = appointmentSystem.addManager("12345", "39021");
         assertTrue(result);
         assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
@@ -44,10 +44,19 @@ class AppointmentSystemTest {
     }
 
     @org.junit.jupiter.api.Test
-    void givenExistManagerIdWhenAddManagerThenFail() {
+    void givenNoTwoParentsForManagerWhenAddManagerThenFail() {
         boolean result = appointmentSystem.addManager("25489", "39021");
         assertTrue(result);
         result = appointmentSystem.addManager("25489", "39021");
+        assertFalse(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void givenTwoOwnersTryAppointSameUserWhenAddManagerThenFail() {
+        boolean result = appointmentSystem.addManager("25489", "39021");
+        assertTrue(result);
+        assertTrue(appointmentSystem.addOwner("25489","12345"));
+        result = appointmentSystem.addManager("12345", "39021");
         assertFalse(result);
     }
 
@@ -67,7 +76,7 @@ class AppointmentSystemTest {
 
     @org.junit.jupiter.api.Test
     void givenLegalAppointeeWhenRemoveManagerThenSuccess() {
-        assertTrue(appointmentSystem.addManager("25489", "39021"));
+        assertTrue(appointmentSystem.addManager("25489","39021"));
         assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
         assertEquals(appointmentSystem.getManagers().size(), 1);
         assertEquals(appointmentSystem.getManagers().getFirst().role(), StoreRole.STORE_MANAGER);
@@ -79,36 +88,25 @@ class AppointmentSystemTest {
     }
 
     @org.junit.jupiter.api.Test
-    void givenIllegalAppointeeWhenRemoveManagerThenSuccess() {
-        assertTrue(appointmentSystem.addManager("25489", "39021"));
-        assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
-        assertEquals(appointmentSystem.getManagers().size(), 1);
-        assertEquals(appointmentSystem.getManagers().getFirst().role(), StoreRole.STORE_MANAGER);
-        assertEquals(appointmentSystem.getManagers().getFirst().userId(), "39021");
-        boolean result = appointmentSystem.removeManager("00000", "39021");
-        assertFalse(result);
-    }
-
-    @org.junit.jupiter.api.Test
-    void givenAnotherAppointeeWhenRemoveManagerThenSuccess() {
-        assertTrue(appointmentSystem.addManager("25489", "39021"));
-        assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
-        assertEquals(appointmentSystem.getManagers().size(), 1);
-        assertEquals(appointmentSystem.getManagers().getFirst().role(), StoreRole.STORE_MANAGER);
-        assertEquals(appointmentSystem.getManagers().getFirst().userId(), "39021");
-        assertTrue(appointmentSystem.addOwner("25489", "12345"));
-        boolean result = appointmentSystem.removeManager("12345", "39021");
-        assertFalse(result);
-    }
-
-    @org.junit.jupiter.api.Test
     void givenIllegalAppointeeWhenRemoveManagerThenFail() {
-        assertTrue(appointmentSystem.addManager("25489", "39021"));
+        assertTrue(appointmentSystem.addManager("25489","39021"));
         assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
         assertEquals(appointmentSystem.getManagers().size(), 1);
         assertEquals(appointmentSystem.getManagers().getFirst().role(), StoreRole.STORE_MANAGER);
         assertEquals(appointmentSystem.getManagers().getFirst().userId(), "39021");
         boolean result = appointmentSystem.removeManager("00000", "39021");
+        assertFalse(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void givenAnotherAppointeeWhenRemoveManagerThenFail() {
+        assertTrue(appointmentSystem.addManager("25489","39021"));
+        assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
+        assertEquals(appointmentSystem.getManagers().size(), 1);
+        assertEquals(appointmentSystem.getManagers().getFirst().role(), StoreRole.STORE_MANAGER);
+        assertEquals(appointmentSystem.getManagers().getFirst().userId(), "39021");
+        assertTrue(appointmentSystem.addOwner("25489","12345"));
+        boolean result = appointmentSystem.removeManager("12345", "39021");
         assertFalse(result);
     }
 
@@ -124,7 +122,7 @@ class AppointmentSystemTest {
 
     @org.junit.jupiter.api.Test
     void givenIllegalAppointedWhenRemoveManagerThenFail() {
-        assertTrue(appointmentSystem.addManager("25489", "39021"));
+        assertTrue(appointmentSystem.addManager("25489","39021"));
         assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_MANAGER);
         assertEquals(appointmentSystem.getManagers().size(), 1);
         assertEquals(appointmentSystem.getManagers().getFirst().role(), StoreRole.STORE_MANAGER);
@@ -150,6 +148,15 @@ class AppointmentSystemTest {
     }
 
     @org.junit.jupiter.api.Test
+    void givenTwoOwnersTryAppointSameUserWhenAddOwnerThenFail() {
+        boolean result = appointmentSystem.addOwner("25489", "39021");
+        assertTrue(result);
+        assertTrue(appointmentSystem.addOwner("25489","12345"));
+        result = appointmentSystem.addOwner("12345", "39021");
+        assertFalse(result);
+    }
+
+    @org.junit.jupiter.api.Test
     void givenIllegalAppointeeWhenAddOwnerThenFail() {
         boolean result = appointmentSystem.addOwner("00000", "39021");
         assertFalse(result);
@@ -157,7 +164,7 @@ class AppointmentSystemTest {
 
     @org.junit.jupiter.api.Test
     void givenLegalAppointeeWhenRemoveOwnerThenSuccess() {
-        assertTrue(appointmentSystem.addOwner("25489", "39021"));
+        assertTrue(appointmentSystem.addOwner("25489","39021"));
         assertEquals(appointmentSystem.getRoleOfUser("39021"), StoreRole.STORE_OWNER);
         assertEquals(appointmentSystem.getOwners().size(), 2);
         assertEquals(appointmentSystem.getOwners().getFirst().role(), StoreRole.STORE_OWNER);
