@@ -2,6 +2,8 @@ package com.amazonas.business.stores.storePositions;
 
 import com.amazonas.utils.ReadWriteLock;
 
+
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,54 +23,63 @@ public class AppointmentSystem {
         this.appointmentLock = new ReadWriteLock();
     }
 
-    public void addManager(String appointeeOwnerUserId, String appointedUserId) {
+    public boolean addManager(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (!managersList.containsKey(appointedUserId) && !ownershipList.containsKey(appointedUserId)) {
-                    appointeeNode.addManager(appointedUserId);
-                    managersList.put(appointedUserId, null);
+                    if(appointeeNode.addManager(appointedUserId)) {
+                        managersList.put(appointedUserId, null);
+                        return true;
+                    }
                 }
             }
+            return false;
         }
         finally {
             appointmentLock.releaseWrite();
         }
     }
 
-    public void removeManager(String appointeeOwnerUserId, String appointedUserId) {
+    public boolean removeManager(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (appointeeNode.deleteManager(appointedUserId)) {
                     managersList.remove(appointedUserId);
+                    return true;
                 }
             }
+            return false;
         }
         finally {
             appointmentLock.releaseWrite();
         }
     }
 
-    public void addOwner(String appointeeOwnerUserId, String appointedUserId) {
+    public boolean addOwner(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
             if (appointeeNode != null) {
                 if (!ownershipList.containsKey(appointedUserId) && !managersList.containsKey(appointedUserId)) {
                     OwnerNode appointedNode = appointeeNode.addOwner(appointedUserId);
-                    ownershipList.put(appointeeOwnerUserId, appointedNode);
+                    if (appointedNode != null) {
+                        ownershipList.put(appointedUserId, appointedNode);
+                        return true;
+                    }
                 }
             }
+            return false;
         }
         finally {
             appointmentLock.releaseWrite();
         }
     }
 
-    public void removeOwner(String appointeeOwnerUserId, String appointedUserId) {
+    public boolean removeOwner(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
             OwnerNode appointeeNode = ownershipList.get(appointeeOwnerUserId);
@@ -78,15 +89,21 @@ public class AppointmentSystem {
                     List<String> appointerChildren = deletedOwner.getAllChildren();
                     for (String appointerToRemove : appointerChildren) {
                         ownershipList.remove(appointerToRemove);
+                        return true;
                     }
                 }
             }
+            return false;
         }
         finally {
             appointmentLock.releaseWrite();
         }
     }
 
+    /**
+     * The method returns details of the founder of the store.
+     * @return StorePosition with the founder's username
+     */
     public StorePosition getFounder() {
         try {
             appointmentLock.acquireRead();
@@ -97,6 +114,10 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * The method return the details of all the owners except the founder.
+     * @return List of StorePositions with all owners' usernames
+     */
     public List<StorePosition> getOwners() {
         try {
             appointmentLock.acquireRead();
@@ -113,6 +134,10 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * The method return the details of all the managers of the store.
+     * @return List of StorePositions with all managers' usernames
+     */
     public List<StorePosition> getManagers() {
         try {
             appointmentLock.acquireRead();
@@ -127,6 +152,10 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * The method return the details of all the store admins.
+     * @return List of StorePositions with all admins' usernames and their roles
+     */
     public List<StorePosition> getAllRoles() {
         try {
             appointmentLock.acquireRead();
@@ -151,6 +180,11 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * get a responsibility of a user in the store, if he has some.
+     * @param userID the user ID for checking
+     * @return the StoreRole of the user if the user has a role in the store, otherwise returns StoreRole.NONE
+     */
     public StoreRole getRoleOfUser(String userID) {
         try {
             appointmentLock.acquireRead();
@@ -158,12 +192,12 @@ public class AppointmentSystem {
                 return StoreRole.STORE_FOUNDER;
             }
             for (String ownerId : ownershipList.keySet()) {
-                if (ownerId.equals(userID)) { //except the founder
+                if (ownerId.equals(userID)) {
                     return StoreRole.STORE_OWNER;
                 }
             }
             for (String managerId : managersList.keySet()) {
-                if (managerId.equals(userID)) { //except the founder
+                if (managerId.equals(userID)) {
                     return StoreRole.STORE_MANAGER;
                 }
             }
