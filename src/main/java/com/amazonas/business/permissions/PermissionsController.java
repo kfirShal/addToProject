@@ -1,18 +1,16 @@
 package com.amazonas.business.permissions;
 
-import com.amazonas.business.market.MarketActions;
+import com.amazonas.business.permissions.actions.MarketActions;
 import com.amazonas.business.permissions.profiles.PermissionsProfile;
 import com.amazonas.business.permissions.profiles.RegisteredUserPermissionsProfile;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
+import com.amazonas.repository.PermissionsProfileRepository;
+import com.amazonas.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component
@@ -22,15 +20,16 @@ public class PermissionsController {
 
     private final PermissionsProfile defaultProfile;
     private final PermissionsProfile guestProfile;
-    private final Map<String, PermissionsProfile> userIdToPermissionsProfile;
-    private final Semaphore lock;
+    private final ReadWriteLock lock;
+    private final PermissionsProfileRepository repository;
 
     public PermissionsController(PermissionsProfile defaultRegisteredUserPermissionsProfile,
-                                 PermissionsProfile guestPermissionsProfile) {
+                                 PermissionsProfile guestPermissionsProfile,
+                                 PermissionsProfileRepository permissionsProfileRepository) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
-        userIdToPermissionsProfile = new HashMap<>();
-        lock = new Semaphore(1,true);
+        lock = new ReadWriteLock();
+        this.repository = permissionsProfileRepository;
     }
     
     public boolean addPermission(String userId, UserActions action) {
@@ -121,43 +120,38 @@ public class PermissionsController {
     }
 
     private void registerUser(String userId, PermissionsProfile profile , String failMessage) {
-        lockAcquire();
-        if(userIdToPermissionsProfile.containsKey(userId)) {
-            lock.release();
-            log.error(failMessage);
-            throw new IllegalArgumentException(failMessage);
+        try{
+            lock.acquireWrite();
+            repository.addUser(userId, profile);
+        } finally{
+            lock.releaseWrite();
         }
-        userIdToPermissionsProfile.put(userId, profile);
-        lock.release();
     }
 
     private void removeUser(String userId, String failMessage) {
-        lockAcquire();
-        var removed = userIdToPermissionsProfile.remove(userId);
-        lock.release();
+        try{
+            lock.acquireWrite();
+            var removed = repository.removeUser(userId);
 
-        if(removed == null) {
-            log.error(failMessage);
-            throw new IllegalArgumentException(failMessage);
+            if(removed == null) {
+                log.error(failMessage);
+                throw new IllegalArgumentException(failMessage);
+            }
+        } finally {
+            lock.releaseWrite();
         }
     }
 
     @NonNull
     private PermissionsProfile getPermissionsProfile(String userId) {
         log.trace("Fetching permissions profile for user {}", userId);
-        lockAcquire();
-        PermissionsProfile profile = userIdToPermissionsProfile.get(userId);
-        lock.release();
+        lock.acquireRead();
+        PermissionsProfile profile = repository.getPermissionsProfile(userId);
+        lock.releaseRead();
         if(profile == null) {
             log.error("User not registered");
             throw new IllegalArgumentException("User not registered");
         }
         return profile;
-    }
-
-    private void lockAcquire() {
-        try {
-            lock.acquire();
-        } catch (InterruptedException ignored) {}
     }
 }

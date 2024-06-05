@@ -1,5 +1,7 @@
 package com.amazonas.business.authentication;
 
+import com.amazonas.repository.UserCredentialsRepository;
+import com.amazonas.utils.ReadWriteLock;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.slf4j.Logger;
@@ -11,43 +13,38 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class AuthenticationController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
-    //=================================================================
-    //TODO: replace this with a database
-    //Temporary storage for hashed passwords until we have a database
-    private final Map<String, String> userIdToHashedPassword = new HashMap<>();
-    //=================================================================
+    private final UserCredentialsRepository repository;
 
     private static final MacAlgorithm alg = Jwts.SIG.HS512;
     private static final String passwordStorageFormat = "{bcrypt}";
-
-    private final ConcurrentMap<String, String> userIdToUUID;
-    private final Set<String> uuids;
-
+    private final Map<String, String> userIdToUUID;
     private final PasswordEncoder encoder;
+    private final ReadWriteLock lock;
     private SecretKey key;
 
-    public AuthenticationController() {
+    public AuthenticationController(UserCredentialsRepository userCredentialsRepository) {
+        this.repository = userCredentialsRepository;
         key = Jwts.SIG.HS512.key().build();
-        userIdToUUID = new ConcurrentHashMap<>();
-        uuids = ConcurrentHashMap.newKeySet();
+        userIdToUUID = new HashMap<>();
+        lock = new ReadWriteLock();
         encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    public AuthenticationResponse authenticate(String userId, String password) {
-        log.debug("Authenticating user: {}", userId);
+    public AuthenticationResponse authenticateGuest(String userid){
+        log.debug("Generating token for guest user {}", userid);
+        return new AuthenticationResponse(true, getToken(userid));
+    }
 
-        String hashedPassword = userIdToHashedPassword.get(userId);
-        String uuid = userIdToUUID.get(userId);
+    public AuthenticationResponse authenticateUser(String userId, String password) {
+        log.debug("Authenticating user: {}", userId);
+        String hashedPassword = repository.getHashedPassword(userId);
 
         // check if the user exists
         if(hashedPassword == null) {
@@ -57,40 +54,21 @@ public class AuthenticationController {
         log.trace("User {} exists", userId);
 
         // check if the password is correct
-        boolean passwordsMatch = encoder.matches(
-                passwordStorageFormat+password,
-                hashedPassword); //TODO: get hashed password from database
-        if(!passwordsMatch) {
+        if(! isPasswordsMatch(password, hashedPassword)) {
             log.debug("Incorrect password for user {}", userId);
             return new AuthenticationResponse(false, null);
         }
 
-        //remove the old UUID if it exists
-        if(uuid != null) {
-            log.trace("Removing old UUID for user {}", userId);
-            uuids.remove(uuid);
-        }
-
-        //generate a unique UUID
-        log.trace("Generating new UUID for user {}", userId);
-        do{
-            uuid = UUID.randomUUID().toString();
-        } while (uuids.contains(uuid));
-
-        //store the UUID and associate it with the user
-        log.trace("Storing new UUID for user {}", userId);
-        userIdToUUID.put(userId, uuid);
-        uuids.add(uuid);
-
-        String token = generateToken(uuid);
+        String token = getToken(userId);
         log.debug("User {} authenticated successfully", userId);
         return new AuthenticationResponse(true,token);
     }
 
     public boolean revokeAuthentication(String userId) {
         log.debug("Revoking authentication for user {}", userId);
+        lock.acquireWrite();
         String uuid = userIdToUUID.remove(userId);
-        uuids.remove(uuid);
+        lock.releaseWrite();
         return uuid != null;
     }
 
@@ -105,7 +83,9 @@ public class AuthenticationController {
                     .getPayload());
 
             log.trace("Checking if the UUID from the token matches the stored UUID for user {}", userId);
+            lock.acquireRead();
             String uuid = userIdToUUID.get(userId);
+            lock.releaseRead();
             answer = uuid != null && uuid.equals(uuidFromToken);
         } catch (Exception ignored) {
             answer = false;
@@ -119,26 +99,41 @@ public class AuthenticationController {
      */
     public void resetSecretKey() {
         log.debug("Resetting secret key");
+        lock.acquireWrite();
         key = Jwts.SIG.HS512.key().build();
         userIdToUUID.clear();
-        uuids.clear();
+        lock.releaseWrite();
     }
 
-    private String generateToken(String userId) {
-        log.debug("Generating token for user {}", userId);
+    private boolean isPasswordsMatch(String password, String hashedPassword) {
+        return encoder.matches(passwordStorageFormat+ password, hashedPassword);
+    }
+
+    private String getToken(String userId) {
+        //generate a unique UUID
+        log.trace("Generating new UUID for user {}", userId);
+        String uuid = UUID.randomUUID().toString();
+
+        //store the UUID and associate it with the user
+        log.trace("Storing new UUID for user {}", userId);
+        lock.acquireWrite();
+        userIdToUUID.put(userId, uuid);
+        lock.releaseWrite();
+
+        return generateJwt(uuid);
+    }
+
+    private String generateJwt(String payload) {
+        log.debug("Generating token for user {}", payload);
         return Jwts.builder()
-                .content(userId, "text/plain")
+                .content(payload, "text/plain")
                 .signWith(key,alg)
                 .compact();
     }
 
-    /**
-     * Temporary method to add user credentials until we have a database
-     */
     public void addUserCredentials(String userId, String password) {
         log.debug("Adding user credentials for user {}", userId);
-        //TODO: store hashed password in database
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
-        userIdToHashedPassword.put(userId, encodedPassword);
+        repository.saveHashedPassword(userId, encodedPassword);
     }
 }

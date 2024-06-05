@@ -1,10 +1,24 @@
 package com.amazonas.business.shipping;
 
 import com.amazonas.business.transactions.Transaction;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
+
+@Component
 public class ShippingService {
 
-    public String ship(Transaction transaction) {
-        return "good to go!";
+    private String serviceId;
+
+    public ShippingService() {
+        this.serviceId = "default";
+    }
+
+    public boolean ship(Transaction transaction) {
+        return true;
+    }
+
+    public String serviceId() {
+        return serviceId;
     }
 }

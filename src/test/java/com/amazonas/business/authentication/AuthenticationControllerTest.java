@@ -1,49 +1,60 @@
 package com.amazonas.business.authentication;
 
+import com.amazonas.repository.UserCredentialsRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.MacAlgorithm;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AuthenticationControllerTest {
+    private static final MacAlgorithm alg = Jwts.SIG.HS512;
 
+    private static final String passwordStorageFormat = "{bcrypt}";
     private AuthenticationController authenticationController;
     private String userId;
     private String password;
+    private String hashedPassword;
+    private PasswordEncoder encoder;
 
-    @BeforeEach
-    void setUp() {
-        authenticationController = new AuthenticationController();
+    public AuthenticationControllerTest() {
+        UserCredentialsRepository ucr = mock(UserCredentialsRepository.class);
         userId = "testUser";
         password = "testPassword";
-        authenticationController.addUserCredentials(userId, password);
-    }
+        encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        hashedPassword = encoder.encode(passwordStorageFormat+password);
+        when(ucr.getHashedPassword(userId)).thenReturn(hashedPassword);
 
-    @AfterEach
-    void tearDown() {
-        authenticationController = null;
-        userId = null;
-        password = null;
+        authenticationController = new AuthenticationController(ucr);
     }
 
     @Test
-    void authenticateSuccess() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, password);
+    void authenticateUserSuccess() {
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
     }
 
     @Test
-    void authenticateFailureWrongPassword() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, "wrongPassword");
+    void authenticateUserFailureWrongPassword() {
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, "wrongPassword");
         assertFalse(response.success());
         assertNull(response.token());
     }
 
     @Test
     void revokeAuthenticationSuccess() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, password);
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
@@ -57,7 +68,7 @@ class AuthenticationControllerTest {
 
     @Test
     void validateTokenSuccess() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, password);
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
@@ -67,7 +78,7 @@ class AuthenticationControllerTest {
 
     @Test
     void validateTokenFailureAfterAuthentication() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, password);
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
@@ -82,7 +93,7 @@ class AuthenticationControllerTest {
 
     @Test
     void validateTokenFailureAfterRevocation() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, password);
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
@@ -93,7 +104,7 @@ class AuthenticationControllerTest {
 
     @Test
     void resetSecretKeySuccess() {
-        AuthenticationResponse response = authenticationController.authenticate(userId, password);
+        AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 

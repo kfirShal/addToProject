@@ -1,25 +1,33 @@
 package com.amazonas.business.userProfiles;
 
+
+
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.inventory.ProductWithQuantity;
+import com.amazonas.business.stores.reservations.Reservation;
+import com.amazonas.utils.Pair;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class StoreBasket {
 
-    private Map<Integer, ProductWithQuantity> products; // productId --> <Product,Quantity>
+    private final Map<String, Pair<Product, Integer>> products; // productId --> <Product,Quantity>
 
-    public StoreBasket (){
+    private final Function<Map<Product,Integer>, Reservation> makeReservation;
+    private final Function<Map<Product, Integer>, Double> calculatePrice;
 
+    public StoreBasket (Function<Map<Product,Integer>,
+                        Reservation> makeReservation,
+                        Function<Map<Product,Integer>,Double> calculatePrice){
+
+        this.makeReservation = makeReservation;
+        this.calculatePrice = calculatePrice;
         products = new HashMap<>();
-
     }
 
-    public ProductWithQuantity getProduct(int productId){
-        if(products == null){
-            throw new RuntimeException("Products have not been initialized");
-        }
+    public Pair<Product, Integer> getProductWithQuantity(String productId){
 
         if(!products.containsKey(productId)){
             throw new RuntimeException("Product with name: " + productId + " not found");
@@ -28,29 +36,20 @@ public class StoreBasket {
         return products.get(productId);
 
     }
-    public void addProduct(int productId, Product product, int quantity) {
-        if(products == null){
-            throw new RuntimeException("Store Baskets has not been initialized");
-        }
 
+    public void addProduct(Product product, int quantity) {
         //TODO : store need to check if the product is legal due to policy restrictions (not for now)
 
-        if(!isProductExists(productId)){
+        if(!isProductExists(product.productId())){
             //TODO: calculate the new price of the product if needed (not for now)
-            products.put(productId,new ProductWithQuantity(product,quantity));
+            Pair <Product, Integer> productWithQuantity = new Pair<>(product,quantity);
+            products.put(product.productId(), productWithQuantity);
         }
         else{
             throw new RuntimeException("Product is already exists, change the quantity of the product if needed");
         }
-
-
     }
-
-    public void removeProduct(int productId) {
-        if(products == null){
-            throw new RuntimeException("Products has not been initialized");
-        }
-
+    public void removeProduct(String productId) {
         if(!products.containsKey(productId)){
             throw new RuntimeException("Product with id: " + productId + " not found");
         }
@@ -58,24 +57,57 @@ public class StoreBasket {
         products.remove(productId);
     }
 
-    public Boolean isProductExists(int productId) {
+    Boolean isProductExists(String productId) {
         return products.containsKey(productId);
     }
 
-    public void changeProductQuantity(int productId, int quantity) {
+    public void changeProductQuantity(String productId, int quantity) {
       try{
-          ProductWithQuantity pq = getProduct(productId);
-          pq.setQuantity(quantity);
+          Pair<Product, Integer> pq = getProductWithQuantity(productId);
+          pq.setSecond(quantity);
 
       }
-      catch(Exception e){
+      catch(Exception e) {
           throw new RuntimeException(e.getMessage());
-        }
-
-
+      }
     }
 
-    public Map<Integer, ProductWithQuantity> getProducts() {
+
+    public Map<String, Pair<Product, Integer>> getProducts() {
         return products;
+    }
+
+    public Map<Product,Integer> getProductsMap() {
+        return new HashMap<>() {{
+            for (var entry : products.entrySet()) {
+                var pair = entry.getValue();
+                put(pair.first(), pair.second());
+            }
+        }};
+    }
+
+    public void mergeStoreBaskets(StoreBasket guestBasket) {
+        for (Map.Entry<String, Pair<Product, Integer>> entry : guestBasket.products.entrySet()) {
+            String productId = entry.getKey();
+            Pair<Product, Integer> guestProductWithQuantity = entry.getValue();
+
+            Pair<Product, Integer> userProductWithQuantity = this.products.get(productId);
+            if (userProductWithQuantity == null) {
+                // If the product ID doesn't exist in the user's basket, add the guest's product
+                this.products.put(productId, guestProductWithQuantity);
+            } else {
+                // If the product ID exists in both baskets, update the quantity
+                int updatedQuantity = userProductWithQuantity.second() + guestProductWithQuantity.second();
+                this.products.put(productId, Pair.of(userProductWithQuantity.first(), updatedQuantity));
+            }
+        }
+    }
+
+    public Reservation reserveBasket() {
+        return makeReservation.apply(getProductsMap());
+    }
+
+    public double getTotalPrice() {
+        return calculatePrice.apply(getProductsMap());
     }
 }

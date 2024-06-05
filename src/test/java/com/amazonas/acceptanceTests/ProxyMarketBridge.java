@@ -1,6 +1,6 @@
 package com.amazonas.acceptanceTests;
 
-import com.amazonas.business.market.GlobalSearchRequest;
+import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.userProfiles.User;
 
 public class ProxyMarketBridge implements MarketBridge{

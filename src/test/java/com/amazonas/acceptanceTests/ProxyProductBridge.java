@@ -20,4 +20,9 @@ public class ProxyProductBridge implements ProductBridge {
     public void testAddProduct() {
 
     }
+
+    @Override
+    public void testAddProductValid() {
+
+    }
 }

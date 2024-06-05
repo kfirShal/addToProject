@@ -1,6 +1,6 @@
 package com.amazonas.acceptanceTests;
 
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.UserActions;
 
 public class ProxyPermissionBridge implements PermissionBridge {
     @Override

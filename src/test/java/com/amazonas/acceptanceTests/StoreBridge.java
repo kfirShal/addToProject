@@ -1,6 +1,6 @@
 package com.amazonas.acceptanceTests;
 
-import com.amazonas.business.stores.StoreActions;
+import com.amazonas.business.permissions.actions.StoreActions;
 
 public interface StoreBridge {
     boolean addProduct(String storeId,String productName, String productDescription);
