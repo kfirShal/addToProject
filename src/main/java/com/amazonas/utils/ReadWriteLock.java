@@ -2,6 +2,7 @@ package com.amazonas.utils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -14,23 +15,23 @@ public class ReadWriteLock {
 
     private final AtomicInteger readers;
     private final AtomicInteger waitingToWrite;
-    private final Object entryLock;
+    private final Object readerLock;
     private final SpinLock writeQueueLock;
     private final List<Object> writeQueue;
 
     public ReadWriteLock() {
         readers = new AtomicInteger();
         waitingToWrite = new AtomicInteger();
-        entryLock = new Object();
+        readerLock = new Object();
         writeQueueLock = new SpinLock();
         writeQueue = new LinkedList<>();
     }
 
     public void acquireRead() {
-        synchronized (entryLock){
+        synchronized (readerLock){
             while(waitingToWrite.get() > 0){
                 try{
-                    entryLock.wait();
+                    readerLock.wait();
                 } catch(InterruptedException ignored){}
             }
 
@@ -45,10 +46,10 @@ public class ReadWriteLock {
     }
 
     public void releaseRead() {
-        synchronized(entryLock){
+        synchronized(readerLock){
             decrement(readers); // this needs to be inside the synchronized block
             if(readers.get() == 0){
-                entryLock.notifyAll();
+                readerLock.notifyAll();
             }
         }
     }
@@ -65,10 +66,10 @@ public class ReadWriteLock {
         writeQueueLock.release(); // release the busy wait lock
 
         // wait for all readers to leave
-        synchronized(entryLock){
+        synchronized(readerLock){
             while(readers.get() > 0){
                 try{
-                    entryLock.wait();
+                    readerLock.wait();
                 } catch(InterruptedException ignored){}
             }
         }
@@ -98,8 +99,8 @@ public class ReadWriteLock {
         if(waitingToWrite.get() == 0){
             // no one is waiting to write
             writeQueueLock.release();
-            synchronized(entryLock){
-                entryLock.notifyAll();
+            synchronized(readerLock){
+                readerLock.notifyAll();
             }
         } else if(!writeQueue.isEmpty()) {
             // waitingToWrite > 0 && writeQueue.size() > 0
@@ -128,5 +129,27 @@ public class ReadWriteLock {
         do{
             curr = num.get();
         } while(!num.compareAndSet(curr, curr - 1));
+    }
+
+    private static class SpinLock {
+
+        private final AtomicBoolean locked;
+
+        public SpinLock(){
+            locked = new AtomicBoolean(false);
+        }
+
+        /**
+         * Acquire the lock non-blocking. will spin until the lock is acquired
+         */
+        public void acquire(){
+            while(!locked.compareAndSet(false,true)){
+                Thread.onSpinWait();
+            }
+        }
+
+        public void release(){
+            locked.set(false);
+        }
     }
 }
