@@ -315,7 +315,7 @@ public class UsersController {
                     userId,
                     transactionTime,
                     reservation.productToQuantity());
-            transactionRepository.documentTransaction(t);
+            transactionRepository.addNewTransaction(t);
         }
     }
 

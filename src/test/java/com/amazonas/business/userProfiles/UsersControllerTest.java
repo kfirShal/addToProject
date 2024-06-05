@@ -224,7 +224,7 @@ class UsersControllerTest {
         when(mockCart.reserveCart()).thenReturn(reservations);
         when(paymentService.charge(user.getPaymentMethod(),100)).thenReturn(true);
 //        when(shippingService.ship(transaction)).thenReturn(true);
-        doNothing().when(transactionRepository).documentTransaction(transaction);
+        doNothing().when(transactionRepository).addNewTransaction(transaction);
         //make purchase
 //        usersController.makePurchase("testUserName2");
 //        verify(transactionsController, times(1));

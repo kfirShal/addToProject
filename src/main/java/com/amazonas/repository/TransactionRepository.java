@@ -51,7 +51,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
         }
     }
 
-    public void documentTransaction(Transaction transaction){
+    public void addNewTransaction(Transaction transaction){
         try {
             lock.acquireWrite();
             log.debug("Documenting transaction for user {} in store {}", transaction.userId(), transaction.storeId());
@@ -83,7 +83,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
         }
     }
 
-    public Transaction getTransaction(String transactionId) {
+    public Transaction getTransactionById(String transactionId) {
         transactionLock.acquireRead();
         try {
             return transactionIdToTransaction.get(transactionId);
@@ -92,7 +92,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
         }
     }
 
-    public void saveTransaction(Transaction transaction) {
+    public void updateTransaction(Transaction transaction) {
         transactionLock.acquireWrite();
         try {
             transactionIdToTransaction.put(transaction.transactionId(), transaction);

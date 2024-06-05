@@ -143,9 +143,9 @@ public class Store {
     public void setShipped(String transactionId){
         try{
             lock.acquireWrite();
-            Transaction transaction = repository.getTransaction(transactionId);
+            Transaction transaction = repository.getTransactionById(transactionId);
             transaction.setShipped();
-            repository.saveTransaction(transaction);
+            repository.updateTransaction(transaction);
         } finally {
             lock.releaseWrite();
         }
@@ -154,9 +154,9 @@ public class Store {
     public void setDelivered(String transactionId){
         try{
             lock.acquireWrite();
-            Transaction transaction = repository.getTransaction(transactionId);
+            Transaction transaction = repository.getTransactionById(transactionId);
             transaction.setDelivered();
-            repository.saveTransaction(transaction);
+            repository.updateTransaction(transaction);
         } finally {
             lock.releaseWrite();
         }
@@ -165,9 +165,9 @@ public class Store {
     public void setCancelled(String transactionId){
         try{
             lock.acquireWrite();
-            Transaction transaction = repository.getTransaction(transactionId);
+            Transaction transaction = repository.getTransactionById(transactionId);
             transaction.setCancelled();
-            repository.saveTransaction(transaction);
+            repository.updateTransaction(transaction);
         } finally {
             lock.releaseWrite();
         }
