@@ -75,7 +75,6 @@ public class Store {
 
         try{
             lock.acquireWrite();
-
             if(isOpen) {
                 return false;
             } else{
@@ -140,7 +139,7 @@ public class Store {
         }
     }
 
-    public void setShipped(String transactionId){
+    public void setOrderShipped(String transactionId){
         try{
             lock.acquireWrite();
             Transaction transaction = repository.getTransactionById(transactionId);
@@ -151,7 +150,7 @@ public class Store {
         }
     }
 
-    public void setDelivered(String transactionId){
+    public void setOrderDelivered(String transactionId){
         try{
             lock.acquireWrite();
             Transaction transaction = repository.getTransactionById(transactionId);
@@ -162,7 +161,7 @@ public class Store {
         }
     }
 
-    public void setCancelled(String transactionId){
+    public void setOrderCancelled(String transactionId){
         try{
             lock.acquireWrite();
             Transaction transaction = repository.getTransactionById(transactionId);
@@ -223,15 +222,26 @@ public class Store {
             lock.acquireRead();
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
-
-                // Check if the product matches the search request
-                if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
-                        || product.rating().ordinal() >= request.getProductRating().ordinal()
-                        || product.productName().toLowerCase().contains(request.getProductName())
-                        || product.category().toLowerCase().contains(request.getProductCategory())
-                        || product.description().toLowerCase().contains(request.getProductName())
-                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
-                {
+                if(product.price() < request.getMinPrice() || product.price() > request.getMaxPrice()){
+                    continue;
+                }
+                if(product.rating().ordinal() < request.getProductRating().ordinal()){
+                    continue;
+                }
+                if(!request.getProductName().isBlank() && product.productName().toLowerCase().contains(request.getProductName())){
+                    toReturn.add(product);
+                    continue;
+                }
+                if(!request.getProductCategory().isBlank() && product.category().toLowerCase().contains(request.getProductCategory())){
+                    toReturn.add(product);
+                    continue;
+                }
+                if(!request.getProductName().isBlank() && product.description().toLowerCase().contains(request.getProductName())){
+                    toReturn.add(product);
+                    continue;
+                }
+                Set<String> keywords = product.keyWords();
+                if(request.getKeyWords().stream().anyMatch(keywords::contains)){
                     toReturn.add(product);
                 }
             }
@@ -333,7 +343,7 @@ public class Store {
             for (var entry : toReserve.entrySet()) {
                 String productId = entry.getKey().productId();
                 int quantity = entry.getValue();
-                if (inventory.isProductDisabled(productId) && inventory.getQuantity(productId) < quantity) {
+                if (inventory.isProductDisabled(productId) || inventory.getQuantity(productId) < quantity) {
                     return null;
                 }
             }
