@@ -488,14 +488,6 @@ class StoreTest {
         assertNull(actualReservation);
     }
 
-    @Test
-    void addPermissionToManager() {
-    }
-
-    @Test
-    void removePermissionFromManager() {
-    }
-
     private void assertProductListsEqual(List<Product> expected, List<Product> actual) {
         assertEquals(expected.size(), actual.size());
         for (Product product : expected) {
