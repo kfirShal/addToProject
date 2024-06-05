@@ -17,5 +17,8 @@ public class RegisteredUser extends User{
         return super.getUserId();
     }
 
+    public String getEmail() {
+        return email;
+    }
 }
 

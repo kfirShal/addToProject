@@ -12,7 +12,7 @@ public class ProductInventory {
 
     private static final Logger log = LoggerFactory.getLogger(ProductInventory.class);
 
-    private final ConcurrentMap<String, Product> idToProduct;
+    protected ConcurrentMap<String, Product> idToProduct;
     private final ConcurrentMap<String, Integer> idToQuantity;
     private final Set<String> disabledProductsId;
 
@@ -37,7 +37,7 @@ public class ProductInventory {
         log.debug("Updating product {} with id {} in inventory", product.productName(), product.productId());
 
         // we want to make sure the object is the same object
-        // so we can update it for the entire system
+        // we can update it for the entire system
         if(idToProduct.containsKey(product.productId())) {
             Product product1 = idToProduct.get(product.productId());
             product1.setProductName(product.productName());
