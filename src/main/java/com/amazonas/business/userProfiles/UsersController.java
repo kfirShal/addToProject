@@ -299,7 +299,7 @@ public class UsersController {
 
         // charge the user
         if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
-            reservations.forEach(Reservation::cancelReservation);
+            cancelPurchase(userId);
             throw new PurchaseFailedException("Payment failed");
         }
 
@@ -321,6 +321,10 @@ public class UsersController {
 
     public void cancelPurchase(String userId) {
         List<Reservation> reservations = reservationRepository.getReservations(userId);
-        reservations.forEach(Reservation::cancelReservation);
+        reservations.forEach(r -> {
+            r.cancelReservation();
+            reservationRepository.removeReservation(userId,r);
+        });
+
     }
 }
