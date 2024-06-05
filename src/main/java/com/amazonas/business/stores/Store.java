@@ -130,6 +130,8 @@ public class Store {
     //========================== PAID ORDERS =============================== |
     //====================================================================== |
 
+    // TODO: All this can probably be moved to the controller
+
     public Collection<Transaction> getPendingShipmentOrders(){
         try{
             lock.acquireRead();
