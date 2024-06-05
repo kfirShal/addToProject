@@ -11,6 +11,8 @@ public class UserProfilesService {
 
     private final UsersController usersController;
 
+    //TODO: USE PROXY
+
     public UserProfilesService(UsersController usersController) {
         this.usersController = usersController;
     }

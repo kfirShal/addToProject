@@ -19,6 +19,8 @@ public class StoresService {
         this.controller = storeProxy;
     }
 
+    //TODO: USE PROXY
+
     public String addStore(String storeJson) {
         StoreCreationRequest toAdd = JsonUtils.deserialize(storeJson, StoreCreationRequest.class);
         try {

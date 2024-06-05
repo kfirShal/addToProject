@@ -12,4 +12,14 @@ public class MarketService {
         proxy = marketProxy;
     }
 
+    //TODO: USE PROXY
+
+    public String startMarket() {
+        return "";
+    }
+
+    public String shutdown() {
+        return "";
+    }
+
 }
