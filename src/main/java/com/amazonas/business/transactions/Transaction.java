@@ -1,8 +1,6 @@
 package com.amazonas.business.transactions;
 
 import com.amazonas.business.inventory.Product;
-import com.amazonas.business.payment.PaymentMethod;
-import com.amazonas.utils.Pair;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -15,7 +13,7 @@ public final class Transaction {
     private final String storeId;
     private final String userId;
     private final LocalDateTime dateOfTransaction;
-    private final Map<Product, Double> productToPrice;
+    private final Map<Product, Integer> productToQuantity;
 
     private TransactionState state;
 
@@ -23,13 +21,13 @@ public final class Transaction {
                        String storeId,
                        String userId,
                        LocalDateTime dateOfTransaction,
-                       Map<Product, Integer> productToPrice) {
+                       Map<Product, Integer> productToQuantity) {
         this.transactionId = transactionId;
         this.storeId = storeId;
         this.userId = userId;
         this.dateOfTransaction = dateOfTransaction;
-        this.productToPrice = Collections.unmodifiableMap(new HashMap<>() {{
-            productToPrice.forEach((key, value) -> put(key.clone(), Double.valueOf(value)));
+        this.productToQuantity = Collections.unmodifiableMap(new HashMap<>() {{
+            productToQuantity.forEach((key, value) -> put(key.clone(), value));
         }});
 
         this.state = TransactionState.PENDING_SHIPMENT;
@@ -76,8 +74,8 @@ public final class Transaction {
         return dateOfTransaction;
     }
 
-    public Map<Product, Double> productToPrice() {
-        return productToPrice;
+    public Map<Product, Integer> productToQuantity() {
+        return productToQuantity;
     }
 
     @Override
@@ -89,12 +87,12 @@ public final class Transaction {
                 Objects.equals(this.storeId, that.storeId) &&
                 Objects.equals(this.userId, that.userId) &&
                 Objects.equals(this.dateOfTransaction, that.dateOfTransaction) &&
-                Objects.equals(this.productToPrice, that.productToPrice);
+                Objects.equals(this.productToQuantity, that.productToQuantity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(transactionId, storeId, userId, dateOfTransaction, productToPrice);
+        return Objects.hash(transactionId, storeId, userId, dateOfTransaction, productToQuantity);
     }
 
     @Override
@@ -104,7 +102,7 @@ public final class Transaction {
                 "storeId=" + storeId + ", " +
                 "userId=" + userId + ", " +
                 "dateOfTransaction=" + dateOfTransaction + ", " +
-                "productToPrice=" + productToPrice + ']';
+                "productToPrice=" + productToQuantity + ']';
     }
 
     public TransactionState state() {
