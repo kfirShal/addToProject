@@ -67,13 +67,4 @@ public class PermissionsProfileRepository extends AbstractCachingRepository<Perm
             permissionsProfileLock.releaseWrite();
         }
     }
-
-    public PermissionsProfile getProfile(String userId) {
-        permissionsProfileLock.acquireRead();
-        try {
-            return userIdToPermissionsProfile.get(userId);
-        } finally {
-            permissionsProfileLock.releaseRead();
-        }
-    }
 }

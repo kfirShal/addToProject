@@ -24,7 +24,8 @@ public class PermissionsController {
     private final PermissionsProfileRepository repository;
 
     public PermissionsController(PermissionsProfile defaultRegisteredUserPermissionsProfile,
-                                 PermissionsProfile guestPermissionsProfile, PermissionsProfileRepository permissionsProfileRepository) {
+                                 PermissionsProfile guestPermissionsProfile,
+                                 PermissionsProfileRepository permissionsProfileRepository) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
         lock = new ReadWriteLock();
@@ -145,7 +146,7 @@ public class PermissionsController {
     private PermissionsProfile getPermissionsProfile(String userId) {
         log.trace("Fetching permissions profile for user {}", userId);
         lock.acquireRead();
-        PermissionsProfile profile = repository.getProfile(userId);
+        PermissionsProfile profile = repository.getPermissionsProfile(userId);
         lock.releaseRead();
         if(profile == null) {
             log.error("User not registered");
