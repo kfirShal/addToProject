@@ -85,11 +85,11 @@ public class Product implements Cloneable {
     }
 
     public void addKeyWords(String key){
-        keyWords.add(key);
+        keyWords.add(key.toLowerCase());
     }
 
     public void removeKeyWords(String key){
-        keyWords.remove(key);
+        keyWords.remove(key.toLowerCase());
     }
 
     @Override

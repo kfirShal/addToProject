@@ -6,7 +6,7 @@ public enum MarketActions {
     CREATE_STORE,
     SEARCH_PRODUCTS,
     MAKE_PURCHASE,
-    SHUTDOWN,
+    SHUTDOWN_MARKET,
     RESTART,
 
     // shipping management
@@ -27,6 +27,6 @@ public enum MarketActions {
     REMOVE_PAYMENT_METHOD,
     UPDATE_PAYMENT_METHOD,
     ENABLE_PAYMENT_METHOD,
-    DISABLE_PAYMENT_METHOD,
+    DISABLE_PAYMENT_METHOD, START_MARKET,
 
 }

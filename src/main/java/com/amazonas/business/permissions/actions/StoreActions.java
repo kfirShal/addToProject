@@ -21,6 +21,7 @@ public enum StoreActions {
     REMOVE_OWNER,
     ADD_MANAGER,
     REMOVE_MANAGER,
+    ADD_PERMISSION_TO_MANAGER,
 
     // store controller actions
     ADD_STORE,
@@ -28,5 +29,7 @@ public enum StoreActions {
     UPDATE_STORE,
     ENABLE_STORE,
     DISABLE_STORE,
+
+    SET_RESERVATION_TIMEOUT, REMOVE_PERMISSION_FROM_MANAGER,
 
 }

@@ -1,6 +1,5 @@
 package com.amazonas.business.userProfiles;
 
-import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
@@ -115,12 +114,12 @@ public class UsersController {
     }
 
     //this is when the guest logs in to the market and turn to registeredUser
-    public void loginToRegistered(String guestInitialId,String userName) {
+    public boolean loginToRegistered(String guestInitialId,String userName) {
 
         try{
             lock.acquireWrite();
             if(!registeredUsers.containsKey(userName)){
-                throw new RuntimeException("The user with user name: " + userName + " does not register to the system");
+                return false;
             }
             //we delete this user from the list of guest
             guests.remove(guestInitialId);
@@ -131,6 +130,7 @@ public class UsersController {
             carts.put(userName,mergedShoppingCart);
             RegisteredUser loggedInUser = getRegisteredUser(userName);
             onlineRegisteredUsers.put(userName,loggedInUser);
+            return true;
         }
         finally {
             lock.releaseWrite();
@@ -191,7 +191,7 @@ public class UsersController {
     }
 
     
-    public void addProductToCart(String userId, String storeName, Product product, int quantity) {
+    public void addProductToCart(String userId, String storeName, String productId, int quantity) {
 
         try{
             lock.acquireWrite();
@@ -201,7 +201,7 @@ public class UsersController {
             if(!carts.containsKey(userId)){
                 throw new RuntimeException("The cart does not exists");
             }
-            carts.get(userId).addProduct(storeName,product,quantity);
+            carts.get(userId).addProduct(storeName, productId,quantity);
         }
         finally {
             lock.releaseWrite();

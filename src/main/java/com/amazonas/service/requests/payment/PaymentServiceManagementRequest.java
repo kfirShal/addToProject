@@ -1,4 +1,4 @@
-package com.amazonas.service.requests;
+package com.amazonas.service.requests.payment;
 
 import com.amazonas.business.payment.PaymentService;
 

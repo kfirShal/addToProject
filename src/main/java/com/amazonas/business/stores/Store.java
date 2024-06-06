@@ -25,6 +25,8 @@ import java.util.*;
 public class Store {
 
     private static final int FIVE_MINUTES = 5 * 60;
+    private static final long reservationTimeoutSeconds = FIVE_MINUTES;
+
     private final ReservationFactory reservationFactory;
     private final PendingReservationMonitor pendingReservationMonitor;
     private final PermissionsController permissionsController;
@@ -40,7 +42,6 @@ public class Store {
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
-    private long reservationTimeoutSeconds;
 
     public Store(String storeId,
                  String storeName,
@@ -62,7 +63,6 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.repository = transactionRepository;
-        this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.salesPolicies = new LinkedList<>();
         lock = new ReadWriteLock();
         isOpen = true;
@@ -75,7 +75,6 @@ public class Store {
 
         try{
             lock.acquireWrite();
-
             if(isOpen) {
                 return false;
             } else{
@@ -131,6 +130,8 @@ public class Store {
     //========================== PAID ORDERS =============================== |
     //====================================================================== |
 
+    // TODO: All this can probably be moved to the controller
+
     public Collection<Transaction> getPendingShipmentOrders(){
         try{
             lock.acquireRead();
@@ -140,7 +141,7 @@ public class Store {
         }
     }
 
-    public void setShipped(String transactionId){
+    public void setOrderShipped(String transactionId){
         try{
             lock.acquireWrite();
             Transaction transaction = repository.getTransactionById(transactionId);
@@ -151,7 +152,7 @@ public class Store {
         }
     }
 
-    public void setDelivered(String transactionId){
+    public void setOrderDelivered(String transactionId){
         try{
             lock.acquireWrite();
             Transaction transaction = repository.getTransactionById(transactionId);
@@ -162,7 +163,7 @@ public class Store {
         }
     }
 
-    public void setCancelled(String transactionId){
+    public void setOrderCancelled(String transactionId){
         try{
             lock.acquireWrite();
             Transaction transaction = repository.getTransactionById(transactionId);
@@ -223,15 +224,26 @@ public class Store {
             lock.acquireRead();
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
-
-                // Check if the product matches the search request
-                if((product.price() >= request.getMinPrice() && product.price() <= request.getMaxPrice())
-                        || product.rating().ordinal() >= request.getProductRating().ordinal()
-                        || product.productName().toLowerCase().contains(request.getProductName())
-                        || product.category().toLowerCase().contains(request.getProductCategory())
-                        || product.description().toLowerCase().contains(request.getProductName())
-                        || request.getKeyWords().stream().anyMatch(product.keyWords()::contains))
-                {
+                if(product.price() < request.getMinPrice() || product.price() > request.getMaxPrice()){
+                    continue;
+                }
+                if(product.rating().ordinal() < request.getProductRating().ordinal()){
+                    continue;
+                }
+                if(!request.getProductName().isBlank() && product.productName().toLowerCase().contains(request.getProductName())){
+                    toReturn.add(product);
+                    continue;
+                }
+                if(!request.getProductCategory().isBlank() && product.category().toLowerCase().contains(request.getProductCategory())){
+                    toReturn.add(product);
+                    continue;
+                }
+                if(!request.getProductName().isBlank() && product.description().toLowerCase().contains(request.getProductName())){
+                    toReturn.add(product);
+                    continue;
+                }
+                Set<String> keywords = product.keyWords();
+                if(request.getKeyWords().stream().anyMatch(keywords::contains)){
                     toReturn.add(product);
                 }
             }
@@ -333,7 +345,7 @@ public class Store {
             for (var entry : toReserve.entrySet()) {
                 String productId = entry.getKey().productId();
                 int quantity = entry.getValue();
-                if (inventory.isProductDisabled(productId) && inventory.getQuantity(productId) < quantity) {
+                if (inventory.isProductDisabled(productId) || inventory.getQuantity(productId) < quantity) {
                     return null;
                 }
             }
@@ -372,15 +384,6 @@ public class Store {
                 inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
             }
 
-        } finally {
-            lock.releaseWrite();
-        }
-    }
-
-    public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
-        try{
-            lock.acquireWrite();
-            this.reservationTimeoutSeconds = reservationTimeoutSeconds;
         } finally {
             lock.releaseWrite();
         }
