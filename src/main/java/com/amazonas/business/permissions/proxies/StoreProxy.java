@@ -111,11 +111,13 @@ public class StoreProxy extends ControllerProxy {
 
     public List<Product> searchProductsGlobally(GlobalSearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.SEARCH_PRODUCTS);
         return real.searchProductsGlobally(request);
     }
 
     public List<Product> searchProductsInStore(String storeId, SearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.SEARCH_PRODUCTS);
         return real.searchProductsInStore(storeId, request);
     }
 }
