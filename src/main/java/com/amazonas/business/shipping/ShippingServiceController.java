@@ -1,6 +1,6 @@
 package com.amazonas.business.shipping;
 
-import com.amazonas.service.requests.ShipmentRequest;
+import com.amazonas.service.requests.shipping.ShipmentRequest;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 

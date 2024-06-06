@@ -52,9 +52,11 @@ public class StoresController {
     public void removeProduct(String storeId,String productId) throws StoreException {
         getStore(storeId).removeProduct(productId);
     }
+
     public void disableProduct(String storeId,String productId){
         getStore(storeId).disableProduct(productId);
     }
+
     public void enableProduct(String storeId,String productId){
         getStore(storeId).enableProduct(productId);
     }
@@ -62,24 +64,27 @@ public class StoresController {
     public void addOwner(String username, String storeId, String logged){
         getStore(storeId).addOwner(logged,username);
     }
+
     public void addManager(String logged, String storeId, String username){
         getStore(storeId).addManager(logged,username);
     }
+
     public void removeOwner(String username,String storeId, String logged){
         getStore(storeId).removeOwner(logged,username);
     }
+
     public void removeManager(String logged, String storeId,String username){
         getStore(storeId).removeManager(logged,username);
     }
-    public void setReservationTimeoutSeconds(String storeId, long time){
-        getStore(storeId).setReservationTimeoutSeconds(time);
-    }
+
     public boolean addPermissionToManager(String storeId,String managerId, StoreActions actions) throws StoreException {
         return getStore(storeId).addPermissionToManager(managerId,actions);
     }
+
     public boolean removePermissionFromManager(String storeId,String managerId, StoreActions actions) throws StoreException {
         return getStore(storeId).removePermissionFromManager(managerId,actions);
     }
+
     public Store getStore(String storeId){
         return repository.getStore(storeId);
     }

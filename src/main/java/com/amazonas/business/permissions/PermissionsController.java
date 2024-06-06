@@ -33,66 +33,66 @@ public class PermissionsController {
     }
     
     public boolean addPermission(String userId, UserActions action) {
-        log.debug("Adding permission {} to user {}", action, userId);
+        log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addUserActionPermission(action);
-        log.debug("permission was {}", result? "added" : "not added");
+        log.debug("action was {}", result? "added" : "not added");
         return result;
     }
 
     public boolean removePermission(String userId, UserActions action) {
-        log.debug("Removing permission {} from user {}", action, userId);
+        log.debug("Removing action {} from user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeUserActionPermission(action);
-        log.debug("permission was {}", result? "removed" : "not removed");
+        log.debug("action was {}", result? "removed" : "not removed");
         return result;
     }
 
     public boolean addPermission(String userId, String storeId, StoreActions action) {
-        log.debug("Adding permission {} to user {} for store {}", action, userId, storeId);
+        log.debug("Adding action {} to user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addStorePermission(storeId, action);
-        log.debug("permission was {}", result? "added" : "not added");
+        log.debug("action was {}", result? "added" : "not added");
         return result;
     }
 
     public boolean removePermission(String userId, String storeId, StoreActions action) {
-        log.debug("Removing permission {} from user {} for store {}", action, userId, storeId);
+        log.debug("Removing action {} from user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeStorePermission(storeId, action);
-        log.debug("permission was {}", result? "removed" : "not removed");
+        log.debug("action was {}", result? "removed" : "not removed");
         return result;
     }
 
     public boolean addPermission(String userId, MarketActions action) {
-        log.debug("Adding permission {} to user {}", action, userId);
+        log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addMarketActionPermission(action);
-        log.debug("permission was {}", result? "added" : "not added");
+        log.debug("action was {}", result? "added" : "not added");
         return result;
     }
 
     public boolean checkPermission(String userId, UserActions action) {
-        log.debug("Checking permission {} for user {}", action, userId);
+        log.debug("Checking action {} for user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(action);
-        log.debug("permission is {}", result? "granted" : "denied");
+        log.debug("action is {}", result? "granted" : "denied");
         return result;
     }
 
     public boolean checkPermission(String userId, String storeId, StoreActions action) {
-        log.debug("Checking permission {} for user {} for store {}", action, userId, storeId);
+        log.debug("Checking action {} for user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(storeId, action);
-        log.debug("permission is {}", result? "granted" : "denied");
+        log.debug("action is {}", result? "granted" : "denied");
         return result;
     }
 
     public boolean checkPermission(String userId, MarketActions action) {
-        log.debug("Checking permission {} for user {}", action, userId);
+        log.debug("Checking action {} for user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(action);
-        log.debug("permission is {}", result? "granted" : "denied");
+        log.debug("action is {}", result? "granted" : "denied");
         return result;
     }
 

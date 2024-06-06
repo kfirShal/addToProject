@@ -25,6 +25,8 @@ import java.util.*;
 public class Store {
 
     private static final int FIVE_MINUTES = 5 * 60;
+    private static final long reservationTimeoutSeconds = FIVE_MINUTES;
+
     private final ReservationFactory reservationFactory;
     private final PendingReservationMonitor pendingReservationMonitor;
     private final PermissionsController permissionsController;
@@ -40,7 +42,6 @@ public class Store {
     private String storeDescription;
     private Rating storeRating;
     private boolean isOpen;
-    private long reservationTimeoutSeconds;
 
     public Store(String storeId,
                  String storeName,
@@ -62,7 +63,6 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.repository = transactionRepository;
-        this.reservationTimeoutSeconds = FIVE_MINUTES;
         this.salesPolicies = new LinkedList<>();
         lock = new ReadWriteLock();
         isOpen = true;
@@ -384,15 +384,6 @@ public class Store {
                 inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
             }
 
-        } finally {
-            lock.releaseWrite();
-        }
-    }
-
-    public void setReservationTimeoutSeconds(long reservationTimeoutSeconds) {
-        try{
-            lock.acquireWrite();
-            this.reservationTimeoutSeconds = reservationTimeoutSeconds;
         } finally {
             lock.releaseWrite();
         }

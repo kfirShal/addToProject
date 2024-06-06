@@ -1,4 +1,4 @@
-package com.amazonas.service.requests;
+package com.amazonas.service.requests.shipping;
 
 import com.amazonas.business.shipping.ShippingService;
 
