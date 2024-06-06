@@ -1,11 +1,11 @@
 package com.amazonas.acceptanceTests;
 
-import com.amazonas.business.market.GlobalSearchRequest;
+import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.payment.PaymentMethod;
-import com.amazonas.business.stores.StoreActions;
+import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.userProfiles.User;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.UserActions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,8 +112,6 @@ public class SadnaTests {
         return permissionBridge.checkPermission(userId, action);
     }
 
-
-
     public boolean addPermission(String userId, UserActions action){
         return permissionBridge.addPermission(userId, action);
     }
@@ -125,9 +123,6 @@ public class SadnaTests {
     public boolean checkPermission(String userId, UserActions action){
         return permissionBridge.checkPermission(userId, action);
     }
-
-
-
 
 
     //////////Product
@@ -150,7 +145,6 @@ public class SadnaTests {
     public boolean updateProduct(String storeId,String productName, String productDescription){
         return productBridge.updateProduct(storeId, productDescription);
     }
-
 
 
 
@@ -185,16 +179,6 @@ public class SadnaTests {
     public boolean removeFromCart(String productName){
         return false;
     }
-
-
-
-
-
-
-
-
-
-
 
     public void testAuthenticateValidUser() {
         authenticationBridge.testAuthenticateValidUser();
@@ -268,19 +252,6 @@ public class SadnaTests {
         marketBridge.testMakePurchaseInvalidProduct();
     }
 
-
-    public void testChargeValid() {
-        paymentBridge.testChargeValid();
-    }
-
-    public void testChargeInvalidCard() {
-        paymentBridge.testChargeInvalidCard();
-    }
-
-    public void testChargeInsufficientFunds() {
-        paymentBridge.testChargeInsufficientFunds();
-    }
-
     public void testAddPermissionValid() {
         permissionBridge.testAddPermissionValid();
     }
@@ -289,20 +260,12 @@ public class SadnaTests {
         permissionBridge.testAddPermissionInvalidUser();
     }
 
-    public void testAddPermissionDuplicate() {
-        permissionBridge.testAddPermissionDuplicate();
-    }
-
     public void testRemovePermissionValid() {
         permissionBridge.testRemovePermissionValid();
     }
 
     public void testRemovePermissionInvalidUser() {
         permissionBridge.testRemovePermissionInvalidUser();
-    }
-
-    public void testRemovePermissionNonexistent() {
-        permissionBridge.testRemovePermissionNonexistent();
     }
 
     public void testCheckPermissionValid() {

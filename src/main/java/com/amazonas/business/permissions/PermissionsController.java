@@ -1,18 +1,16 @@
 package com.amazonas.business.permissions;
 
-import com.amazonas.business.market.MarketActions;
+import com.amazonas.business.permissions.actions.MarketActions;
 import com.amazonas.business.permissions.profiles.PermissionsProfile;
 import com.amazonas.business.permissions.profiles.RegisteredUserPermissionsProfile;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
+import com.amazonas.repository.PermissionsProfileRepository;
+import com.amazonas.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component
@@ -22,78 +20,79 @@ public class PermissionsController {
 
     private final PermissionsProfile defaultProfile;
     private final PermissionsProfile guestProfile;
-    private final Map<String, PermissionsProfile> userIdToPermissionsProfile;
-    private final Semaphore lock;
+    private final ReadWriteLock lock;
+    private final PermissionsProfileRepository repository;
 
     public PermissionsController(PermissionsProfile defaultRegisteredUserPermissionsProfile,
-                                 PermissionsProfile guestPermissionsProfile) {
+                                 PermissionsProfile guestPermissionsProfile,
+                                 PermissionsProfileRepository permissionsProfileRepository) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
-        userIdToPermissionsProfile = new HashMap<>();
-        lock = new Semaphore(1,true);
+        lock = new ReadWriteLock();
+        this.repository = permissionsProfileRepository;
     }
     
     public boolean addPermission(String userId, UserActions action) {
-        log.debug("Adding permission {} to user {}", action, userId);
+        log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addUserActionPermission(action);
-        log.debug("permission was {}", result? "added" : "not added");
+        log.debug("action was {}", result? "added" : "not added");
         return result;
     }
 
     public boolean removePermission(String userId, UserActions action) {
-        log.debug("Removing permission {} from user {}", action, userId);
+        log.debug("Removing action {} from user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeUserActionPermission(action);
-        log.debug("permission was {}", result? "removed" : "not removed");
+        log.debug("action was {}", result? "removed" : "not removed");
         return result;
     }
 
     public boolean addPermission(String userId, String storeId, StoreActions action) {
-        log.debug("Adding permission {} to user {} for store {}", action, userId, storeId);
+        log.debug("Adding action {} to user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addStorePermission(storeId, action);
-        log.debug("permission was {}", result? "added" : "not added");
+        log.debug("action was {}", result? "added" : "not added");
         return result;
     }
 
     public boolean removePermission(String userId, String storeId, StoreActions action) {
-        log.debug("Removing permission {} from user {} for store {}", action, userId, storeId);
+        log.debug("Removing action {} from user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeStorePermission(storeId, action);
-        log.debug("permission was {}", result? "removed" : "not removed");
+        log.debug("action was {}", result? "removed" : "not removed");
         return result;
     }
 
     public boolean addPermission(String userId, MarketActions action) {
-        log.debug("Adding permission {} to user {}", action, userId);
+        log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addMarketActionPermission(action);
-        log.debug("permission was {}", result? "added" : "not added");
+        log.debug("action was {}", result? "added" : "not added");
         return result;
     }
 
     public boolean checkPermission(String userId, UserActions action) {
-        log.debug("Checking permission {} for user {}", action, userId);
+        log.debug("Checking action {} for user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(action);
-        log.debug("permission is {}", result? "granted" : "denied");
+        log.debug("action is {}", result? "granted" : "denied");
         return result;
     }
 
     public boolean checkPermission(String userId, String storeId, StoreActions action) {
-        log.debug("Checking permission {} for user {} for store {}", action, userId, storeId);
+        log.debug("Checking action {} for user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(storeId, action);
-        log.debug("permission is {}", result? "granted" : "denied");
+        log.debug("action is {}", result? "granted" : "denied");
         return result;
     }
 
     public boolean checkPermission(String userId, MarketActions action) {
-        log.debug("Checking permission {} for user {}", action, userId);
+        log.debug("Checking action {} for user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(action);
-        log.debug("permission is {}", result? "granted" : "denied");
+        log.debug("action is {}", result? "granted" : "denied");
         return result;
     }
 
@@ -121,43 +120,38 @@ public class PermissionsController {
     }
 
     private void registerUser(String userId, PermissionsProfile profile , String failMessage) {
-        lockAcquire();
-        if(userIdToPermissionsProfile.containsKey(userId)) {
-            lock.release();
-            log.error(failMessage);
-            throw new IllegalArgumentException(failMessage);
+        try{
+            lock.acquireWrite();
+            repository.addUser(userId, profile);
+        } finally{
+            lock.releaseWrite();
         }
-        userIdToPermissionsProfile.put(userId, profile);
-        lock.release();
     }
 
     private void removeUser(String userId, String failMessage) {
-        lockAcquire();
-        var removed = userIdToPermissionsProfile.remove(userId);
-        lock.release();
+        try{
+            lock.acquireWrite();
+            var removed = repository.removeUser(userId);
 
-        if(removed == null) {
-            log.error(failMessage);
-            throw new IllegalArgumentException(failMessage);
+            if(removed == null) {
+                log.error(failMessage);
+                throw new IllegalArgumentException(failMessage);
+            }
+        } finally {
+            lock.releaseWrite();
         }
     }
 
     @NonNull
     private PermissionsProfile getPermissionsProfile(String userId) {
         log.trace("Fetching permissions profile for user {}", userId);
-        lockAcquire();
-        PermissionsProfile profile = userIdToPermissionsProfile.get(userId);
-        lock.release();
+        lock.acquireRead();
+        PermissionsProfile profile = repository.getPermissionsProfile(userId);
+        lock.releaseRead();
         if(profile == null) {
             log.error("User not registered");
             throw new IllegalArgumentException("User not registered");
         }
         return profile;
-    }
-
-    private void lockAcquire() {
-        try {
-            lock.acquire();
-        } catch (InterruptedException ignored) {}
     }
 }

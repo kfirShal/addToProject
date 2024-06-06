@@ -2,12 +2,16 @@ package com.amazonas.business.permissions.proxies;
 
 import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.permissions.PermissionsController;
-import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.business.userProfiles.UsersController;
+import com.amazonas.business.permissions.actions.UserActions;
+import com.amazonas.business.userProfiles.*;
+import com.amazonas.exceptions.AuthenticationFailedException;
+import com.amazonas.exceptions.NoPermissionException;
+import com.amazonas.exceptions.PurchaseFailedException;
+import com.amazonas.exceptions.UserException;
 import org.springframework.stereotype.Component;
 
 @Component("userProxy")
-public class UserProxy extends ControllerProxy implements UsersController {
+public class UserProxy extends ControllerProxy {
 
     private final UsersController real;
 
@@ -16,48 +20,77 @@ public class UserProxy extends ControllerProxy implements UsersController {
         this.real = usersController;
     }
 
-    @Override
-    public void register(String email, String userName, String password) {
-
+    public void register(String email, String userName, String password) throws UserException {
+        real.register(email, userName, password);
     }
 
-    @Override
-    public void enterAsGuest() {
-
+    public String enterAsGuest() {
+        return real.enterAsGuest();
     }
 
-    @Override
-    public void login(String userName) {
-        //add user to logged in users
+    //this is when the guest logs in to the market and turn to registeredUser
+    public boolean loginToRegistered(String guestInitialId,String userId, String token) throws AuthenticationFailedException {
+        authenticateToken(guestInitialId, token);
+        return real.loginToRegistered(guestInitialId,userId);
     }
 
-    @Override
-    public void logout() {
-
+    public void logout(String userId, String token) throws AuthenticationFailedException {
+        authenticateToken(userId, token);
+        real.logout(userId);
     }
 
-    @Override
-    public void logoutAsGuest() {
-
+    public void logoutAsGuest(String guestInitialId, String token) throws AuthenticationFailedException {
+        authenticateToken(guestInitialId, token);
+        real.logoutAsGuest(guestInitialId);
     }
 
-    @Override
-    public ShoppingCart getCart() {
-        return null;
+
+    public ShoppingCart getCart(String userId, String token) throws AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.VIEW_SHOPPING_CART);
+        return real.getCart(userId);
     }
 
-    @Override
-    public void addProductToCart() {
 
+    public void addProductToCart(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.ADD_TO_SHOPPING_CART);
+        real.addProductToCart(userId, storeName, productId, quantity);
     }
 
-    @Override
-    public void RemoveProductFromCart() {
 
+    public void RemoveProductFromCart(String userId,String storeName,String productId, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.REMOVE_FROM_SHOPPING_CART);
+        real.RemoveProductFromCart(userId, storeName, productId);
     }
 
-    @Override
-    public void changeProductQuantity() {
+    public void changeProductQuantity(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.UPDATE_SHOPPING_CART);
+        real.changeProductQuantity(userId, storeName, productId, quantity);
+    }
 
+    public User getUser(String userId, String token) throws AuthenticationFailedException {
+        authenticateToken(userId, token);
+        return real.getUser(userId);
+    }
+
+    public void startPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.START_PURCHASE);
+        real.startPurchase(userId);
+    }
+
+    public void payForPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.PAY_FOR_PURCHASE);
+        real.payForPurchase(userId);
+    }
+
+    public void cancelPurchase(String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.CANCEL_PURCHASE);
+        real.cancelPurchase(userId);
     }
 }

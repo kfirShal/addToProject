@@ -1,8 +1,8 @@
 package com.amazonas.acceptanceTests;
 
 import com.amazonas.business.payment.PaymentMethod;
-import com.amazonas.business.stores.StoreActions;
-import com.amazonas.business.userProfiles.UserActions;
+import com.amazonas.business.permissions.actions.StoreActions;
+import com.amazonas.business.permissions.actions.UserActions;
 
 public class ProxyStoreBridge implements StoreBridge{
 

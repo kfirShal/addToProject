@@ -1,7 +1,10 @@
 package com.amazonas.business.payment;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class PaymentService {
 
-    public void charge(PaymentMethod paymentMethod, double amount){}
+    public boolean charge(PaymentMethod paymentMethod, double amount){return true;}
 
 }

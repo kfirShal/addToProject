@@ -8,4 +8,26 @@ public interface ProductBridge {
     void testAddProduct();
 
     void testAddProductValid();
+
+    void testAddProductInvalid();
+
+    void testAddProductDuplicate();
+
+    void testRemoveProductValid();
+
+    void testRemoveProductInvalid();
+
+    void testRemoveProductNonexistent();
+
+    void testUpdateProductValid();
+
+    void testUpdateProductInvalid();
+
+    void testUpdateProductNonexistent();
+
+    void testSearchProductByName();
+
+    void testSearchProductByCategory();
+
+    void testSearchProductByPriceRange();
 }

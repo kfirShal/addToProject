@@ -1,41 +1,43 @@
 package com.amazonas.business.inventory;
 
+import com.amazonas.utils.Rating;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 public class Product implements Cloneable {
-    private String productID;
-    private String nameProduct;
+    private String productId;
+    private String productName;
     private double price;
     private String category;
     private String description;
-    private int rate;
-    private Set<String> keyWords = new HashSet<>();
+    private Rating rating;
+    private Set<String> keyWords;
 
     public Product(
-            String productID,
-            String nameProduct,
+            String productId,
+            String productName,
             double price,
             String category,
             String description,
-            int rate
+            Rating rating
     ) {
-        this.productID = productID;
-        this.nameProduct = nameProduct;
+        this.productId = productId;
+        this.productName = productName;
         this.price = price;
         this.category = category;
+        this.rating = rating;
         this.description = description;
-        this.rate = rate;
-        this.description = description;
+        this.keyWords = new HashSet<>();
     }
 
-    public String productID() {
-        return productID;
+    public String productId() {
+        return productId;
     }
 
-    public String nameProduct() {
-        return nameProduct;
+    public String productName() {
+        return productName;
     }
 
     public double price() {
@@ -46,55 +48,58 @@ public class Product implements Cloneable {
         return category;
     }
 
-    public int rate() {
-        return rate;
+    public Rating rating() {
+        return rating;
     }
 
-    public void changeProductID(String newProductId) {
-         this.productID = newProductId;
+    public String description() {
+        return description;
     }
 
-    public void changeNameProduct(String nameProduct) {
-        this.nameProduct = nameProduct;
+    public void setProductId(String newProductId) {
+         this.productId = newProductId;
     }
 
-    public void changePrice(double price) {
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public void setPrice(double price) {
         this.price = price;
     }
 
-    public void changeCategory(String category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
-    public void changeDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public void changeRate(int rate) {
-        this.rate = rate;
+    public void setRating(Rating rating) {
+        this.rating = rating;
+    }
+
+    public Set<String> keyWords() {
+        return keyWords;
     }
 
     public void addKeyWords(String key){
-        keyWords.add(key);
+        keyWords.add(key.toLowerCase());
     }
 
     public void removeKeyWords(String key){
-        keyWords.remove(key);
+        keyWords.remove(key.toLowerCase());
     }
 
     @Override
     public String toString() {
         return "Product[" +
-                "productID=" + productID + ", " +
-                "nameProduct=" + nameProduct + ", " +
+                "productID=" + productId + ", " +
+                "nameProduct=" + productName + ", " +
                 "price=" + price + ", " +
                 "category=" + category + ", " +
-                "rate=" + rate + ']';
-    }
-
-
-    public String description() {
-        return description;
+                "rate=" + rating + ']';
     }
 
     @Override
@@ -102,25 +107,27 @@ public class Product implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return Objects.equals(productID, product.productID);
+        return Objects.equals(productId, product.productId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(productID);
+        return Objects.hashCode(productId);
     }
 
     @Override
     public Product clone() {
         try {
             Product clone = (Product) super.clone();
-            clone.productID = productID;
-            clone.nameProduct = nameProduct;
+            clone.productId = productId;
+            clone.productName = productName;
             clone.price = price;
             clone.category = category;
             clone.description = description;
-            clone.rate = rate;
-            clone.keyWords = (HashSet<String>)((HashSet<String>) keyWords).clone();
+            clone.rating = rating;
+            clone.keyWords =  new HashSet<>(){{
+                keyWords.forEach(clone::addKeyWords);
+            }};
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
