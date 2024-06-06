@@ -116,4 +116,24 @@ public class UserProfilesService {
             return Response.getErrorResponse(e).toJson();
         }
     }
+
+    public String payForPurchase(String json){
+        Request request = Request.from(json);
+        try{
+            proxy.payForPurchase(request.userId(), request.token());
+            return new Response(true).toJson();
+        } catch (AuthenticationFailedException | NoPermissionException | PurchaseFailedException e){
+            return Response.getErrorResponse(e).toJson();
+        }
+    }
+
+    public String cancelPurchase(String json){
+        Request request = Request.from(json);
+        try{
+            proxy.cancelPurchase(request.userId(), request.token());
+            return new Response(true).toJson();
+        } catch (AuthenticationFailedException | NoPermissionException e){
+            return Response.getErrorResponse(e).toJson();
+        }
+    }
 }
