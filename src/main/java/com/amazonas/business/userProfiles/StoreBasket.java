@@ -13,21 +13,21 @@ import java.util.function.Function;
 
 public class StoreBasket {
 
-    private final Map<String, Pair<Product, Integer>> products; // productId --> <Product,Quantity>
+    private final Map<String, Pair<String, Integer>> products; // productId --> <Product,Quantity>
 
-    private final Function<Map<Product,Integer>, Reservation> makeReservation;
-    private final Function<Map<Product, Integer>, Double> calculatePrice;
+    private final Function<Map<String,Integer>, Reservation> makeReservation;
+    private final Function<Map<String, Integer>, Double> calculatePrice;
 
-    public StoreBasket (Function<Map<Product,Integer>,
+    public StoreBasket (Function<Map<String,Integer>,
                         Reservation> makeReservation,
-                        Function<Map<Product,Integer>,Double> calculatePrice){
+                        Function<Map<String,Integer>,Double> calculatePrice){
 
         this.makeReservation = makeReservation;
         this.calculatePrice = calculatePrice;
         products = new HashMap<>();
     }
 
-    public Pair<Product, Integer> getProductWithQuantity(String productId){
+    public Pair<String, Integer> getProductWithQuantity(String productId){
 
         if(!products.containsKey(productId)){
             throw new RuntimeException("Product with name: " + productId + " not found");
@@ -37,13 +37,13 @@ public class StoreBasket {
 
     }
 
-    public void addProduct(Product product, int quantity) {
+    public void addProduct(String productId, int quantity) {
         //TODO : store need to check if the product is legal due to policy restrictions (not for now)
 
-        if(!isProductExists(product.productId())){
+        if(!isProductExists(productId)){
             //TODO: calculate the new price of the product if needed (not for now)
-            Pair <Product, Integer> productWithQuantity = new Pair<>(product,quantity);
-            products.put(product.productId(), productWithQuantity);
+            Pair <String, Integer> productWithQuantity = new Pair<>(productId,quantity);
+            products.put(productId, productWithQuantity);
         }
         else{
             throw new RuntimeException("Product is already exists, change the quantity of the product if needed");
@@ -63,7 +63,7 @@ public class StoreBasket {
 
     public void changeProductQuantity(String productId, int quantity) {
       try{
-          Pair<Product, Integer> pq = getProductWithQuantity(productId);
+          Pair<String, Integer> pq = getProductWithQuantity(productId);
           pq.setSecond(quantity);
 
       }
@@ -73,11 +73,11 @@ public class StoreBasket {
     }
 
 
-    public Map<String, Pair<Product, Integer>> getProducts() {
+    public Map<String, Pair<String, Integer>> getProducts() {
         return products;
     }
 
-    public Map<Product,Integer> getProductsMap() {
+    public Map<String,Integer> getProductsMap() {
         return new HashMap<>() {{
             for (var entry : products.entrySet()) {
                 var pair = entry.getValue();
@@ -87,11 +87,11 @@ public class StoreBasket {
     }
 
     public void mergeStoreBaskets(StoreBasket guestBasket) {
-        for (Map.Entry<String, Pair<Product, Integer>> entry : guestBasket.products.entrySet()) {
+        for (Map.Entry<String, Pair<String, Integer>> entry : guestBasket.products.entrySet()) {
             String productId = entry.getKey();
-            Pair<Product, Integer> guestProductWithQuantity = entry.getValue();
+            Pair<String, Integer> guestProductWithQuantity = entry.getValue();
 
-            Pair<Product, Integer> userProductWithQuantity = this.products.get(productId);
+            Pair<String, Integer> userProductWithQuantity = this.products.get(productId);
             if (userProductWithQuantity == null) {
                 // If the product ID doesn't exist in the user's basket, add the guest's product
                 this.products.put(productId, guestProductWithQuantity);

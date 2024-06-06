@@ -1,13 +1,10 @@
 package com.amazonas.business.userProfiles;
 
-import com.amazonas.business.inventory.Product;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.exceptions.PurchaseFailedException;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ShoppingCart {
 
@@ -28,9 +25,9 @@ public class ShoppingCart {
         return baskets.get(storeName);
     }
 
-    public void addProduct(String storeName,Product product, int quantity) {
-        StoreBasket basket = baskets.computeIfAbsent(storeName, _ -> storeBasketFactory.get(storeName,userId));
-        basket.addProduct(product,quantity);
+    public void addProduct(String storeId, String productId, int quantity) {
+        StoreBasket basket = baskets.computeIfAbsent(storeId, _ -> storeBasketFactory.get(storeId));
+        basket.addProduct(productId,quantity);
     }
 
     public void removeProduct(String storeName, String productId){

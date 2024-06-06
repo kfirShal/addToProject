@@ -1,7 +1,5 @@
 package com.amazonas.business.stores.reservations;
 
-import com.amazonas.business.inventory.Product;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -11,19 +9,19 @@ public class Reservation {
 
     private final String reservationId;
     private final String storeId;
-    private final Map<Product, Integer> productToQuantity;
+    private final Map<String, Integer> productIdToQuantity;
     private final LocalDateTime expirationDate;
     private final Function<Reservation,Void> cancelCallback;
     private ReservationState state;
     public Reservation(
             String reservationId,
             String storeId,
-            Map<Product, Integer> productToQuantity,
+            Map<String, Integer> productIdToQuantity,
             LocalDateTime expirationDate,
             Function<Reservation,Void> cancelCallback) {
         this.reservationId = reservationId;
         this.storeId = storeId;
-        this.productToQuantity = productToQuantity;
+        this.productIdToQuantity = productIdToQuantity;
         this.expirationDate = expirationDate;
         this.cancelCallback = cancelCallback;
         state = ReservationState.PENDING;
@@ -70,8 +68,8 @@ public class Reservation {
         cancelCallback.apply(this);
     }
 
-    public Map<Product, Integer> productToQuantity() {
-        return productToQuantity;
+    public Map<String, Integer> productIdToQuantity() {
+        return productIdToQuantity;
     }
 
     public LocalDateTime expirationDate() {

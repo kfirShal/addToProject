@@ -18,7 +18,7 @@ public class ReservationFactory {
     }
 
     public Reservation get(String storeId,
-                           Map<Product, Integer> productToQuantity,
+                           Map<String, Integer> productToQuantity,
                            LocalDateTime expirationDate){
         return new Reservation(
                 UUID.randomUUID().toString(),

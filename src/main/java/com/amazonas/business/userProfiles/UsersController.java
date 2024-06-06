@@ -1,9 +1,11 @@
 package com.amazonas.business.userProfiles;
 
+import com.amazonas.business.inventory.Product;
 import com.amazonas.business.payment.PaymentService;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.PurchaseFailedException;
+import com.amazonas.repository.ProductRepository;
 import com.amazonas.repository.ReservationRepository;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.repository.UserRepository;
@@ -23,6 +25,7 @@ public class UsersController {
     private final TransactionRepository transactionRepository;
     private final PaymentService paymentService;
     private final ShoppingCartFactory shoppingCartFactory;
+    private final ProductRepository productRepository;
 
     private final Map<String, ShoppingCart> carts;
     private final Map<String,Guest> guests;
@@ -35,6 +38,7 @@ public class UsersController {
     public UsersController(UserRepository userRepository,
                            ReservationRepository reservationRepository,
                            TransactionRepository transactionRepository,
+                           ProductRepository productRepository,
                            PaymentService paymentService,
                            ShoppingCartFactory shoppingCartFactory) {
 
@@ -48,6 +52,7 @@ public class UsersController {
         this.carts = new HashMap<>();
         lock = new ReadWriteLock();
         this.transactionRepository = transactionRepository;
+        this.productRepository = productRepository;
     }
 
 
@@ -309,12 +314,7 @@ public class UsersController {
         // document the transactions
         LocalDateTime transactionTime = LocalDateTime.now();
         for (var reservation : reservations) {
-            String transactionId = UUID.randomUUID().toString();
-            Transaction t = new Transaction(transactionId,
-                    reservation.storeId(),
-                    userId,
-                    transactionTime,
-                    reservation.productToQuantity());
+            Transaction t = reservationToTransaction(userId, reservation, transactionTime);
             transactionRepository.addNewTransaction(t);
         }
     }
@@ -326,5 +326,19 @@ public class UsersController {
             reservationRepository.removeReservation(userId,r);
         });
 
+    }
+
+    private Transaction reservationToTransaction(String userId, Reservation reservation, LocalDateTime transactionTime) {
+        String transactionId = UUID.randomUUID().toString();
+        Map<Product,Integer> productToQuantity = new HashMap<>();
+        reservation.productIdToQuantity().forEach((productId, quantity) -> {
+            Product product = productRepository.getProduct(productId);
+            productToQuantity.put(product, quantity);
+        });
+        return new Transaction(transactionId,
+                reservation.storeId(),
+                userId,
+                transactionTime,
+                productToQuantity);
     }
 }

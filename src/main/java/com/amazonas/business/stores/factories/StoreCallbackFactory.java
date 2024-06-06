@@ -18,7 +18,7 @@ public class StoreCallbackFactory {
         this.storesController = storesController;
     }
 
-    public Function<Map<Product,Integer>, Double> calculatePrice(String storeId){
+    public Function<Map<String,Integer>, Double> calculatePrice(String storeId){
         return products -> storesController.getStore(storeId).calculatePrice(products);
     }
 
@@ -26,7 +26,7 @@ public class StoreCallbackFactory {
         return productId -> storesController.getStore(storeId).availableCount(productId);
     }
 
-    public Function<Map<Product,Integer>, Reservation> makeReservation(String storeId){
+    public Function<Map<String,Integer>, Reservation> makeReservation(String storeId){
         return products -> storesController.getStore(storeId).reserveProducts(products);
     }
 

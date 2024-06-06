@@ -4,7 +4,6 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.StoreActions;
-import com.amazonas.business.stores.policies.SalesPolicy;
 import com.amazonas.business.stores.search.SearchRequest;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
@@ -14,7 +13,6 @@ import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.TransactionRepository;
-import com.amazonas.utils.Pair;
 import com.amazonas.utils.Rating;
 import com.amazonas.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
@@ -33,7 +31,6 @@ public class Store {
     private final TransactionRepository repository;
     private final ProductInventory inventory;
     private final AppointmentSystem appointmentSystem;
-    private final List<SalesPolicy> salesPolicies;
     private final ReadWriteLock lock;
 
     private final String storeName;
@@ -63,7 +60,6 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.repository = transactionRepository;
-        this.salesPolicies = new LinkedList<>();
         lock = new ReadWriteLock();
         isOpen = true;
     }
@@ -100,24 +96,6 @@ public class Store {
             }
 
         }finally {
-            lock.releaseWrite();
-        }
-    }
-
-    public void addSalePolicy(SalesPolicy salesPolicy){
-        try{
-            lock.acquireWrite();
-            salesPolicies.add(salesPolicy);
-        } finally {
-            lock.releaseWrite();
-        }
-    }
-
-    public void removeSalePolicy(SalesPolicy salesPolicy){
-        try{
-            lock.acquireWrite();
-            salesPolicies.remove(salesPolicy);
-        } finally {
             lock.releaseWrite();
         }
     }
@@ -178,44 +156,9 @@ public class Store {
     //============================= PRODUCTS =============================== |
     //====================================================================== |
 
-    public double calculatePrice(Map<Product,Integer> products){
-        try{
-            lock.acquireRead();
-
-            double sum = 0;
-            for(var entry : products.entrySet()){
-                sum += entry.getKey().price() * entry.getValue();
-            }
-            return sum;
-        } finally {
-            lock.releaseRead();
-        }
-    }
-
-    private double applyDiscount(Pair<Product,Integer> pair){
-
-        try{
-            lock.acquireRead();
-
-            Product product = pair.first();
-            Integer quantity = pair.second();
-            int maxQuantity = 0;
-            int maxDiscount = 0;
-            for(SalesPolicy salesPolicy: salesPolicies){
-                if(salesPolicy.getProductID().equals(product.productId())){
-                    if(maxQuantity <= salesPolicy.getProductQuantity()) {
-                        maxQuantity = salesPolicy.getProductQuantity();
-                        maxDiscount = salesPolicy.getDiscount();
-                    }
-                }
-            }
-            if(maxQuantity == 0){
-                return product.price() * quantity;
-            }
-            return product.price() * (100 - maxDiscount)*0.01;
-        } finally {
-            lock.releaseRead();
-        }
+    public double calculatePrice(Map<String,Integer> products){
+        // TODO: implement this in later versions
+        return 0.0;
     }
 
     public List<Product> searchProduct(SearchRequest request) {
@@ -337,13 +280,13 @@ public class Store {
     //====================================================================== |
 
     @Nullable
-    public Reservation reserveProducts(Map<Product,Integer> toReserve){
+    public Reservation reserveProducts(Map<String,Integer> toReserve){
         try{
             lock.acquireWrite();
 
             // Check if the products are available
             for (var entry : toReserve.entrySet()) {
-                String productId = entry.getKey().productId();
+                String productId = entry.getKey();
                 int quantity = entry.getValue();
                 if (inventory.isProductDisabled(productId) || inventory.getQuantity(productId) < quantity) {
                     return null;
@@ -352,7 +295,7 @@ public class Store {
 
             // Reserve the products
             for (var entry : toReserve.entrySet()) {
-                String productId = entry.getKey().productId();
+                String productId = entry.getKey();
                 int quantity = entry.getValue();
                 inventory.setQuantity(productId, inventory.getQuantity(productId) - quantity);
             }
@@ -378,8 +321,8 @@ public class Store {
             reservation.setCancelled();
 
             // Return the reserved products to the inventory
-            for(var entry : reservation.productToQuantity().entrySet()){
-                String productId = entry.getKey().productId();
+            for(var entry : reservation.productIdToQuantity().entrySet()){
+                String productId = entry.getKey();
                 int quantity = entry.getValue();
                 inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
             }

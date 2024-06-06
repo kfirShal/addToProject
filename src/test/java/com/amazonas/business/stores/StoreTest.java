@@ -447,12 +447,12 @@ class StoreTest {
 
     @Test
     void reserveProductGood() {
-        Map<Product,Integer> products = new HashMap<>(){{
-            put(laptop, 1);
-            put(book, 1);
-            put(shirt, 1);
-            put(blender, 1);
-            put(toy, 1);
+        Map<String,Integer> products = new HashMap<>(){{
+            put(laptop.productId(), 1);
+            put(book.productId(), 1);
+            put(shirt.productId(), 1);
+            put(blender.productId(), 1);
+            put(toy.productName(), 1);
         }};
 
         when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
@@ -468,12 +468,12 @@ class StoreTest {
 
     @Test
     void reserveProductBad() {
-        Map<Product,Integer> products = new HashMap<>(){{
-            put(laptop, 2);
-            put(book, 3);
-            put(shirt, 4);
-            put(blender, 5);
-            put(toy, 6);
+        Map<String,Integer> products = new HashMap<>(){{
+            put(laptop.productId(), 1);
+            put(book.productId(), 1);
+            put(shirt.productId(), 1);
+            put(blender.productId(), 1);
+            put(toy.productName(), 1);
         }};
 
         when(productInventory.getQuantity(laptop.productId())).thenReturn(2);
