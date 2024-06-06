@@ -4,6 +4,7 @@ import com.amazonas.business.inventory.Product;
 import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.factories.StoreFactory;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
+import com.amazonas.business.stores.search.SearchRequest;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.StoreRepository;
 import org.springframework.stereotype.Component;
@@ -89,7 +90,7 @@ public class StoresController {
         return repository.getStore(storeId);
     }
 
-    public List<Product> searchProducts(GlobalSearchRequest request) {
+    public List<Product> searchProductsGlobally(GlobalSearchRequest request) {
         List<Product> ret = new LinkedList<>();
         for (Store store : repository.getAllStores()) {
             if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
@@ -97,5 +98,9 @@ public class StoresController {
             }
         }
         return ret;
+    }
+
+    public List<Product> searchProductsInStore(String storeId, SearchRequest request) {
+        return getStore(storeId).searchProduct(request);
     }
 }
