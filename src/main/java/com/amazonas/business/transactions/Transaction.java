@@ -79,23 +79,6 @@ public final class Transaction {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (Transaction) obj;
-        return Objects.equals(this.transactionId, that.transactionId) &&
-                Objects.equals(this.storeId, that.storeId) &&
-                Objects.equals(this.userId, that.userId) &&
-                Objects.equals(this.dateOfTransaction, that.dateOfTransaction) &&
-                Objects.equals(this.productToQuantity, that.productToQuantity);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(transactionId, storeId, userId, dateOfTransaction, productToQuantity);
-    }
-
-    @Override
     public String toString() {
         return "Transaction[" +
                 "transactionId=" + transactionId + ", " +
@@ -107,5 +90,18 @@ public final class Transaction {
 
     public TransactionState state() {
         return state;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Transaction that = (Transaction) o;
+        return Objects.equals(transactionId, that.transactionId) && Objects.equals(storeId, that.storeId) && Objects.equals(userId, that.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(transactionId, storeId, userId);
     }
 }
