@@ -70,6 +70,9 @@ public class ShoppingCart {
             if(reserved.get()){
                 throw new PurchaseFailedException("Cart has already been reserved");
             }
+            if(baskets.isEmpty()){
+                throw new PurchaseFailedException("Cart is empty");
+            }
             Map<String, Reservation> reservations = new HashMap<>();
             for(var entry : baskets.entrySet()){
                 Reservation r = entry.getValue().reserveBasket();

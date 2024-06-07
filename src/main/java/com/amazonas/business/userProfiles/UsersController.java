@@ -234,6 +234,9 @@ public class UsersController {
     }
 
     public void cancelPurchase(String userId) throws UserException {
+        if(!userRepository.userIdExists(userId)){
+            throw new UserException("Invalid userId");
+        }
         List<Reservation> reservations = reservationRepository.getReservations(userId);
         reservations.forEach(r -> {
             r.cancelReservation();
@@ -269,7 +272,7 @@ public class UsersController {
     }
 
     private boolean isValidPassword(String password) {
-        String passwordPattern = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+$";
+        String passwordPattern = "^(?=.*[A-Z].*)(?=.*[!@#$%^&*()\\-=\\[\\]{};':\"<>?|])(?=.*[0-9].*)(?=.*[a-z].*).{8,}$";
         return password.matches(passwordPattern);
     }
 

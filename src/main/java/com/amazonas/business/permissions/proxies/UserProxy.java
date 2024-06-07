@@ -4,10 +4,7 @@ import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.UserActions;
 import com.amazonas.business.userProfiles.*;
-import com.amazonas.exceptions.AuthenticationFailedException;
-import com.amazonas.exceptions.NoPermissionException;
-import com.amazonas.exceptions.PurchaseFailedException;
-import com.amazonas.exceptions.UserException;
+import com.amazonas.exceptions.*;
 import org.springframework.stereotype.Component;
 
 @Component("userProxy")
@@ -44,25 +41,25 @@ public class UserProxy extends ControllerProxy {
         real.logoutAsGuest(guestInitialId);
     }
 
-    public void addProductToCart(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException {
+    public void addProductToCart(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException, ShoppingCartException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.ADD_TO_SHOPPING_CART);
         real.addProductToCart(userId, storeName, productId, quantity);
     }
 
-    public void RemoveProductFromCart(String userId,String storeName,String productId, String token) throws NoPermissionException, AuthenticationFailedException {
+    public void RemoveProductFromCart(String userId,String storeName,String productId, String token) throws NoPermissionException, AuthenticationFailedException, ShoppingCartException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.REMOVE_FROM_SHOPPING_CART);
         real.RemoveProductFromCart(userId, storeName, productId);
     }
 
-    public void changeProductQuantity(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException {
+    public void changeProductQuantity(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException, ShoppingCartException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.UPDATE_SHOPPING_CART);
         real.changeProductQuantity(userId, storeName, productId, quantity);
     }
 
-    public User getUser(String userId, String token) throws AuthenticationFailedException {
+    public User getUser(String userId, String token) throws AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
         return real.getUser(userId);
     }
@@ -79,7 +76,7 @@ public class UserProxy extends ControllerProxy {
         real.payForPurchase(userId);
     }
 
-    public void cancelPurchase(String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+    public void cancelPurchase(String userId, String token) throws NoPermissionException, AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.CANCEL_PURCHASE);
         real.cancelPurchase(userId);

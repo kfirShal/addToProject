@@ -5,6 +5,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class PaymentService {
 
-    public boolean charge(PaymentMethod paymentMethod, double amount){return true;}
+    public boolean charge(PaymentMethod paymentMethod, Double amount){return true;}
 
 }

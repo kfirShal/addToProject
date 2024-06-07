@@ -2,10 +2,7 @@ package com.amazonas.service;
 
 import com.amazonas.business.permissions.proxies.UserProxy;
 import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.exceptions.AuthenticationFailedException;
-import com.amazonas.exceptions.NoPermissionException;
-import com.amazonas.exceptions.PurchaseFailedException;
-import com.amazonas.exceptions.UserException;
+import com.amazonas.exceptions.*;
 import com.amazonas.service.requests.Request;
 import com.amazonas.service.requests.users.CartRequest;
 import com.amazonas.service.requests.users.LoginRequest;
@@ -75,7 +72,7 @@ public class UserProfilesService {
             CartRequest toAdd = JsonUtils.deserialize(request.payload(), CartRequest.class);
             proxy.addProductToCart(request.userId(),toAdd.storeId(), toAdd.productId(), toAdd.quantity(), request.token());
             return new Response(true).toJson();
-        } catch (AuthenticationFailedException | NoPermissionException e) {
+        } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
             return Response.getErrorResponse(e).toJson();
         }
     }
@@ -86,7 +83,7 @@ public class UserProfilesService {
             CartRequest toRemove = JsonUtils.deserialize(request.payload(), CartRequest.class);
             proxy.RemoveProductFromCart(request.userId(), toRemove.storeId(), toRemove.productId(), request.token());
             return new Response(true).toJson();
-        } catch (AuthenticationFailedException | NoPermissionException e) {
+        } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
             return Response.getErrorResponse(e).toJson();
         }
     }
@@ -97,7 +94,7 @@ public class UserProfilesService {
             CartRequest toChange = JsonUtils.deserialize(request.payload(), CartRequest.class);
             proxy.changeProductQuantity(request.userId(), toChange.storeId(), toChange.productId(), toChange.quantity(), request.token());
             return new Response(true).toJson();
-        } catch (AuthenticationFailedException | NoPermissionException e) {
+        } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
             return Response.getErrorResponse(e).toJson();
         }
     }
@@ -127,7 +124,7 @@ public class UserProfilesService {
         try{
             proxy.cancelPurchase(request.userId(), request.token());
             return new Response(true).toJson();
-        } catch (AuthenticationFailedException | NoPermissionException e){
+        } catch (AuthenticationFailedException | NoPermissionException | UserException e){
             return Response.getErrorResponse(e).toJson();
         }
     }
