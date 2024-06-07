@@ -65,36 +65,30 @@ public class UsersController {
 
 
     public void register(String email, String userId, String password) throws UserException {
-        try {
-            lock.acquireWrite();
-            if(userRepository.userIdExists(userId)){
-                throw new UserException("This user name is already exists in the system");
-            }
-
-            if (!isValidPassword(password)) {
-                throw new UserException("Password must contain at least one uppercase letter and one special character.");
-            }
-
-            if (!isValidEmail(email)) {
-                throw new UserException("Invalid email address.");
-            }
-
-            RegisteredUser newRegisteredUser = new RegisteredUser(userId,email);
-            userRepository.saveUser(newRegisteredUser);
-            shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
-            authenticationController.addUserCredentials(userId, password);
-        }
-        finally {
-            lock.releaseWrite();
+        if(userRepository.userIdExists(userId)){
+            throw new UserException("This user name is already exists in the system");
         }
 
+        if (!isValidPassword(password)) {
+            throw new UserException("Password must contain at least one uppercase letter and one special character.");
+        }
+
+        if (!isValidEmail(email)) {
+            throw new UserException("Invalid email address.");
+        }
+
+        RegisteredUser newRegisteredUser = new RegisteredUser(userId,email);
+        userRepository.saveUser(newRegisteredUser);
+        shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
+        authenticationController.addUserCredentials(userId, password);
     }
 
     public String enterAsGuest() {
         try{
-            lock.acquireWrite();
             guestInitialId = UUID.randomUUID().toString();
             Guest newGuest = new Guest(guestInitialId);
+
+            lock.acquireWrite();
             guests.put(guestInitialId,newGuest);
             guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
             return guestInitialId;
@@ -106,40 +100,43 @@ public class UsersController {
 
     public ShoppingCart loginToRegistered(String guestInitialId,String userId) throws UserException {
 
+        if(! userRepository.userIdExists(userId)){
+            throw new UserException("Login failed");
+        }
+
+        User loggedInUser = userRepository.getUser(userId);
+        ShoppingCart cartOfGuest;
         try{
             lock.acquireWrite();
-            if(! userRepository.userIdExists(userId)){
-                throw new UserException("Login failed");
-            }
-
-            //we delete this user from the list of guest
+            //remove guest from system
             guests.remove(guestInitialId);
             authenticationController.revokeAuthentication(guestInitialId);
-            ShoppingCart cartOfGuest = guestCarts.remove(guestInitialId);
-            ShoppingCart cartOfUser = shoppingCartRepository.getCart(userId);
-            ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
-            shoppingCartRepository.saveCart(mergedShoppingCart);
-            User loggedInUser = userRepository.getUser(userId);
+            cartOfGuest = guestCarts.remove(guestInitialId);
+
+            //add the registered user to the online users
             onlineRegisteredUsers.put(userId,loggedInUser);
-            return mergedShoppingCart;
-        }
-        finally {
+        } finally {
             lock.releaseWrite();
         }
 
+        ShoppingCart cartOfUser = shoppingCartRepository.getCart(userId);
+        ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
+        shoppingCartRepository.saveCart(mergedShoppingCart);
+        return mergedShoppingCart;
     }
+
     public String logout(String userId) throws UserException {
+        if(!onlineRegisteredUsers.containsKey(userId)){
+            throw new UserException("User with id: " + userId + " is not online");
+        }
+
+        authenticationController.revokeAuthentication(userId);
+        guestInitialId = UUID.randomUUID().toString();
+        Guest guest = new Guest(guestInitialId);
 
         try{
             lock.acquireWrite();
-            //the registeredUser return to be a guest in the system
-            if(!onlineRegisteredUsers.containsKey(userId)){
-                throw new UserException("User with id: " + userId + " is not online");
-            }
             onlineRegisteredUsers.remove(userId);
-            authenticationController.revokeAuthentication(userId);
-            guestInitialId = UUID.randomUUID().toString();
-            Guest guest = new Guest(guestInitialId);
             guests.put(guestInitialId,guest);
             guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
             return guestInitialId;
@@ -147,20 +144,19 @@ public class UsersController {
         finally {
             lock.releaseWrite();
         }
-
     }
 
     public void logoutAsGuest(String guestInitialId) throws UserException {
+        if(!guests.containsKey(guestInitialId)){
+            throw new UserException("Guest with id: " + guestInitialId + " is not in the market");
+        }
+        authenticationController.revokeAuthentication(guestInitialId);
 
         try{
             lock.acquireWrite();
             //the guest exits the system, therefore his cart removes from the system
-            if(!guests.containsKey(guestInitialId)){
-                throw new UserException("Guest with id: " + guestInitialId + " is not in the market");
-            }
             guestCarts.remove(guestInitialId);
             guests.remove(guestInitialId);
-            authenticationController.revokeAuthentication(guestInitialId);
         }
         finally {
             lock.releaseWrite();
@@ -168,21 +164,19 @@ public class UsersController {
     }
 
     public User getUser(String userId) throws UserException {
+        if(userRepository.userIdExists(userId)){
+            return userRepository.getUser(userId);
+        }
         try{
             lock.acquireRead();
-            if(userRepository.userIdExists(userId)){
-                return userRepository.getUser(userId);
-            }
             if(guests.containsKey(userId)){
                 return guests.get(userId);
-            }
-            else{
-                throw new UserException("The user does not exists");
             }
         }
         finally {
             lock.releaseRead();
         }
+        throw new UserException("The user does not exists");
     }
 
     // =============================================================================== |
@@ -234,15 +228,18 @@ public class UsersController {
             Transaction t = reservationToTransaction(userId, reservation, transactionTime);
             transactionRepository.addNewTransaction(t);
         }
+
+        // give the user a new empty cart
+        shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
     }
 
-    public void cancelPurchase(String userId) {
+    public void cancelPurchase(String userId) throws UserException {
         List<Reservation> reservations = reservationRepository.getReservations(userId);
         reservations.forEach(r -> {
             r.cancelReservation();
             reservationRepository.removeReservation(userId,r);
         });
-
+        getCartWithValidation(userId).cancelReservation();
     }
 
     // =============================================================================== |

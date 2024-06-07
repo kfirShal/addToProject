@@ -7,12 +7,14 @@ import com.amazonas.utils.ReadWriteLock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ShoppingCart {
 
     private final StoreBasketFactory storeBasketFactory;
     private final String userId;
     private final ReadWriteLock lock;
+    private final AtomicBoolean reserved;
 
     private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket
     public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
@@ -20,6 +22,7 @@ public class ShoppingCart {
         this.userId = userId;
         baskets = new HashMap<>();
         lock = new ReadWriteLock();
+        reserved = new AtomicBoolean(false);
     }
 
     //====================================================================================== |
@@ -64,6 +67,9 @@ public class ShoppingCart {
     public Map<String, Reservation> reserveCart() throws PurchaseFailedException {
         try{
             lock.acquireWrite();
+            if(reserved.get()){
+                throw new PurchaseFailedException("Cart has already been reserved");
+            }
             Map<String, Reservation> reservations = new HashMap<>();
             for(var entry : baskets.entrySet()){
                 Reservation r = entry.getValue().reserveBasket();
@@ -78,7 +84,17 @@ public class ShoppingCart {
                 // reservation was successful
                 reservations.put(entry.getKey(),r);
             }
+            reserved.set(true);
             return reservations;
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public void cancelReservation() {
+        try{
+            lock.acquireWrite();
+            reserved.set(false);
         } finally {
             lock.releaseWrite();
         }
