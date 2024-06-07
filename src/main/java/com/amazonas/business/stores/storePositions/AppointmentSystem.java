@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public class AppointmentSystem {
-    private final Map<String, OwnerNode> managersList;
-    private final OwnerNode ownershipTree;
-    private final Map<String, OwnerNode> ownershipList;
+    private final Map<String, OwnerNode> managersList; // contains all the managers of the store every moment
+    private final OwnerNode ownershipTree; // handle the appointment hierarchy as a tree
+    private final Map<String, OwnerNode> ownershipList; //contains all the owners of the store every moment
     private final ReadWriteLock appointmentLock;
 
     public AppointmentSystem(String storeFounderId) {
@@ -23,6 +23,12 @@ public class AppointmentSystem {
         this.appointmentLock = new ReadWriteLock();
     }
 
+    /**
+     * Add a new user to the administration team of the store as a manager.
+     * @param appointeeOwnerUserId an exist owner of the store
+     * @param appointedUserId a user who isn't part of the administration team of the store (neither owner nor manager)
+     * @return true - if the operation done well, false - otherwise
+     */
     public boolean addManager(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
@@ -42,6 +48,12 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * Remove exist manager from the administration team of the store.
+     * @param appointeeOwnerUserId the original owner who appointed the manager
+     * @param appointedUserId the manager ID to remove
+     * @return true - if the operation done well, false - otherwise
+     */
     public boolean removeManager(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
@@ -59,6 +71,12 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * Add a new user to the administration team of the store as a owner.
+     * @param appointeeOwnerUserId an exist owner of the store
+     * @param appointedUserId a user who isn't part of the administration team of the store (neither owner nor manager)
+     * @return true - if the operation done well, false - otherwise
+     */
     public boolean addOwner(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
@@ -79,6 +97,12 @@ public class AppointmentSystem {
         }
     }
 
+    /**
+     * Remove exist owner from the administration team of the store. Along with him, all the other owners and managers appointed by him, and by his descendants, will be removed.
+     * @param appointeeOwnerUserId the original owner who appointed the owner
+     * @param appointedUserId the owner ID to remove
+     * @return true - if the operation done well, false - otherwise
+     */
     public boolean removeOwner(String appointeeOwnerUserId, String appointedUserId) {
         try {
             appointmentLock.acquireWrite();
@@ -88,9 +112,11 @@ public class AppointmentSystem {
                 if (deletedOwner != null) {
                     List<String> appointerChildren = deletedOwner.getAllChildren();
                     for (String appointerToRemove : appointerChildren) {
-                        ownershipList.remove(appointerToRemove);
-                        return true;
+                        if (ownershipList.remove(appointerToRemove) == null) {
+                            managersList.remove(appointerToRemove);
+                        }
                     }
+                    return true;
                 }
             }
             return false;
@@ -115,7 +141,7 @@ public class AppointmentSystem {
     }
 
     /**
-     * The method return the details of all the owners except the founder.
+     * The method returns the details of all the owners except the founder.
      * @return List of StorePositions with all owners' usernames
      */
     public List<StorePosition> getOwners() {

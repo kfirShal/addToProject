@@ -84,6 +84,7 @@ public class OwnerNode {
 
     public List<String> getAllChildren() {
         List<String> ret = new LinkedList<>();
+        ret.addAll(managersChildren);
         ret.add(getUserID());
         for(OwnerNode ownershipChild : ownersChildren) {
             ret.addAll(ownershipChild.getAllChildren());
