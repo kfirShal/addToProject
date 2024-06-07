@@ -128,4 +128,13 @@ public class UserProfilesService {
             return Response.getErrorResponse(e).toJson();
         }
     }
+
+    public String getUserTransactionHistory(String json){
+        Request request = Request.from(json);
+        try{
+            return new Response(true,proxy.getUserTransactionHistory(request.userId(), request.token())).toJson();
+        } catch (AuthenticationFailedException | NoPermissionException | UserException e){
+            return Response.getErrorResponse(e).toJson();
+        }
+    }
 }

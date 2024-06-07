@@ -8,6 +8,8 @@ import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.StoresController;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.stores.search.SearchRequest;
+import com.amazonas.business.stores.storePositions.StorePosition;
+import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import com.amazonas.exceptions.StoreException;
@@ -119,5 +121,17 @@ public class StoreProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.SEARCH_PRODUCTS);
         return real.searchProductsInStore(storeId, request);
+    }
+
+    public List<StorePosition> getStoreRolesInformation(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.VIEW_ROLES_INFORMATION);
+        return real.getStoreRolesInformation(storeId);
+    }
+
+    public List<Transaction> getStoreTransactionHistory(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.VIEW_STORE_TRANSACTIONS);
+        return real.getStoreTransactionHistory(storeId);
     }
 }

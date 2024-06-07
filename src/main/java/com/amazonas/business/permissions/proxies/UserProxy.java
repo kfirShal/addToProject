@@ -3,9 +3,12 @@ package com.amazonas.business.permissions.proxies;
 import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.UserActions;
+import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.userProfiles.*;
 import com.amazonas.exceptions.*;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component("userProxy")
 public class UserProxy extends ControllerProxy {
@@ -59,11 +62,6 @@ public class UserProxy extends ControllerProxy {
         real.changeProductQuantity(userId, storeName, productId, quantity);
     }
 
-    public User getUser(String userId, String token) throws AuthenticationFailedException, UserException {
-        authenticateToken(userId, token);
-        return real.getUser(userId);
-    }
-
     public void startPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.START_PURCHASE);
@@ -80,5 +78,11 @@ public class UserProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.CANCEL_PURCHASE);
         real.cancelPurchase(userId);
+    }
+
+    public List<Transaction> getUserTransactionHistory(String userId, String token) throws NoPermissionException, AuthenticationFailedException, UserException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.VIEW_USER_TRANSACTIONS);
+        return real.getUserTransactionHistory(userId);
     }
 }

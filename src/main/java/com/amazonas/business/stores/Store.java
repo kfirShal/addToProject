@@ -9,6 +9,7 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.business.stores.storePositions.StorePosition;
 import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.StoreException;
@@ -354,6 +355,9 @@ public class Store {
         appointmentSystem.addOwner(logged,username);
     }
 
+    public List<StorePosition> getRolesInformation() {
+        return appointmentSystem.getAllRoles();
+    }
 
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
@@ -396,9 +400,9 @@ public class Store {
             }
         }
     }
-
     //====================================================================== |
     //========================= GETTERS SETTERS ============================ |
+
     //====================================================================== |
 
     public Rating getStoreRating() {

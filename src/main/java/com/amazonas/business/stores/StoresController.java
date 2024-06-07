@@ -5,8 +5,11 @@ import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.factories.StoreFactory;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.stores.search.SearchRequest;
+import com.amazonas.business.stores.storePositions.StorePosition;
+import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.StoreRepository;
+import com.amazonas.repository.TransactionRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -16,10 +19,12 @@ import java.util.List;
 public class StoresController {
     private final StoreFactory storeFactory;
     private final StoreRepository repository;
+    private final TransactionRepository transactionRepository;
 
-    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository){
+    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository){
         this.storeFactory = storeFactory;
         this.repository = storeRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     public void addStore(String ownerID,String name, String description) throws StoreException {
@@ -102,5 +107,13 @@ public class StoresController {
 
     public List<Product> searchProductsInStore(String storeId, SearchRequest request) {
         return getStore(storeId).searchProduct(request);
+    }
+
+    public List<StorePosition> getStoreRolesInformation(String storeId) {
+        return getStore(storeId).getRolesInformation();
+    }
+
+    public List<Transaction> getStoreTransactionHistory(String storeId) {
+        return transactionRepository.getTransactionHistoryByStore(storeId);
     }
 }

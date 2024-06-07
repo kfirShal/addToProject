@@ -179,6 +179,12 @@ public class UsersController {
         throw new UserException("The user does not exists");
     }
 
+    public List<Transaction> getUserTransactionHistory(String userId) throws UserException {
+        if(!userRepository.userIdExists(userId)){
+            throw new UserException("Invalid userId");
+        }
+        return transactionRepository.getTransactionHistoryByUser(userId);
+    }
     // =============================================================================== |
     // ================================ SHOPPING CART ================================ |
     // =============================================================================== |
@@ -197,7 +203,6 @@ public class UsersController {
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
     }
-
     // =============================================================================== |
     // ================================ PURCHASE ===================================== |
     // =============================================================================== |
@@ -244,7 +249,6 @@ public class UsersController {
         });
         getCartWithValidation(userId).cancelReservation();
     }
-
     // =============================================================================== |
     // ============================= HELPER METHODS ================================== |
     // =============================================================================== |
@@ -285,7 +289,6 @@ public class UsersController {
         Matcher matcher = emailPattern.matcher(email);
         return matcher.matches();
     }
-
     // =============================================================================== |
     // ================================ GETTERS ====================================== |
     // =============================================================================== |
