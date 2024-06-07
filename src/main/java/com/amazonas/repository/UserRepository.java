@@ -51,4 +51,13 @@ public class UserRepository extends AbstractCachingRepository<User> {
         }
     }
 
+    public boolean userIdExists(String userId) {
+        userLock.acquireRead();
+        try {
+            return userCache.containsKey(userId);
+        } finally {
+            userLock.releaseRead();
+        }
+    }
+
 }

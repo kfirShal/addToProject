@@ -29,35 +29,26 @@ public class UserProxy extends ControllerProxy {
     }
 
     //this is when the guest logs in to the market and turn to registeredUser
-    public boolean loginToRegistered(String guestInitialId,String userId, String token) throws AuthenticationFailedException {
+    public ShoppingCart loginToRegistered(String guestInitialId,String userId, String token) throws AuthenticationFailedException, UserException {
         authenticateToken(guestInitialId, token);
         return real.loginToRegistered(guestInitialId,userId);
     }
 
-    public void logout(String userId, String token) throws AuthenticationFailedException {
+    public String logout(String userId, String token) throws AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
-        real.logout(userId);
+        return real.logout(userId);
     }
 
-    public void logoutAsGuest(String guestInitialId, String token) throws AuthenticationFailedException {
+    public void logoutAsGuest(String guestInitialId, String token) throws AuthenticationFailedException, UserException {
         authenticateToken(guestInitialId, token);
         real.logoutAsGuest(guestInitialId);
     }
-
-
-    public ShoppingCart getCart(String userId, String token) throws AuthenticationFailedException, NoPermissionException {
-        authenticateToken(userId, token);
-        checkPermission(userId, UserActions.VIEW_SHOPPING_CART);
-        return real.getCart(userId);
-    }
-
 
     public void addProductToCart(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.ADD_TO_SHOPPING_CART);
         real.addProductToCart(userId, storeName, productId, quantity);
     }
-
 
     public void RemoveProductFromCart(String userId,String storeName,String productId, String token) throws NoPermissionException, AuthenticationFailedException {
         authenticateToken(userId, token);
@@ -76,13 +67,13 @@ public class UserProxy extends ControllerProxy {
         return real.getUser(userId);
     }
 
-    public void startPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException {
+    public void startPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.START_PURCHASE);
         real.startPurchase(userId);
     }
 
-    public void payForPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException {
+    public void payForPurchase(String userId, String token) throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.PAY_FOR_PURCHASE);
         real.payForPurchase(userId);

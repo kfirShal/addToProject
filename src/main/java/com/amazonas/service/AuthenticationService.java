@@ -20,4 +20,11 @@ public class AuthenticationService {
         String message = authResp.success() ? "Authentication successful" : "Authentication failed";
         return new Response(message,authResp.success(), data).toJson();
     }
+
+    public String authenticateGuest(String userId) {
+        AuthenticationResponse authResp = controller.authenticateGuest(userId);
+        String data = authResp.success() ? authResp.token() : "";
+        String message = authResp.success() ? "Authentication successful" : "Authentication failed";
+        return new Response(message,authResp.success(), data).toJson();
+    }
 }
