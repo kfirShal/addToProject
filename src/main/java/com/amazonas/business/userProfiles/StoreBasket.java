@@ -24,10 +24,10 @@ public class StoreBasket {
     }
 
     public void addProduct(String productId, int quantity) throws ShoppingCartException {
+
         if(quantity <= 0){
             throw new ShoppingCartException("Quantity cannot be 0 or less");
         }
-
         if(products.containsKey(productId)){
             throw new ShoppingCartException("Product is already exists, change the quantity of the product if needed");
         }
