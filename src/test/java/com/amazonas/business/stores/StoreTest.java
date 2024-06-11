@@ -3,11 +3,14 @@ package com.amazonas.business.stores;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.search.SearchRequestBuilder;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.business.stores.storePositions.StoreRole;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -463,7 +469,7 @@ class StoreTest {
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
         Reservation actualReservation = store.reserveProducts(products);
-        assertNotNull(actualReservation);
+        assertNotNull(actualReservation); // return null
     }
 
     @Test
@@ -493,6 +499,52 @@ class StoreTest {
         for (Product product : expected) {
             assertTrue(actual.contains(product));
         }
+    }
+
+    @Test
+    void testActionWhenStoreClosed() {
+        store.closeStore();
+        assertThrows(StoreException.class, () -> store.addProduct(laptop));
+    }
+
+    @Test
+    void testConcurrentAccessToLastProduct() throws InterruptedException {
+        when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
+        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        service.submit(() -> store.reserveProducts(Map.of(laptop.productId(), 1)));
+        service.submit(() -> store.reserveProducts(Map.of(laptop.productId(), 1)));
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
+
+        verify(productInventory, times(2)).setQuantity(eq(laptop.productId()), anyInt());
+    }
+
+    @Test
+    void testAddTwiceProduct() throws StoreException {
+        assertThrows(StoreException.class, () -> store.addProduct(laptop));
+    }
+
+    @Test
+    void testRemoveProduct() throws StoreException {
+        when(productInventory.removeProduct(laptop.productId())).thenReturn(true);
+        store.removeProduct(laptop.productId());
+        verify(productInventory, times(1)).removeProduct(laptop.productId());
+    }
+
+    @Test
+    void testDisableProduct() {
+        store.disableProduct(laptop.productId());
+        verify(productInventory, times(1)).disableProduct(laptop.productId());
+    }
+
+    @Test
+    void testCancelReservation() {
+        Reservation reservation = mock(Reservation.class);
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        store.cancelReservation(reservation);
+        verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
     }
 
 }

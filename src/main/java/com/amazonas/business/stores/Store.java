@@ -23,9 +23,11 @@ import java.util.*;
 
 public class Store {
 
+    // Static final variables
     private static final int FIVE_MINUTES = 5 * 60;
     private static final long reservationTimeoutSeconds = FIVE_MINUTES;
 
+    // Final instance variables
     private final ReservationFactory reservationFactory;
     private final PendingReservationMonitor pendingReservationMonitor;
     private final PermissionsController permissionsController;
@@ -33,13 +35,13 @@ public class Store {
     private final ProductInventory inventory;
     private final AppointmentSystem appointmentSystem;
     private final ReadWriteLock lock;
-
-    private final String storeName;
     private final String storeId;
+    private final String storeName;
 
-    private String storeDescription;
-    private Rating storeRating;
+    // Non-final instance variables
     private boolean isOpen;
+    private Rating storeRating;
+    private String storeDescription;
 
     public Store(String storeId,
                  String storeName,
@@ -105,6 +107,12 @@ public class Store {
         return isOpen;
     }
 
+    public void checkIfOpen() throws StoreException {
+        if(!isOpen) {
+            throw new StoreException("Store is closed");
+        }
+    }
+
     //====================================================================== |
     //========================== PAID ORDERS =============================== |
     //====================================================================== |
@@ -163,7 +171,6 @@ public class Store {
     }
 
     public List<Product> searchProduct(SearchRequest request) {
-
         try{
             lock.acquireRead();
             List<Product> toReturn = new LinkedList<>();
@@ -210,17 +217,13 @@ public class Store {
     public void addProduct(Product toAdd) throws StoreException {
         try{
             lock.acquireWrite();
+            checkIfOpen();
 
-            if(isOpen) {
-                if(inventory.nameExists(toAdd.productName())) {
-                    inventory.addProduct(toAdd);
-                }
-                else {
-                    throw new StoreException("product name exists");
-                }
+            if(inventory.nameExists(toAdd.productName())) {
+                inventory.addProduct(toAdd);
             }
             else {
-                throw new StoreException("store is closed");
+                throw new StoreException("product name exists");
             }
 
         } finally {
@@ -232,16 +235,13 @@ public class Store {
         try {
             lock.acquireWrite();
 
-            if (isOpen) {
-                boolean check = inventory.removeProduct(productIdToRemove);
+            checkIfOpen();
+
+            boolean check = inventory.removeProduct(productIdToRemove);
                 if(!check){
                     //product wasn't removed
                     throw new StoreException("product wasn't removed - no product in system");
                 }
-            }
-            else {
-                throw new StoreException("product wasn't removed - store closed");
-            }
 
         } finally {
             lock.releaseWrite();
@@ -249,8 +249,9 @@ public class Store {
 
     }
 
-    public void updateProduct(Product product){
+    public void updateProduct(Product product) throws StoreException {
         lock.acquireWrite();
+        checkIfOpen();
         try {
             inventory.updateProduct(product);
         } finally {
@@ -258,7 +259,7 @@ public class Store {
         }
      }
 
-    public void enableProduct(String productId){
+    public void enableProduct(String productId) {
         lock.acquireWrite();
         try {
             inventory.enableProduct(productId);
