@@ -22,20 +22,27 @@ public class OwnerNode {
     }
 
     public OwnerNode addOwner(String userID) {
-        OwnerNode ret = new OwnerNode(userID, this);
-        ownersChildren.add(ret);
-        return ret;
+        OwnerNode userNode = new OwnerNode(userID, this);
+        if (ownersChildren.add(userNode)) {
+            return userNode;
+        }
+        return null;
     }
 
-    public void addManager(String userID) {
-        managersChildren.add(userID);
+    public boolean addManager(String userID) {
+        return managersChildren.add(userID);
     }
 
+    /**
+     *
+     * @param userID
+     * @return userID if the action successfully done, otherwise returns null
+     */
     public OwnerNode deleteOwner(String userID) {
         Iterator<OwnerNode> iter = ownersChildren.iterator();
         while (iter.hasNext()) {
             OwnerNode owner = iter.next(); // must be called before you can call i.remove()
-            if (owner.userID.equals(userID)) {
+            if (owner != null && owner.userID != null && owner.userID.equals(userID)) {
                 iter.remove();
                 return owner;
             }
@@ -57,6 +64,7 @@ public class OwnerNode {
 
     public List<String> getAllChildren() {
         List<String> ret = new LinkedList<>();
+        ret.addAll(managersChildren);
         ret.add(getUserID());
         for(OwnerNode ownershipChild : ownersChildren) {
             ret.addAll(ownershipChild.getAllChildren());
