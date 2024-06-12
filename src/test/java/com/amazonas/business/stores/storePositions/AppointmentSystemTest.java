@@ -3,6 +3,7 @@ package com.amazonas.business.stores.storePositions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -455,6 +456,193 @@ class AppointmentSystemTest {
         assertFalse(appointmentSystem.addManager("101", "10201"));
         assertFalse(appointmentSystem.addManager("102", "10201"));
         assertFalse(appointmentSystem.addManager("10201", "10201"));
+    }
+
+    @org.junit.jupiter.api.Test
+    void twoOwnersAddSameManagerAtTheSameTime() {
+        assertTrue(appointmentSystem.addOwner("25489", "1"));
+        assertTrue(appointmentSystem.addOwner("25489", "2"));
+        final boolean[] result1 = new boolean[1];
+        final boolean[] result2 = new boolean[1];
+        AtomicInteger count = new AtomicInteger(0);
+
+        Thread thread1 = new Thread() {
+            public void run() {
+                result1[0] = appointmentSystem.addManager("1", "11");
+                count.incrementAndGet();
+                System.out.println(result1[0]);
+            }
+        };
+
+        Thread thread2 = new Thread() {
+            public void run() {
+                result2[0] = appointmentSystem.addManager("2", "11");
+                count.incrementAndGet();
+            }
+        };
+
+        thread1.start();
+        thread2.start();
+
+        while (count.get() != 2);
+        boolean result = (result1[0] && !result2[0]) || (!result1[0] && result2[0]); // xor implementation
+        assertTrue(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void tenOwnersAddSameManagerAtTheSameTime() {
+        final boolean[] results = new boolean[10];
+        final Thread[] threads = new Thread[10];
+        AtomicInteger count = new AtomicInteger(0);
+
+        for (int i = 0; i < 10; i++) {
+            assertTrue(appointmentSystem.addOwner("25489", String.valueOf(i)));
+            int finalI = i;
+            threads[i] = new Thread() {
+                public void run() {
+                    results[finalI] = appointmentSystem.addManager(String.valueOf(finalI), "11");
+                    count.incrementAndGet();
+                }
+            };
+        }
+
+        for (int i = 0; i < 10; i++) {
+            threads[i].start();
+        }
+
+        while (count.get() != 10);
+        // bitwise xor implementation
+        boolean result = false;
+        for (int i = 0; i < 10; i++) {
+            result = (result && !results[i]) || (!result && results[i]);
+        }
+        assertTrue(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void twoOwnersAddSameOwnerAtTheSameTime() {
+        assertTrue(appointmentSystem.addOwner("25489", "1"));
+        assertTrue(appointmentSystem.addOwner("25489", "2"));
+        final boolean[] result1 = new boolean[1];
+        final boolean[] result2 = new boolean[1];
+        AtomicInteger count = new AtomicInteger(0);
+
+        Thread thread1 = new Thread() {
+            public void run() {
+                result1[0] = appointmentSystem.addOwner("1", "11");
+                count.incrementAndGet();
+                System.out.println(result1[0]);
+            }
+        };
+
+        Thread thread2 = new Thread() {
+            public void run() {
+                result2[0] = appointmentSystem.addOwner("2", "11");
+                count.incrementAndGet();
+            }
+        };
+
+        thread1.start();
+        thread2.start();
+
+        while (count.get() != 2);
+        boolean result = (result1[0] && !result2[0]) || (!result1[0] && result2[0]); // xor implementation
+        assertTrue(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void tenOwnersAddSameOwnerAtTheSameTime() {
+        final boolean[] results = new boolean[10];
+        final Thread[] threads = new Thread[10];
+        AtomicInteger count = new AtomicInteger(0);
+
+        for (int i = 0; i < 10; i++) {
+            assertTrue(appointmentSystem.addOwner("25489", String.valueOf(i)));
+            int finalI = i;
+            threads[i] = new Thread() {
+                public void run() {
+                    results[finalI] = appointmentSystem.addOwner(String.valueOf(finalI), "11");
+                    count.incrementAndGet();
+                }
+            };
+        }
+
+        for (int i = 0; i < 10; i++) {
+            threads[i].start();
+        }
+
+        while (count.get() != 10);
+        // bitwise xor implementation
+        boolean result = false;
+        for (int i = 0; i < 10; i++) {
+            result = (result && !results[i]) || (!result && results[i]);
+        }
+        assertTrue(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void addManagerByRemovedOwnerAtTheSameTime() {
+        assertTrue(appointmentSystem.addOwner("25489", "1"));
+        final boolean[] result1 = new boolean[1];
+        final boolean[] result2 = new boolean[1];
+        AtomicInteger count = new AtomicInteger(0);
+
+        Thread thread1 = new Thread() {
+            public void run() {
+                result1[0] = appointmentSystem.addManager("1", "11");
+                count.incrementAndGet();
+            }
+        };
+
+        Thread thread2 = new Thread() {
+            public void run() {
+                result2[0] = appointmentSystem.removeOwner("25489", "1");
+                count.incrementAndGet();
+            }
+        };
+
+        thread1.start();
+        thread2.start();
+
+        while (count.get() != 2);
+        boolean firstAddedThenRemoved = result1[0] && result2[0];
+        boolean firstRemovedThenDidntAdded = !result1[0] && result2[0];
+        boolean result = appointmentSystem.getOwners().isEmpty() && appointmentSystem.getManagers().isEmpty()
+                        && (firstAddedThenRemoved || firstRemovedThenDidntAdded);
+        assertTrue(result);
+    }
+
+    @org.junit.jupiter.api.Test
+    void addManagerByRemovedOwnerAppointeeAtTheSameTime() {
+        assertTrue(appointmentSystem.addOwner("25489", "25490"));
+        assertTrue(appointmentSystem.addOwner("25490", "1"));
+        final boolean[] result1 = new boolean[1];
+        final boolean[] result2 = new boolean[1];
+        AtomicInteger count = new AtomicInteger(0);
+
+        Thread thread1 = new Thread() {
+            public void run() {
+                result1[0] = appointmentSystem.addManager("1", "11");
+                count.incrementAndGet();
+            }
+        };
+
+        Thread thread2 = new Thread() {
+            public void run() {
+                result2[0] = appointmentSystem.removeOwner("25489", "25490");
+                count.incrementAndGet();
+            }
+        };
+
+        thread1.start();
+        thread2.start();
+
+        while (count.get() != 2);
+        boolean firstAddedThenRemoved = result1[0] && result2[0];
+        boolean firstRemovedThenDidntAdded = !result1[0] && result2[0];
+        boolean result = appointmentSystem.getOwners().isEmpty() && appointmentSystem.getManagers().isEmpty()
+                && (firstAddedThenRemoved || firstRemovedThenDidntAdded);
+        assertTrue(result);
     }
 
 
