@@ -70,7 +70,7 @@ public class ShoppingCart {
         try{
             lock.acquireWrite();
             if(reserved.get()){
-                log.debug("Cart has already been reserved");
+                log.debug("Cart has already been reserved for user {}.", userId);
                 throw new PurchaseFailedException("Cart has already been reserved");
             }
             if(baskets.isEmpty()){
@@ -85,7 +85,7 @@ public class ShoppingCart {
                 // so we need to cancel all the reservations that were made so far
                 if (r == null){
                     reservations.values().forEach(Reservation::cancelReservation);
-                    log.debug("Could not reserve some of the products in the cart.");
+                    log.debug("Could not reserve some of the products in the cart for user {}.", userId);
                     throw new PurchaseFailedException("Could not reserve some of the products in the cart.");
                 }
 
