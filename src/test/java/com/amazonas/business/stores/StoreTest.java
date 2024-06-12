@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -534,7 +535,7 @@ class StoreTest {
     // ======================================================================== |
 
     @Test
-    void testConcurrentReserveProductsGood() throws InterruptedException, NoSuchFieldException, IllegalAccessException, StoreException {
+    void testConcurrentReserveProducts() throws InterruptedException, NoSuchFieldException, IllegalAccessException, StoreException {
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
         // test concurrent access with a real product inventory
@@ -564,6 +565,28 @@ class StoreTest {
 
         verify(inventory, times(1)).setQuantity(newId, 0);
         assertEquals(0, inventory.getQuantity(newId));
+    }
+
+    @Test
+    void testConcurrentCancelReservation(){
+        Reservation reservation = new Reservation("id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null);
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            if(!store.cancelReservation(reservation)){
+                counter.incrementAndGet();
+            }
+        };
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        try {
+            service.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(1, counter.get());
     }
 
     @Test

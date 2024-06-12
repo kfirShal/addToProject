@@ -312,6 +312,10 @@ public class Store {
                 return false;
             }
 
+            if(!reservation.storeId().equals(storeId)){
+                return false;
+            }
+
             reservation.setCancelled();
 
             // Return the reserved products to the inventory
