@@ -315,9 +315,13 @@ public class Store {
         }
     }
 
-    public void cancelReservation(Reservation reservation){
+    public void cancelReservation(Reservation reservation) throws StoreException {
         try{
             lock.acquireWrite();
+
+            if(reservation.isCancelled()){
+                throw new StoreException("Reservation is already cancelled");
+            }
 
             reservation.setCancelled();
 
