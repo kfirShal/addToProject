@@ -194,7 +194,7 @@ public class UsersController {
         cart.addProduct(storeId, productId,quantity);
     }
 
-    public void RemoveProductFromCart(String userId,String storeName,String productId) throws UserException, ShoppingCartException {
+    public void removeProductFromCart(String userId,String storeName,String productId) throws UserException, ShoppingCartException {
         ShoppingCart cart = getCartWithValidation(userId);
         cart.removeProduct(storeName,productId);
     }
@@ -202,6 +202,10 @@ public class UsersController {
     public void changeProductQuantity(String userId, String storeName, String productId, int quantity) throws UserException, ShoppingCartException {
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
+    }
+
+    public ShoppingCart viewCart(String userId) throws UserException {
+        return getCartWithValidation(userId);
     }
     // =============================================================================== |
     // ================================ PURCHASE ===================================== |
