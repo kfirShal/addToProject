@@ -545,19 +545,29 @@ class StoreTest {
         String newId = inventory.addProduct(laptop);
         inventory.setQuantity(newId, 1);
 
+        AtomicInteger counter = new AtomicInteger(0);
+
         ExecutorService service = Executors.newFixedThreadPool(2);
         Map<String, Integer> toReserve = Map.of(laptop.productId(), 1);
-        service.submit(() -> store.reserveProducts(toReserve));
-        service.submit(() -> store.reserveProducts(toReserve));
+        Runnable test = () -> {
+            Reservation r = store.reserveProducts(toReserve);
+            if (r == null) {
+                counter.incrementAndGet();
+            }
+        };
+
+        service.submit(test);
+        service.submit(test);
         service.shutdown();
         service.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, counter.get());
 
         verify(inventory, times(1)).setQuantity(newId, 0);
         assertEquals(0, inventory.getQuantity(newId));
     }
 
     @Test
-    void testAddTwiceProduct() throws StoreException, IllegalAccessException, NoSuchFieldException, InterruptedException {
+    void testAddTwiceProduct() throws IllegalAccessException, NoSuchFieldException, InterruptedException {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
