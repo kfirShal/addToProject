@@ -5,6 +5,8 @@ import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.permissions.proxies.StoreProxy;
 import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.stores.search.SearchRequest;
+import com.amazonas.business.stores.storePositions.StorePosition;
+import com.amazonas.business.transactions.Transaction;
 import com.amazonas.exceptions.AuthenticationFailedException;
 import com.amazonas.exceptions.NoPermissionException;
 import com.amazonas.exceptions.StoreException;
@@ -193,6 +195,28 @@ public class StoresService {
             boolean result = proxy.removePermissionFromManager(toRemove.storeId(), toRemove.targetActor(), StoreActions.valueOf(toRemove.action()), request.userId(), request.token());
             return new Response(result).toJson();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
+    }
+
+    public String getStoreRolesInformation(String json){
+        Request request = Request.from(json);
+        try {
+            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            List<StorePosition> result = proxy.getStoreRolesInformation(storeId, request.userId(), request.token());
+            return new Response(true, result).toJson();
+        } catch (NoPermissionException | AuthenticationFailedException e) {
+            return Response.getErrorResponse(e).toJson();
+        }
+    }
+
+    public String getStoreTransactionHistory(String json){
+        Request request = Request.from(json);
+        try {
+            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            List<Transaction> result = proxy.getStoreTransactionHistory(storeId, request.userId(), request.token());
+            return new Response(true, result).toJson();
+        } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getErrorResponse(e).toJson();
         }
     }
