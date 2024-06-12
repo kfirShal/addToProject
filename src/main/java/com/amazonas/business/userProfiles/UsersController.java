@@ -10,6 +10,8 @@ import com.amazonas.exceptions.ShoppingCartException;
 import com.amazonas.exceptions.UserException;
 import com.amazonas.repository.*;
 import com.amazonas.utils.ReadWriteLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -19,7 +21,7 @@ import java.util.regex.Pattern;
 
 @Component("usersController")
 public class UsersController {
-
+    private static final Logger log = LoggerFactory.getLogger(UsersController.class);
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final TransactionRepository transactionRepository;
@@ -65,15 +67,19 @@ public class UsersController {
 
 
     public void register(String email, String userId, String password) throws UserException {
+
         if(userRepository.userIdExists(userId)){
+            log.debug("User with id: {} already exists in the system", userId);
             throw new UserException("This user name is already exists in the system");
         }
 
         if (!isValidPassword(password)) {
+            log.debug("Password does not meet the requirements");
             throw new UserException("Password must contain at least one uppercase letter and one special character.");
         }
 
         if (!isValidEmail(email)) {
+            log.debug("Invalid email address");
             throw new UserException("Invalid email address.");
         }
 
@@ -81,6 +87,7 @@ public class UsersController {
         userRepository.saveUser(newRegisteredUser);
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
         authenticationController.addUserCredentials(userId, password);
+        log.debug("User with id: {} registered successfully", userId);
     }
 
     public String enterAsGuest() {
@@ -91,16 +98,19 @@ public class UsersController {
             lock.acquireWrite();
             guests.put(guestInitialId,newGuest);
             guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
+            log.debug("Guest with id: {} entered the market", guestInitialId);
             return guestInitialId;
         }
         finally {
             lock.releaseWrite();
         }
+
     }
 
     public ShoppingCart loginToRegistered(String guestInitialId,String userId) throws UserException {
 
         if(! userRepository.userIdExists(userId)){
+            log.debug("User with id: {} does not exist in the system", userId);
             throw new UserException("Login failed");
         }
 
@@ -115,6 +125,7 @@ public class UsersController {
 
             //add the registered user to the online users
             onlineRegisteredUsers.put(userId,loggedInUser);
+            log.debug("User with id: {} logged in successfully", userId);
         } finally {
             lock.releaseWrite();
         }
@@ -122,11 +133,13 @@ public class UsersController {
         ShoppingCart cartOfUser = shoppingCartRepository.getCart(userId);
         ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
         shoppingCartRepository.saveCart(mergedShoppingCart);
+        log.debug("Guest cart merged with user cart successfully");
         return mergedShoppingCart;
     }
 
     public String logout(String userId) throws UserException {
         if(!onlineRegisteredUsers.containsKey(userId)){
+            log.debug("User with id: {} is not online", userId);
             throw new UserException("User with id: " + userId + " is not online");
         }
 
@@ -139,6 +152,7 @@ public class UsersController {
             onlineRegisteredUsers.remove(userId);
             guests.put(guestInitialId,guest);
             guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
+            log.debug("User with id: {} logged out successfully", userId);
             return guestInitialId;
         }
         finally {
@@ -148,6 +162,7 @@ public class UsersController {
 
     public void logoutAsGuest(String guestInitialId) throws UserException {
         if(!guests.containsKey(guestInitialId)){
+            log.debug("Guest with id: {} is not in the market", guestInitialId);
             throw new UserException("Guest with id: " + guestInitialId + " is not in the market");
         }
         authenticationController.revokeAuthentication(guestInitialId);
@@ -157,6 +172,7 @@ public class UsersController {
             //the guest exits the system, therefore his cart removes from the system
             guestCarts.remove(guestInitialId);
             guests.remove(guestInitialId);
+            log.debug("Guest with id: {} logged out successfully", guestInitialId);
         }
         finally {
             lock.releaseWrite();
@@ -176,11 +192,13 @@ public class UsersController {
         finally {
             lock.releaseRead();
         }
+        log.debug("User with id: {} does not exist", userId);
         throw new UserException("The user does not exists");
     }
 
     public List<Transaction> getUserTransactionHistory(String userId) throws UserException {
         if(!userRepository.userIdExists(userId)){
+            log.debug("User with id: {} does not exist", userId);
             throw new UserException("Invalid userId");
         }
         return transactionRepository.getTransactionHistoryByUser(userId);
@@ -192,16 +210,19 @@ public class UsersController {
     public void addProductToCart(String userId, String storeId, String productId, int quantity) throws UserException, ShoppingCartException {
         ShoppingCart cart = getCartWithValidation(userId);
         cart.addProduct(storeId, productId,quantity);
+        log.debug("Product with id: {} added to the cart of user with id: {}", productId, userId);
     }
 
     public void removeProductFromCart(String userId,String storeName,String productId) throws UserException, ShoppingCartException {
         ShoppingCart cart = getCartWithValidation(userId);
         cart.removeProduct(storeName,productId);
+        log.debug("Product with id: {} removed from the cart of user with id: {}", productId, userId);
     }
 
     public void changeProductQuantity(String userId, String storeName, String productId, int quantity) throws UserException, ShoppingCartException {
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
+        log.debug("Product with id: {} quantity changed in the cart of user with id: {}", productId, userId);
     }
 
     public ShoppingCart viewCart(String userId) throws UserException {
@@ -215,6 +236,7 @@ public class UsersController {
         ShoppingCart cart = getCartWithValidation(userId);
         Map<String, Reservation> reservations = cart.reserveCart();
         reservations.values().forEach(r -> reservationRepository.saveReservation(userId,r));
+        log.debug("Cart of user with id: {} reserved successfully", userId);
     }
 
     public void payForPurchase(String userId) throws PurchaseFailedException, UserException {
@@ -225,25 +247,31 @@ public class UsersController {
         User user = userRepository.getUser(userId);
         if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
             cancelPurchase(userId);
+            log.debug("Payment failed");
             throw new PurchaseFailedException("Payment failed");
         }
 
         // mark the reservations as paid
         reservations.forEach(Reservation::setPaid);
+        log.debug("Mark the reservation as paid successfully");
 
         // document the transactions
         LocalDateTime transactionTime = LocalDateTime.now();
         for (var reservation : reservations) {
             Transaction t = reservationToTransaction(userId, reservation, transactionTime);
             transactionRepository.addNewTransaction(t);
+
         }
+        log.debug("Document the transactions successfully");
 
         // give the user a new empty cart
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
+        log.debug("The purchase completed");
     }
 
     public void cancelPurchase(String userId) throws UserException {
         if(!userRepository.userIdExists(userId)){
+            log.debug("Cancel Purchase - invalid userId");
             throw new UserException("Invalid userId");
         }
         List<Reservation> reservations = reservationRepository.getReservations(userId);
@@ -252,6 +280,7 @@ public class UsersController {
             reservationRepository.removeReservation(userId,r);
         });
         getCartWithValidation(userId).cancelReservation();
+        log.debug("The purchase canceled");
     }
     // =============================================================================== |
     // ============================= HELPER METHODS ================================== |

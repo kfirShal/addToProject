@@ -4,13 +4,15 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.exceptions.PurchaseFailedException;
 import com.amazonas.exceptions.ShoppingCartException;
 import com.amazonas.utils.ReadWriteLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ShoppingCart {
-
+    private static final Logger log = LoggerFactory.getLogger(ShoppingCart.class);
     private final StoreBasketFactory storeBasketFactory;
     private final String userId;
     private final ReadWriteLock lock;
@@ -68,9 +70,11 @@ public class ShoppingCart {
         try{
             lock.acquireWrite();
             if(reserved.get()){
+                log.debug("Cart has already been reserved for user {}.", userId);
                 throw new PurchaseFailedException("Cart has already been reserved");
             }
             if(baskets.isEmpty()){
+                log.debug("Cart is empty");
                 throw new PurchaseFailedException("Cart is empty");
             }
             Map<String, Reservation> reservations = new HashMap<>();
@@ -81,6 +85,7 @@ public class ShoppingCart {
                 // so we need to cancel all the reservations that were made so far
                 if (r == null){
                     reservations.values().forEach(Reservation::cancelReservation);
+                    log.debug("Could not reserve some of the products in the cart for user {}.", userId);
                     throw new PurchaseFailedException("Could not reserve some of the products in the cart.");
                 }
 
