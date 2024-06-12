@@ -116,7 +116,7 @@ public class ShoppingCart {
 
         try{
             lock.acquireWrite();
-            StoreBasket basket = baskets.computeIfAbsent(storeId, _ -> storeBasketFactory.get(storeId));
+            StoreBasket basket = baskets.computeIfAbsent(storeId, _ -> storeBasketFactory.get(storeId,userId));
             basket.addProduct(productId,quantity);
         } finally {
             lock.releaseWrite();

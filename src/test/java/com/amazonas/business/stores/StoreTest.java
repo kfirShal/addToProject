@@ -471,9 +471,9 @@ class StoreTest {
         when(productInventory.getQuantity(blender.productId())).thenReturn(1);
         when(productInventory.getQuantity(toy.productId())).thenReturn(1);
         when(productInventory.isProductDisabled(any())).thenReturn(false);
-        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+        when(reservationFactory.get(any(), any(), any(),any())).thenReturn(mock(Reservation.class));
 
-        Reservation actualReservation = store.reserveProducts(products);
+        Reservation actualReservation = store.reserveProducts(products, "userId");
         assertNotNull(actualReservation); // return null
     }
 
@@ -494,9 +494,9 @@ class StoreTest {
         when(productInventory.getQuantity(blender.productId())).thenReturn(1);
         when(productInventory.getQuantity(toy.productId())).thenReturn(6);
         when(productInventory.isProductDisabled(any())).thenReturn(false);
-        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+        when(reservationFactory.get(any(),any(), any(),any())).thenReturn(mock(Reservation.class));
 
-        Reservation actualReservation = store.reserveProducts(products);
+        Reservation actualReservation = store.reserveProducts(products, "userId");
         assertNull(actualReservation);
     }
 
@@ -538,7 +538,7 @@ class StoreTest {
 
     @Test
     void testConcurrentReserveProducts() throws InterruptedException, NoSuchFieldException, IllegalAccessException, StoreException {
-        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+        when(reservationFactory.get(any(),any(), any(),any())).thenReturn(mock(Reservation.class));
 
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
@@ -553,7 +553,7 @@ class StoreTest {
         ExecutorService service = Executors.newFixedThreadPool(2);
         Map<String, Integer> toReserve = Map.of(laptop.productId(), 1);
         Runnable test = () -> {
-            Reservation r = store.reserveProducts(toReserve);
+            Reservation r = store.reserveProducts(toReserve, "userId");
             if (r == null) {
                 counter.incrementAndGet();
             }
@@ -571,7 +571,7 @@ class StoreTest {
 
     @Test
     void testConcurrentCancelReservation(){
-        Reservation reservation = new Reservation("id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null);
+        Reservation reservation = new Reservation("userId","id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null);
         AtomicInteger counter = new AtomicInteger(0);
 
         ExecutorService service = Executors.newFixedThreadPool(2);

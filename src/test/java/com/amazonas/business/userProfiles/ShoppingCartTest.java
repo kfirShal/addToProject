@@ -15,6 +15,7 @@ import static org.mockito.Mockito.*;
 class ShoppingCartTest {
     private final String STORE_ID = "storeId";
     private final String PRODUCT_ID = "productId";
+    private final String USER_ID = "userId";
     private  StoreBasketFactory storeBasketFactory;
     private ShoppingCart cart;
     private StoreBasket storeBasket;
@@ -22,7 +23,6 @@ class ShoppingCartTest {
     void setUp() {
         storeBasketFactory = mock(StoreBasketFactory.class);
         storeBasket = mock(StoreBasket.class);
-        String USER_ID = "userId";
         cart = new ShoppingCart(storeBasketFactory, USER_ID);
     }
 
@@ -31,7 +31,7 @@ class ShoppingCartTest {
         String GUEST_USER_ID = "guestUserId";
         ShoppingCart guestCart = new ShoppingCart(storeBasketFactory, GUEST_USER_ID);
         StoreBasket guestStoreBasket = mock(StoreBasket.class);
-        when(storeBasketFactory.get(STORE_ID)).thenReturn(guestStoreBasket);
+        when(storeBasketFactory.get(STORE_ID,GUEST_USER_ID)).thenReturn(guestStoreBasket);
         doNothing().when(guestStoreBasket).addProduct(PRODUCT_ID, 1);
         guestCart.addProduct(STORE_ID, PRODUCT_ID, 1);
         assertNotNull(cart.mergeGuestCartWithRegisteredCart(guestCart));
@@ -39,7 +39,7 @@ class ShoppingCartTest {
 
     @Test
     void getTotalPriceGood() throws ShoppingCartException {
-        when(storeBasketFactory.get(STORE_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.getTotalPrice()).thenReturn(100.0);
@@ -48,7 +48,7 @@ class ShoppingCartTest {
 
     @Test
     void reserveCartGood() throws ShoppingCartException, PurchaseFailedException {
-        when(storeBasketFactory.get(STORE_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(mock(Reservation.class));
@@ -60,7 +60,7 @@ class ShoppingCartTest {
     }
     @Test
     void reserveCartAlreadyReserved() throws ShoppingCartException, PurchaseFailedException {
-        when(storeBasketFactory.get(STORE_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(mock(Reservation.class));
@@ -69,7 +69,7 @@ class ShoppingCartTest {
     }
     @Test
     void reserveCartSomeProductsNotReserved() throws ShoppingCartException {
-        when(storeBasketFactory.get(STORE_ID)).thenReturn(storeBasket);
+        when(storeBasketFactory.get(STORE_ID,USER_ID)).thenReturn(storeBasket);
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(null);

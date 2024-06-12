@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Component("permissionsProfileRepository")
 public class PermissionsProfileRepository extends AbstractCachingRepository<PermissionsProfile> {
 
     private final Map<String, PermissionsProfile> userIdToPermissionsProfile;

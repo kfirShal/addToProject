@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 public class Reservation {
 
+    private final String userId;
     private final String reservationId;
     private final String storeId;
     private final Map<String, Integer> productIdToQuantity;
@@ -14,11 +15,13 @@ public class Reservation {
     private final Function<Reservation,Boolean> cancelCallback;
     private ReservationState state;
     public Reservation(
+            String userId,
             String reservationId,
             String storeId,
             Map<String, Integer> productIdToQuantity,
             LocalDateTime expirationDate,
             Function<Reservation,Boolean> cancelCallback) {
+        this.userId = userId;
         this.reservationId = reservationId;
         this.storeId = storeId;
         this.productIdToQuantity = productIdToQuantity;
@@ -82,6 +85,10 @@ public class Reservation {
 
     public String reservationId() {
         return reservationId;
+    }
+
+    public String userId() {
+        return userId;
     }
 
     @Override

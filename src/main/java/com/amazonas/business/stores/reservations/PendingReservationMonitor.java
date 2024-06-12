@@ -1,5 +1,6 @@
 package com.amazonas.business.stores.reservations;
 
+import com.amazonas.repository.ShoppingCartRepository;
 import com.amazonas.utils.Pair;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +15,10 @@ public class PendingReservationMonitor {
     private final Object waitObject;
 
     private final ConcurrentLinkedDeque<Pair<Reservation, LocalDateTime>> reservations;
+    private final ShoppingCartRepository shoppingCartRepository;
 
-    public PendingReservationMonitor() {
+    public PendingReservationMonitor(ShoppingCartRepository shoppingCartRepository) {
+        this.shoppingCartRepository = shoppingCartRepository;
         reservations = new ConcurrentLinkedDeque<>();
         waitObject = new Object();
 
@@ -71,6 +74,7 @@ public class PendingReservationMonitor {
                 case PENDING -> {
                     if(r.isExpired()){
                         r.cancelReservation();
+                        shoppingCartRepository.getCart(r.userId()).cancelReservation();
                         reservations.removeFirst();
                     }
                 }

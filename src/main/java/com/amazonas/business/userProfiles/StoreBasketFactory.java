@@ -13,8 +13,8 @@ public class StoreBasketFactory {
         this.storeCallbackFactory = storeCallbackFactory;
     }
 
-    public StoreBasket get(String storeId){
-        return new StoreBasket(storeCallbackFactory.makeReservation(storeId),
+    public StoreBasket get(String storeId, String userId){
+        return new StoreBasket(storeCallbackFactory.makeReservation(storeId, userId),
                                 storeCallbackFactory.calculatePrice(storeId));
     }
 }

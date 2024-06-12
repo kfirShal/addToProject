@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Component("storeRepository")
 public class StoreRepository extends AbstractCachingRepository<Store> {
 
 

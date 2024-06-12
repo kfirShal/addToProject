@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Component("userRepository")
 public class UserRepository extends AbstractCachingRepository<User> {
 
     private final Map<String, User> userCache;

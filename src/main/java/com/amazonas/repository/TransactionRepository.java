@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Component
+@Component("transactionRepository")
 public class TransactionRepository extends AbstractCachingRepository<Transaction> {
 
 

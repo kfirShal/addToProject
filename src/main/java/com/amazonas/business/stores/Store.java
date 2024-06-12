@@ -268,7 +268,7 @@ public class Store {
     //====================================================================== |
 
     @Nullable
-    public Reservation reserveProducts(Map<String,Integer> toReserve){
+    public Reservation reserveProducts(Map<String,Integer> toReserve, String userId){
         try{
             lock.acquireWrite();
 
@@ -292,6 +292,7 @@ public class Store {
 
             // Create the reservation
             Reservation reservation = reservationFactory.get(
+                    userId,
                     storeId,
                     toReserve,
                     LocalDateTime.now().plusSeconds(reservationTimeoutSeconds));

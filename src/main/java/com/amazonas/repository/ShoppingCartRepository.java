@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Component("shoppingCartRepository")
 public class ShoppingCartRepository extends AbstractCachingRepository<ShoppingCart> {
 
     private final Map<String, ShoppingCart> cartCache; //TODO: REMOVE THIS

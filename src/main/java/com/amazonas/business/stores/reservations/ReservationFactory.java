@@ -17,10 +17,12 @@ public class ReservationFactory {
         this.storeCallbackFactory = storeCallbackFactory;
     }
 
-    public Reservation get(String storeId,
+    public Reservation get(String userId,
+                           String storeId,
                            Map<String, Integer> productToQuantity,
                            LocalDateTime expirationDate){
         return new Reservation(
+                userId,
                 UUID.randomUUID().toString(),
                 storeId,
                 productToQuantity,

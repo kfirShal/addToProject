@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Component
+@Component("reservationRepository")
 public class ReservationRepository{
 
 
