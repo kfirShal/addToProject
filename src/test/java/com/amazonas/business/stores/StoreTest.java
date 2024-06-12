@@ -15,6 +15,8 @@ import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -466,6 +468,7 @@ class StoreTest {
         when(productInventory.getQuantity(shirt.productId())).thenReturn(1);
         when(productInventory.getQuantity(blender.productId())).thenReturn(1);
         when(productInventory.getQuantity(toy.productId())).thenReturn(1);
+        when(productInventory.isProductDisabled(any())).thenReturn(false);
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
         Reservation actualReservation = store.reserveProducts(products);
@@ -488,6 +491,7 @@ class StoreTest {
         // Only 1 blender in stock, but 5 requested
         when(productInventory.getQuantity(blender.productId())).thenReturn(1);
         when(productInventory.getQuantity(toy.productId())).thenReturn(6);
+        when(productInventory.isProductDisabled(any())).thenReturn(false);
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
         Reservation actualReservation = store.reserveProducts(products);
@@ -508,7 +512,31 @@ class StoreTest {
     }
 
     @Test
-    void testConcurrentAccessToLastProduct() throws InterruptedException {
+    void testCancelReservation() throws IllegalAccessException, NoSuchFieldException {
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        inventoryField.set(store, new ProductInventory());
+        fail(); //TODO: implement this test with a real inventory instance
+
+        Reservation reservation = mock(Reservation.class);
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        store.cancelReservation(reservation);
+        verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
+    }
+
+    // ======================================================================== |
+    // ======================== CONCURRENT TESTS ============================== |
+    // ======================================================================== |
+
+    @Test
+    void testConcurrentAccessToLastProduct() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        inventoryField.set(store, new ProductInventory());
+        fail(); //TODO: implement this test with a real inventory instance
+
         when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
@@ -522,29 +550,33 @@ class StoreTest {
     }
 
     @Test
-    void testAddTwiceProduct() throws StoreException {
+    void testAddTwiceProduct() throws StoreException, IllegalAccessException, NoSuchFieldException {
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        inventoryField.set(store, new ProductInventory());
+        fail(); //TODO: implement this test with a real inventory instance
+
         assertThrows(StoreException.class, () -> store.addProduct(laptop));
     }
 
     @Test
-    void testRemoveProduct() throws StoreException {
+    void testConcurrentRemoveProduct() throws StoreException, IllegalAccessException, NoSuchFieldException {
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        inventoryField.set(store, new ProductInventory());
+        fail(); //TODO: implement this test with a real inventory instance
+
         when(productInventory.removeProduct(laptop.productId())).thenReturn(true);
         store.removeProduct(laptop.productId());
         verify(productInventory, times(1)).removeProduct(laptop.productId());
     }
 
     @Test
-    void testDisableProduct() {
+    void testConcurrentDisableProduct() {
         store.disableProduct(laptop.productId());
         verify(productInventory, times(1)).disableProduct(laptop.productId());
-    }
-
-    @Test
-    void testCancelReservation() {
-        Reservation reservation = mock(Reservation.class);
-        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
-        store.cancelReservation(reservation);
-        verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
     }
 
 }
