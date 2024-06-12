@@ -577,6 +577,7 @@ class StoreTest {
         service.submit(test);
         service.shutdown();
         service.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, counter.get());
     }
 
     @Test
