@@ -460,7 +460,7 @@ class StoreTest {
             put(book.productId(), 1);
             put(shirt.productId(), 1);
             put(blender.productId(), 1);
-            put(toy.productName(), 1);
+            put(toy.productId(), 1);
         }};
 
         when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
@@ -481,8 +481,8 @@ class StoreTest {
             put(laptop.productId(), 1);
             put(book.productId(), 1);
             put(shirt.productId(), 1);
-            put(blender.productId(), 1);
-            put(toy.productName(), 1);
+            put(blender.productId(), 5);
+            put(toy.productId(), 1);
         }};
 
         when(productInventory.getQuantity(laptop.productId())).thenReturn(2);
@@ -512,17 +512,20 @@ class StoreTest {
     }
 
     @Test
-    void testCancelReservation() throws IllegalAccessException, NoSuchFieldException {
-        // test concurrent access with a real product inventory
-        Field inventoryField = store.getClass().getDeclaredField("inventory");
-        inventoryField.setAccessible(true);
-        inventoryField.set(store, new ProductInventory());
-        fail(); //TODO: implement this test with a real inventory instance
-
+    void testCancelReservationGood() {
         Reservation reservation = mock(Reservation.class);
         when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
-        store.cancelReservation(reservation);
+        when(reservation.isCancelled()).thenReturn(false);
+        assertTrue(store.cancelReservation(reservation));
         verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
+    }
+
+    @Test
+    void testCancelReservationBad() {
+        Reservation reservation = mock(Reservation.class);
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        when(reservation.isCancelled()).thenReturn(true);
+        assertFalse(store.cancelReservation(reservation));
     }
 
     // ======================================================================== |

@@ -290,7 +290,9 @@ public class Store {
             for (var entry : toReserve.entrySet()) {
                 String productId = entry.getKey();
                 int quantity = entry.getValue();
-                if (inventory.isProductDisabled(productId) || inventory.getQuantity(productId) < quantity) {
+                if (inventory.isProductDisabled(productId)) {
+                    return null;
+                } else if (inventory.getQuantity(productId) < quantity) {
                     return null;
                 }
             }
@@ -316,12 +318,12 @@ public class Store {
         }
     }
 
-    public void cancelReservation(Reservation reservation) throws StoreException {
+    public boolean cancelReservation(Reservation reservation) {
         try{
             lock.acquireWrite();
 
             if(reservation.isCancelled()){
-                throw new StoreException("Reservation is already cancelled");
+                return false;
             }
 
             reservation.setCancelled();
@@ -332,7 +334,7 @@ public class Store {
                 int quantity = entry.getValue();
                 inventory.setQuantity(productId, inventory.getQuantity(productId) + quantity);
             }
-
+            return true;
         } finally {
             lock.releaseWrite();
         }
