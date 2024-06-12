@@ -16,6 +16,7 @@ public class ShoppingCart {
     private final ReadWriteLock lock;
     private final AtomicBoolean reserved;
 
+
     private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket
     public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
         this.storeBasketFactory = storeBasketFactory;
@@ -35,7 +36,6 @@ public class ShoppingCart {
             for (var entry : cartOfGuest.baskets.entrySet()) {
                 String storeId = entry.getKey();
                 StoreBasket guestBasket = entry.getValue();
-
                 StoreBasket userBasket = baskets.get(storeId);
                 if (userBasket == null) {
                     // If the store ID doesn't exist in the user's cart, add the guest's basket
@@ -108,6 +108,7 @@ public class ShoppingCart {
     //====================================================================================== |
 
     public void addProduct(String storeId, String productId, int quantity) throws ShoppingCartException {
+
         try{
             lock.acquireWrite();
             StoreBasket basket = baskets.computeIfAbsent(storeId, _ -> storeBasketFactory.get(storeId));
@@ -156,4 +157,8 @@ public class ShoppingCart {
     public String userId() {
         return userId;
     }
+    public Map<String, StoreBasket> getBaskets() {
+        return baskets;
+    }
+
 }
