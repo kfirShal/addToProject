@@ -518,6 +518,8 @@ class StoreTest {
         Reservation reservation = mock(Reservation.class);
         when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
         when(reservation.isCancelled()).thenReturn(false);
+        when(reservation.storeId()).thenReturn(store.getStoreId());
+
         assertTrue(store.cancelReservation(reservation));
         verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
     }
