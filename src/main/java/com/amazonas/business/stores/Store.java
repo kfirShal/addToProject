@@ -214,18 +214,11 @@ public class Store {
         }
     }
 
-    public void addProduct(Product toAdd) throws StoreException {
+    public String addProduct(Product toAdd) throws StoreException {
         try{
             lock.acquireWrite();
             checkIfOpen();
-
-            if(inventory.nameExists(toAdd.productName())) {
-                inventory.addProduct(toAdd);
-            }
-            else {
-                throw new StoreException("product name exists");
-            }
-
+            return inventory.addProduct(toAdd);
         } finally {
             lock.releaseWrite();
         }
@@ -234,15 +227,8 @@ public class Store {
     public void removeProduct(String productIdToRemove) throws StoreException {
         try {
             lock.acquireWrite();
-
             checkIfOpen();
-
-            boolean check = inventory.removeProduct(productIdToRemove);
-                if(!check){
-                    //product wasn't removed
-                    throw new StoreException("product wasn't removed - no product in system");
-                }
-
+            inventory.removeProduct(productIdToRemove);
         } finally {
             lock.releaseWrite();
         }
@@ -250,9 +236,9 @@ public class Store {
     }
 
     public void updateProduct(Product product) throws StoreException {
-        lock.acquireWrite();
-        checkIfOpen();
         try {
+            lock.acquireWrite();
+            checkIfOpen();
             inventory.updateProduct(product);
         } finally {
             lock.releaseWrite();
@@ -260,8 +246,8 @@ public class Store {
      }
 
     public void enableProduct(String productId) {
-        lock.acquireWrite();
         try {
+            lock.acquireWrite();
             inventory.enableProduct(productId);
         } finally {
             lock.releaseWrite();
@@ -269,8 +255,8 @@ public class Store {
     }
 
     public void disableProduct(String productId){
-        lock.acquireWrite();
         try {
+            lock.acquireWrite();
             inventory.disableProduct(productId);
         } finally {
             lock.releaseWrite();

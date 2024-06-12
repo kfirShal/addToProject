@@ -1,5 +1,6 @@
 package com.amazonas.business.inventory;
 
+import com.amazonas.exceptions.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.UUID;
@@ -26,10 +27,16 @@ public class ProductInventory {
         return idToProduct.entrySet().stream()
                 .anyMatch((x -> x.getValue().productName().equalsIgnoreCase(productName)));
     }
-    public void addProduct(Product product) {
+
+    public String addProduct(Product product) throws StoreException {
+        if(nameExists(product.productName())){
+            throw new StoreException("Product with name " + product.productName() + " already exists");
+        }
+
         product.setProductId(UUID.randomUUID().toString());
         log.debug("Adding product {} with id {} to inventory", product.productName(), product.productId());
         idToProduct.put(product.productId(),product);
+        return product.productId();
     }
 
     public boolean updateProduct(Product product) {
@@ -50,14 +57,16 @@ public class ProductInventory {
         return false;
     }
 
-    public boolean removeProduct(String productId) {
+    public boolean removeProduct(String productId) throws StoreException {
         log.debug("Removing product with id {} from inventory", productId);
 
-        if(!disabledProductsId.contains(productId)){
-            return false;
+        if(!idToProduct.containsKey(productId)){
+            throw new StoreException("product wasn't removed - no product in system");
         }
+
         idToProduct.remove(productId);
         idToQuantity.remove(productId);
+        disabledProductsId.remove(productId);
         return true;
     }
 
@@ -76,19 +85,11 @@ public class ProductInventory {
     }
 
     public boolean enableProduct(String productId) {
-        if(disabledProductsId.contains(productId)){
-            disabledProductsId.remove(productId);
-            return true;
-        }
-        return false;
+        return disabledProductsId.remove(productId);
     }
 
     public boolean disableProduct(String productId) {
-        if(!disabledProductsId.contains(productId)){
-            disabledProductsId.add(productId);
-            return true;
-        }
-        return false;
+        return disabledProductsId.add(productId);
     }
 
     public boolean isProductDisabled(String productId) {

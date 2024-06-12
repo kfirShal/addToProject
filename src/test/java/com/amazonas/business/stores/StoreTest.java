@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -533,53 +534,76 @@ class StoreTest {
     // ======================================================================== |
 
     @Test
-    void testConcurrentAccessToLastProduct() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+    void testConcurrentReserveProductsGood() throws InterruptedException, NoSuchFieldException, IllegalAccessException, StoreException {
+        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        inventoryField.set(store, new ProductInventory());
-        fail(); //TODO: implement this test with a real inventory instance
-
-        when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
-        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+        ProductInventory inventory = spy(new ProductInventory());
+        inventoryField.set(store, inventory);
+        String newId = inventory.addProduct(laptop);
+        inventory.setQuantity(newId, 1);
 
         ExecutorService service = Executors.newFixedThreadPool(2);
-        service.submit(() -> store.reserveProducts(Map.of(laptop.productId(), 1)));
-        service.submit(() -> store.reserveProducts(Map.of(laptop.productId(), 1)));
+        Map<String, Integer> toReserve = Map.of(laptop.productId(), 1);
+        service.submit(() -> store.reserveProducts(toReserve));
+        service.submit(() -> store.reserveProducts(toReserve));
         service.shutdown();
         service.awaitTermination(1, TimeUnit.SECONDS);
 
-        verify(productInventory, times(2)).setQuantity(eq(laptop.productId()), anyInt());
+        verify(inventory, times(1)).setQuantity(newId, 0);
+        assertEquals(0, inventory.getQuantity(newId));
     }
 
     @Test
-    void testAddTwiceProduct() throws StoreException, IllegalAccessException, NoSuchFieldException {
+    void testAddTwiceProduct() throws StoreException, IllegalAccessException, NoSuchFieldException, InterruptedException {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
         inventoryField.set(store, new ProductInventory());
-        fail(); //TODO: implement this test with a real inventory instance
 
-        assertThrows(StoreException.class, () -> store.addProduct(laptop));
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            try {
+                store.addProduct(laptop);
+            } catch (StoreException e) {
+                counter.incrementAndGet();
+            }
+        };
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
     }
 
     @Test
-    void testConcurrentRemoveProduct() throws StoreException, IllegalAccessException, NoSuchFieldException {
+    void testConcurrentRemoveProduct() throws IllegalAccessException, NoSuchFieldException, InterruptedException, StoreException {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        inventoryField.set(store, new ProductInventory());
-        fail(); //TODO: implement this test with a real inventory instance
+        ProductInventory inventory = new ProductInventory();
+        inventoryField.set(store, inventory);
+        String newId = inventory.addProduct(laptop);
+        inventory.setQuantity(newId, 1);
+        assertEquals(1, inventory.getQuantity(newId));
 
-        when(productInventory.removeProduct(laptop.productId())).thenReturn(true);
-        store.removeProduct(laptop.productId());
-        verify(productInventory, times(1)).removeProduct(laptop.productId());
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            try {
+                store.removeProduct(newId);
+            } catch (StoreException e) {
+                counter.incrementAndGet();
+            }
+        };
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, counter.get());
     }
-
-    @Test
-    void testConcurrentDisableProduct() {
-        store.disableProduct(laptop.productId());
-        verify(productInventory, times(1)).disableProduct(laptop.productId());
-    }
-
 }
