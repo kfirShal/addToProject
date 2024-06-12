@@ -3,19 +3,29 @@ package com.amazonas.business.stores;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
+import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.search.SearchRequestBuilder;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.business.stores.storePositions.StoreRole;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -452,7 +462,7 @@ class StoreTest {
             put(book.productId(), 1);
             put(shirt.productId(), 1);
             put(blender.productId(), 1);
-            put(toy.productName(), 1);
+            put(toy.productId(), 1);
         }};
 
         when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
@@ -460,10 +470,11 @@ class StoreTest {
         when(productInventory.getQuantity(shirt.productId())).thenReturn(1);
         when(productInventory.getQuantity(blender.productId())).thenReturn(1);
         when(productInventory.getQuantity(toy.productId())).thenReturn(1);
+        when(productInventory.isProductDisabled(any())).thenReturn(false);
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
         Reservation actualReservation = store.reserveProducts(products);
-        assertNotNull(actualReservation);
+        assertNotNull(actualReservation); // return null
     }
 
     @Test
@@ -472,8 +483,8 @@ class StoreTest {
             put(laptop.productId(), 1);
             put(book.productId(), 1);
             put(shirt.productId(), 1);
-            put(blender.productId(), 1);
-            put(toy.productName(), 1);
+            put(blender.productId(), 5);
+            put(toy.productId(), 1);
         }};
 
         when(productInventory.getQuantity(laptop.productId())).thenReturn(2);
@@ -482,6 +493,7 @@ class StoreTest {
         // Only 1 blender in stock, but 5 requested
         when(productInventory.getQuantity(blender.productId())).thenReturn(1);
         when(productInventory.getQuantity(toy.productId())).thenReturn(6);
+        when(productInventory.isProductDisabled(any())).thenReturn(false);
         when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
 
         Reservation actualReservation = store.reserveProducts(products);
@@ -495,4 +507,139 @@ class StoreTest {
         }
     }
 
+    @Test
+    void testActionWhenStoreClosed() {
+        store.closeStore();
+        assertThrows(StoreException.class, () -> store.addProduct(laptop));
+    }
+
+    @Test
+    void testCancelReservationGood() {
+        Reservation reservation = mock(Reservation.class);
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        when(reservation.isCancelled()).thenReturn(false);
+        when(reservation.storeId()).thenReturn(store.getStoreId());
+
+        assertTrue(store.cancelReservation(reservation));
+        verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
+    }
+
+    @Test
+    void testCancelReservationBad() {
+        Reservation reservation = mock(Reservation.class);
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        when(reservation.isCancelled()).thenReturn(true);
+        assertFalse(store.cancelReservation(reservation));
+    }
+
+    // ======================================================================== |
+    // ======================== CONCURRENT TESTS ============================== |
+    // ======================================================================== |
+
+    @Test
+    void testConcurrentReserveProducts() throws InterruptedException, NoSuchFieldException, IllegalAccessException, StoreException {
+        when(reservationFactory.get(any(), any(),any())).thenReturn(mock(Reservation.class));
+
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        ProductInventory inventory = spy(new ProductInventory());
+        inventoryField.set(store, inventory);
+        String newId = inventory.addProduct(laptop);
+        inventory.setQuantity(newId, 1);
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Map<String, Integer> toReserve = Map.of(laptop.productId(), 1);
+        Runnable test = () -> {
+            Reservation r = store.reserveProducts(toReserve);
+            if (r == null) {
+                counter.incrementAndGet();
+            }
+        };
+
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, counter.get());
+
+        verify(inventory, times(1)).setQuantity(newId, 0);
+        assertEquals(0, inventory.getQuantity(newId));
+    }
+
+    @Test
+    void testConcurrentCancelReservation(){
+        Reservation reservation = new Reservation("id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null);
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            if(!store.cancelReservation(reservation)){
+                counter.incrementAndGet();
+            }
+        };
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        try {
+            service.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(1, counter.get());
+    }
+
+    @Test
+    void testAddTwiceProduct() throws IllegalAccessException, NoSuchFieldException, InterruptedException {
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        inventoryField.set(store, new ProductInventory());
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            try {
+                store.addProduct(laptop);
+            } catch (StoreException e) {
+                counter.incrementAndGet();
+            }
+        };
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, counter.get());
+    }
+
+    @Test
+    void testConcurrentRemoveProduct() throws IllegalAccessException, NoSuchFieldException, InterruptedException, StoreException {
+        // test concurrent access with a real product inventory
+        Field inventoryField = store.getClass().getDeclaredField("inventory");
+        inventoryField.setAccessible(true);
+        ProductInventory inventory = new ProductInventory();
+        inventoryField.set(store, inventory);
+        String newId = inventory.addProduct(laptop);
+        inventory.setQuantity(newId, 1);
+        assertEquals(1, inventory.getQuantity(newId));
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            try {
+                store.removeProduct(newId);
+            } catch (StoreException e) {
+                counter.incrementAndGet();
+            }
+        };
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
+        assertEquals(1, counter.get());
+    }
 }
