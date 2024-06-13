@@ -1,7 +1,5 @@
 package com.amazonas.acceptanceTests;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.inventory.Product;
@@ -26,6 +24,8 @@ import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class VisitorActionsRequirements {
 
     private UsersController usersController;
@@ -47,23 +47,28 @@ public class VisitorActionsRequirements {
     private TransactionRepository transactionRepository;
     private StoreCallbackFactory storeCallbackFactory;
     private StoresController storesController;
+    private UserRepository userRepository;
+    private AuthenticationController authenticationController;
 
     @BeforeEach
     public void setup() {
         shoppingCartRepository = new ShoppingCartRepository(shoppingCartMongo);
         shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
+        storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
+        storeCallbackFactory = new StoreCallbackFactory(storesController);
+        userRepository = new UserRepository(userMongo);
+        authenticationController = new AuthenticationController(userCredentialsRepository);
+
         usersController = new UsersController(
-                new UserRepository(userMongo),
+                userRepository,
                 new ReservationRepository(),
                 new TransactionRepository(transMongo),
                 new ProductRepository(productMongo),
                 new PaymentService(),
                 shoppingCartFactory,
-                new AuthenticationController(userCredentialsRepository),
+                authenticationController,
                 shoppingCartRepository
         );
-        storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
-        storeCallbackFactory = new StoreCallbackFactory(storesController);
     }
 
     //-------------------------Guest entry-------------------------
@@ -91,56 +96,114 @@ public class VisitorActionsRequirements {
         assertTrue(shoppingCart.getTotalPrice() != 0);
     }
 
+    //-------------------------Guest exit-------------------------
 
     @Test
-    public void testInvalidLoginFallsBackToGuest() throws UserException, ShoppingCartException {
+    public void testGuestIndicatesIntentionToLeave() throws UserException {
         // Arrange
-        String invalidUserId = "invalidUser";
-        String invalidPassword = "wrongPassword";
-
-        boolean loginFailed = false;
-        try {
-            usersController.loginToRegistered(invalidUserId, invalidPassword);
-        } catch (UserException e) {
-            loginFailed = true; // Expected exception for invalid login
-        }
-
-        // User continues as a guest
         String guestId = usersController.enterAsGuest();
-        Guest guest = usersController.getGuest(guestId);
 
         // Act
-        Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
-        Store store = new Store("store1",
-                "KSP",
-                "STORE",
-                rating.FIVE_STARS,
-                new ProductInventory(), // assuming a valid product inventory
-                new AppointmentSystem(), // assuming a valid appointment system
-                new ReservationFactory(), // assuming a valid reservation factory
-                new PendingReservationMonitor(), // assuming a valid pending reservation monitor
-                new PermissionsController(), // assuming a valid permissions controller
-                new TransactionRepository()); // assuming a valid transaction repository
-
-        usersController.addProductToCart(guestId, "store1", "product1", 1);
-        ShoppingCart shoppingCart = shoppingCartRepository.getCart(guestId);
+        usersController.logoutAsGuest(guestId);
 
         // Assert
-        assertTrue(loginFailed, "User login should fail with invalid credentials");
-        assertNotNull(guest, "Guest user should be created");
-        assertTrue(shoppingCart.getTotalPrice() != 0, "Guest user should be able to add products to the cart");
+        assertFalse(usersController.getGuests().containsKey(guestId));
     }
 
+    @Test
+    public void testGuestDoesNotIndicateIntentionToLeave() throws UserException {
+        // Arrange
+        String guestId = usersController.enterAsGuest();
+        ShoppingCart guestCart = shoppingCartRepository.getCart(guestId);
 
+        // Act
+        // Guest does not explicitly log out, hence no action is taken
 
+        // Assert
+        assertTrue(usersController.getGuests().containsKey(guestId));
+    }
 
+    //-------------------------Registration-------------------------
 
+    @Test
+    public void testSuccessfulRegistration() throws UserException {
+        // Arrange
+        String email = "uniqueemail@example.com";
+        String userId = "uniqueUser123";
+        String password = "ValidPassword1!";
 
+        // Act & Assert
+        try {
+            usersController.register(email, userId, password);
+        } catch (UserException e) {
+            throw new RuntimeException(e);
+        }
 
+        assertTrue(userRepository.userIdExists(userId), "Registered user ID should exist in the user repository");
+    }
 
+    @Test
+    public void testRegistrationWithTakenUsername() throws UserException {
+        // Arrange
+        String email = "uniqueemail@example.com";
+        String userId = "existingUser123";
+        String password = "ValidPassword1!";
 
+        // Pre-register a user with the same userId
+        usersController.register("anotheremail@example.com", userId, "AnotherValidPassword1!");
 
+        // Act & Assert
+        assertThrows(UserException.class, () -> {
+            usersController.register(email, userId, password);
+        }, "Registration with taken username should throw a UserException");
+    }
+
+    @Test
+    public void testRegistrationWithIncompleteDetails() {
+        // Arrange
+        String email = "uniqueemail@example.com";
+        String userId = "uniqueUser123";
+        String password = "";  // Incomplete detail
+
+        // Act & Assert
+        assertThrows(UserException.class, () -> {
+            usersController.register(email, userId, password);
+        }, "Registration with incomplete details should throw a UserException");
+    }
+
+    //-------------------------Login-------------------------
+
+    @Test
+    public void testSuccessfulLogin() throws UserException {
+        // Arrange
+        String userId = "validUser";
+        String password = "ValidPassword1!";
+
+        // Act
+        String guestId = usersController.enterAsGuest();
+        ShoppingCart shoppingCart = usersController.loginToRegistered(guestId, userId);
+
+        // Assert
+        assertNotNull(shoppingCart, "User should have a shopping cart after successful login");
+        assertTrue(usersController.getOnlineRegisteredUsers().containsKey(userId), "User should be recognized as logged in");
+    }
+
+    @Test
+    public void testInvalidLogin() {
+        // Arrange
+        String userId = "invalidUser";
+        String password = "InvalidPassword";
+
+        // Act & Assert
+        assertThrows(UserException.class, () -> {
+            String guestId = usersController.enterAsGuest();
+            usersController.loginToRegistered(guestId, userId);
+        }, "System should throw an exception for invalid login credentials");
+    }
 }
+
+
+
 
 
 

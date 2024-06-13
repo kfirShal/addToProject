@@ -42,9 +42,7 @@ public class System {
     }
 
 
-
-////////////////////// System Startup //////////////////////
-
+    //-------------------------System Startup-------------------------
 
     @Test
     public void testSystemStartup_Success() {
@@ -118,7 +116,7 @@ public class System {
         marketInitializer.start();
     }
 
-    ////////////// Adding / removing / changing an external service //////////
+    //-------------------------Adding / removing / changing an external service-------------------------
 
     @Test
     public void testAddExternalService_Success() {
@@ -182,9 +180,7 @@ public class System {
         assertTrue(paymentController.areAllPaymentServicesEnabled());
     }
 
-
-
-    ////////////// Payment //////////
+    //-------------------------Payment-------------------------
 
     @Test
     public void testPayment_Success() {
@@ -210,7 +206,7 @@ public class System {
         assertFalse(paymentResult);
     }
 
-    ////////////// Supply //////////
+    //-------------------------Supply-------------------------
 
     @Test
     public void testShippingOrder_Success() {
