@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -210,7 +211,7 @@ class UsersControllerTest {
     @SuppressWarnings("unchecked")
     @Test
     void testConcurrentStartPurchase() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
-        
+
         ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
         StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
         Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
@@ -243,4 +244,104 @@ class UsersControllerTest {
         // Check that one of the purchases failed
         assertEquals(1, counter.get());
     }
+
+//    @SuppressWarnings("unchecked")
+//    @Test
+//    void testConcurrentCancelPurchase() throws IllegalAccessException, NoSuchFieldException, InterruptedException {
+//
+//        // setup
+//
+//        ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
+//        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
+//        Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
+//        basketsField.setAccessible(true);
+//        Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);
+//        baskets.put("storeId", basket);
+//        Reservation reservation = new Reservation(USER_ID, "reservationId", "storeId", Map.of(), null, _->true, basket::unReserve);
+//
+//        Map<String,Reservation> reservations = new HashMap<>(){{put(USER_ID, reservation);}};
+//        when(reservationRepository.getReservations(USER_ID)).then(_-> reservations.get(USER_ID));
+//        doAnswer(_->{
+//            reservations.remove(USER_ID);
+//            return null;
+//        }).when(reservationRepository).removeReservation(USER_ID, reservation);
+//
+//
+//        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
+//        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+//
+//        // test
+//
+//        AtomicInteger counter = new AtomicInteger(0);
+//
+//        ExecutorService service = Executors.newFixedThreadPool(2);
+//        Runnable test = () -> {
+//            try {
+//                if(usersController.cancelPurchase(USER_ID)){
+//                    counter.incrementAndGet();
+//                }
+//            } catch (UserException e) {
+//                fail("UserException thrown when it shouldn't have been");
+//            }
+//        };
+//
+//        service.submit(test);
+//        service.submit(test);
+//        service.shutdown();
+//        service.awaitTermination(1, TimeUnit.SECONDS);
+//
+//        // Verify that cancelPurchase was called twice
+//        verify(reservationRepository, times(2)).getReservations(USER_ID);
+//
+//        // Check that one of the cancellations failed
+//        assertEquals(1, counter.get());
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    @Test
+//    void testConcurrentPayForPurchase() throws IllegalAccessException, NoSuchFieldException {
+//        ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
+//        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
+//        Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
+//        basketsField.setAccessible(true);
+//        Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);
+//        baskets.put("storeId", basket);
+//        Reservation reservation = new Reservation(USER_ID,
+//                "reservationId",
+//                "storeId",
+//                Map.of(),
+//                null,
+//                _->true,
+//                basket::unReserve);
+//
+//
+//        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
+//        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
+//
+//        AtomicInteger counter = new AtomicInteger(0);
+//
+//        ExecutorService service = Executors.newFixedThreadPool(2);
+//        Runnable test = () -> {
+//            try {
+//                usersController.payForPurchase(USER_ID);
+//            } catch (UserException | PurchaseFailedException e) {
+//                counter.incrementAndGet();
+//            }
+//        };
+//
+//        service.submit(test);
+//        service.submit(test);
+//        service.shutdown();
+//        try {
+//            service.awaitTermination(1, TimeUnit.SECONDS);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//        // Verify that payForPurchase was called twice
+//        verify(paymentService, times(2)).charge(any(),any());
+//
+//        // Check that one of the payments failed
+//        assertEquals(1, counter.get());
+//    }
 }

@@ -69,10 +69,14 @@ public class Reservation {
         state = ReservationState.CANCELLED;
     }
 
-    public void cancelReservation() {
-        if(cancelCallback.apply(this)){
-            unReserveBasket.run();
+    public boolean cancelReservation() {
+        if(state == ReservationState.PENDING){
+            if(cancelCallback.apply(this)){
+                unReserveBasket.run();
+                return true;
+            }
         }
+        return false;
     }
 
     public Map<String, Integer> productIdToQuantity() {

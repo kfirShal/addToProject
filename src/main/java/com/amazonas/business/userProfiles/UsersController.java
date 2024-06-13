@@ -240,48 +240,70 @@ public class UsersController {
     }
 
     public void payForPurchase(String userId) throws PurchaseFailedException, UserException {
-        ShoppingCart cart = getCartWithValidation(userId);
-        List<Reservation> reservations = reservationRepository.getReservations(userId);
+        try{
+            lock.acquireWrite();
 
-        // charge the user
-        User user = userRepository.getUser(userId);
-        if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
-            cancelPurchase(userId);
-            log.debug("Payment failed");
-            throw new PurchaseFailedException("Payment failed");
+            List<Reservation> reservations = reservationRepository.getReservations(userId);
+            if(reservations.isEmpty()){
+                log.debug("No reservations to pay for user with id: {}", userId);
+                throw new PurchaseFailedException("No reservations to pay for");
+            }
+
+            // charge the user
+            ShoppingCart cart = getCartWithValidation(userId);
+            User user = userRepository.getUser(userId);
+            if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
+                cancelPurchase(userId);
+                log.debug("Payment failed");
+                throw new PurchaseFailedException("Payment failed");
+            }
+
+            // mark the reservations as paid
+            reservations.forEach(Reservation::setPaid);
+            log.debug("Mark the reservation as paid successfully");
+
+            // document the transactions
+            LocalDateTime transactionTime = LocalDateTime.now();
+            for (var reservation : reservations) {
+                Transaction t = reservationToTransaction(userId, reservation, transactionTime);
+                transactionRepository.addNewTransaction(t);
+
+            }
+            log.debug("Document the transactions successfully");
+
+            // give the user a new empty cart
+            shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
+            log.debug("The purchase completed");
         }
-
-        // mark the reservations as paid
-        reservations.forEach(Reservation::setPaid);
-        log.debug("Mark the reservation as paid successfully");
-
-        // document the transactions
-        LocalDateTime transactionTime = LocalDateTime.now();
-        for (var reservation : reservations) {
-            Transaction t = reservationToTransaction(userId, reservation, transactionTime);
-            transactionRepository.addNewTransaction(t);
-
+        finally{
+            lock.releaseWrite();
         }
-        log.debug("Document the transactions successfully");
-
-        // give the user a new empty cart
-        shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
-        log.debug("The purchase completed");
     }
 
-    public void cancelPurchase(String userId) throws UserException {
+    public boolean cancelPurchase(String userId) throws UserException {
         if(!userRepository.userIdExists(userId)){
             log.debug("Cancel Purchase - invalid userId");
             throw new UserException("Invalid userId");
         }
-        List<Reservation> reservations = reservationRepository.getReservations(userId);
-        ShoppingCart cart = getCartWithValidation(userId);
-        reservations.forEach(r -> {
-            r.cancelReservation();
-            reservationRepository.removeReservation(userId,r);
-        });
 
-        log.debug("The purchase canceled for user with id: {}", userId);
+        try{
+            lock.acquireWrite();
+
+            List<Reservation> reservations = reservationRepository.getReservations(userId);
+            if(reservations.isEmpty()){
+                log.debug("No reservations to cancel for user with id: {}", userId);
+                return false;
+            }
+            reservations.forEach(r -> {
+                r.cancelReservation();
+                reservationRepository.removeReservation(userId,r);
+            });
+
+            log.debug("The purchase canceled for user with id: {}", userId);
+            return true;
+        } finally {
+            lock.releaseWrite();
+        }
     }
     // =============================================================================== |
     // ============================= HELPER METHODS ================================== |
