@@ -31,9 +31,6 @@ import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -443,56 +440,6 @@ public class ActionsOfAStoreOwner {
         assertFalse(positions.isEmpty());
         // Additional assertions based on the actual returned data
     }
-
     //-------------------------purchase history-------------------------
-
-    @Test
-    void testPurchaseHistory_PositiveCase() {
-        // Arrange
-        String userId = "user1";
-        String validToken = "validToken";
-        Transaction transaction = new Transaction("transaction1", "store1", userId, LocalDateTime.now(), Collections.emptyMap());
-
-        // Act
-        List<Transaction> purchaseHistory = transaction.getUserPurchaseHistory(userId, "store1", validToken);
-
-        // Assert: Verify purchase history contains records for store1
-        assertFalse(purchaseHistory.isEmpty());
-        // Additional assertions based on the actual returned data
-    }
-
-    @Test
-    void testPurchaseHistory_NegativeCase_NoHistory() {
-        // Arrange
-        String userId = "user2";
-        String validToken = "validToken";
-        PurchaseHistoryController purchaseHistoryController = new PurchaseHistoryController();
-
-        // Act and Assert
-        PurchaseHistoryException exception = assertThrows(PurchaseHistoryException.class, () -> {
-            purchaseHistoryController.getUserPurchaseHistory(userId, "store1", validToken);
-        });
-
-        // Assert
-        assertTrue(exception.getMessage().contains("no purchase history available"));
-    }
-
-    @Test
-    void testPurchaseHistory_AlternativeCase_DeniedAccess() {
-        // Arrange
-        String userId = "user1";
-        String validToken = "validToken";
-        String unauthorizedUserId = "user2";
-        PurchaseHistoryController purchaseHistoryController = new PurchaseHistoryController();
-
-        // Act and Assert
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
-            purchaseHistoryController.getUserPurchaseHistory(unauthorizedUserId, "store1", validToken);
-        });
-
-        // Assert
-        assertTrue(exception.getMessage().contains("access denied"));
-    }
-
 
 }

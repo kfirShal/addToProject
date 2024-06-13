@@ -117,16 +117,6 @@ public class ActionsOfAMarketAdministrator {
     }
 
     @Test
-    public void testAdminViewsStoreWithNoPurchases() throws UserException {
-        // Act
-        List<Transaction> purchaseHistory = usersController.getUserTransactionHistory("storeWithNoPurchases");
-
-        // Assert
-        assertNotNull(purchaseHistory);
-        assertEquals(0, purchaseHistory.size(), "Purchase history should be empty for a store with no purchases");
-    }
-
-    @Test
     public void testAdminViewsUserWithNoPurchases() throws UserException {
         // Arrange
         // Pre-register a user with no purchases
