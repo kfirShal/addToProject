@@ -21,15 +21,15 @@ class ProductTest {
 
     @Test
     void addKeyWords() {
-        pTest.addKeyWords("Shi");
-        assertTrue(pTest.keyWords().contains("Shi"));
+        pTest.addKeyWords("shi");
+        assertTrue(pTest.keyWords().contains("shi"));
     }
 
     @Test
     void removeKeyWords() {
-        pTest.addKeyWords("Shi");
-        pTest.removeKeyWords("Shi");
-        assertFalse(pTest.keyWords().contains("Shi"));
+        pTest.addKeyWords("shi");
+        pTest.removeKeyWords("shi");
+        assertFalse(pTest.keyWords().contains("shi"));
     }
 
 

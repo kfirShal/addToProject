@@ -50,10 +50,10 @@ public class UserProxy extends ControllerProxy {
         real.addProductToCart(userId, storeName, productId, quantity);
     }
 
-    public void RemoveProductFromCart(String userId,String storeName,String productId, String token) throws NoPermissionException, AuthenticationFailedException, ShoppingCartException, UserException {
+    public void removeProductFromCart(String userId,String storeName,String productId, String token) throws NoPermissionException, AuthenticationFailedException, ShoppingCartException, UserException {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.REMOVE_FROM_SHOPPING_CART);
-        real.RemoveProductFromCart(userId, storeName, productId);
+        real.removeProductFromCart(userId, storeName, productId);
     }
 
     public void changeProductQuantity(String userId, String storeName, String productId, int quantity, String token) throws NoPermissionException, AuthenticationFailedException, ShoppingCartException, UserException {
@@ -78,6 +78,11 @@ public class UserProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.CANCEL_PURCHASE);
         real.cancelPurchase(userId);
+    }
+    public ShoppingCart viewCart(String userId, String token) throws NoPermissionException, AuthenticationFailedException, UserException {
+        authenticateToken(userId, token);
+        checkPermission(userId, UserActions.VIEW_SHOPPING_CART);
+        return real.viewCart(userId);
     }
 
     public List<Transaction> getUserTransactionHistory(String userId, String token) throws NoPermissionException, AuthenticationFailedException, UserException {

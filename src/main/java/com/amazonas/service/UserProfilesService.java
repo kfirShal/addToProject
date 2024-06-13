@@ -21,7 +21,14 @@ public class UserProfilesService {
     }
 
     public String enterAsGuest(){
-        return proxy.enterAsGuest();
+
+
+        try{
+            String guestId = proxy.enterAsGuest();
+            return new Response(true,guestId).toJson();
+        } catch ( Exception e){
+            return Response.getErrorResponse(e).toJson();
+        }
     }
 
     public String register(String json){
@@ -77,11 +84,11 @@ public class UserProfilesService {
         }
     }
 
-    public String RemoveProductFromCart(String json) {
+    public String removeProductFromCart(String json) {
         Request request = Request.from(json);
         try {
             CartRequest toRemove = JsonUtils.deserialize(request.payload(), CartRequest.class);
-            proxy.RemoveProductFromCart(request.userId(), toRemove.storeId(), toRemove.productId(), request.token());
+            proxy.removeProductFromCart(request.userId(), toRemove.storeId(), toRemove.productId(), request.token());
             return new Response(true).toJson();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
             return Response.getErrorResponse(e).toJson();
@@ -97,6 +104,17 @@ public class UserProfilesService {
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
             return Response.getErrorResponse(e).toJson();
         }
+    }
+
+    public String viewCart (String json){
+        Request request = Request.from(json);
+        try{
+            ShoppingCart cart = proxy.viewCart(request.userId(), request.token());
+            return new Response(true,cart).toJson();
+        } catch (AuthenticationFailedException | NoPermissionException | UserException e){
+            return Response.getErrorResponse(e).toJson();
+        }
+
     }
 
     public String startPurchase(String json){

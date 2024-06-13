@@ -1,5 +1,6 @@
 package com.amazonas.business.inventory;
 
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ public class ProductInventoryTest {
     }
 
     @Test
-    public void testAddProduct() {
+    public void testAddProduct() throws StoreException {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
 
@@ -26,7 +27,7 @@ public class ProductInventoryTest {
     }
 
     @Test
-    public void testUpdateProduct() {
+    public void testUpdateProduct() throws StoreException {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
 
@@ -38,11 +39,9 @@ public class ProductInventoryTest {
     }
 
     @Test
-    public void testRemoveProduct() {
+    public void testRemoveProduct() throws StoreException {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
-        inventory.addProduct(product);
-
-        String productId = product.productId();
+        String productId = inventory.addProduct(product);
         inventory.disableProduct(productId);
 
         assertTrue(inventory.removeProduct(productId));
@@ -50,7 +49,7 @@ public class ProductInventoryTest {
     }
 
     @Test
-    public void testSetAndGetQuantity() {
+    public void testSetAndGetQuantity() throws StoreException {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
 
@@ -61,7 +60,7 @@ public class ProductInventoryTest {
     }
 
     @Test
-    public void testEnableAndDisableProduct() {
+    public void testEnableAndDisableProduct() throws StoreException {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         inventory.addProduct(product);
 
@@ -74,7 +73,7 @@ public class ProductInventoryTest {
     }
 
     @Test
-    public void testGetAllAvailableProducts() {
+    public void testGetAllAvailableProducts() throws StoreException {
         Product product1 = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
         Product product2 = new Product(null, "Product2", 150.0, "Category2", "Description2", Rating.FOUR_STARS);
         inventory.addProduct(product1);

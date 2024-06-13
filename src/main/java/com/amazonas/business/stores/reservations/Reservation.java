@@ -11,14 +11,14 @@ public class Reservation {
     private final String storeId;
     private final Map<String, Integer> productIdToQuantity;
     private final LocalDateTime expirationDate;
-    private final Function<Reservation,Void> cancelCallback;
+    private final Function<Reservation,Boolean> cancelCallback;
     private ReservationState state;
     public Reservation(
             String reservationId,
             String storeId,
             Map<String, Integer> productIdToQuantity,
             LocalDateTime expirationDate,
-            Function<Reservation,Void> cancelCallback) {
+            Function<Reservation,Boolean> cancelCallback) {
         this.reservationId = reservationId;
         this.storeId = storeId;
         this.productIdToQuantity = productIdToQuantity;
