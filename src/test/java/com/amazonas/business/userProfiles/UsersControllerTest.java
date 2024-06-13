@@ -14,11 +14,15 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class UsersControllerTest {
     private static final String USER_ID = "userId";
@@ -196,5 +200,34 @@ class UsersControllerTest {
     void payForPurchaseUserDoesNotExist() {
         when(userRepository.getUser(USER_ID)).thenReturn(null);
         assertThrows(UserException.class, ()-> usersController.payForPurchase(USER_ID));
+    }
+
+    @Test
+    void testConcurrentStartPurchase() throws InterruptedException {
+        String userId = "userId";
+        when(userRepository.userIdExists(userId)).thenReturn(true);
+        when(shoppingCartRepository.getCart(userId)).thenReturn(cart);
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Runnable test = () -> {
+            try {
+                usersController.startPurchase(userId);
+            } catch (UserException | PurchaseFailedException e) {
+                counter.incrementAndGet();
+            }
+        };
+
+        service.submit(test);
+        service.submit(test);
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.SECONDS);
+
+        // Verify that startPurchase was called twice
+        verify(shoppingCartRepository, times(2)).getCart(userId);
+
+        // Check that one of the purchases failed
+        assertEquals(1, counter.get());
     }
 }
