@@ -109,6 +109,15 @@ public class ShippingServiceController {
         }
     }
 
+    public boolean isShippingServiceEnabled(String serviceId) {
+        try {
+            lock.acquireRead();
+            return activeShippingServices.containsKey(serviceId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
     public boolean areAllShippingServicesEnabled() {
         try {
             lock.acquireRead();
