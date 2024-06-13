@@ -275,12 +275,13 @@ public class UsersController {
             throw new UserException("Invalid userId");
         }
         List<Reservation> reservations = reservationRepository.getReservations(userId);
+        ShoppingCart cart = getCartWithValidation(userId);
         reservations.forEach(r -> {
             r.cancelReservation();
             reservationRepository.removeReservation(userId,r);
         });
-        getCartWithValidation(userId).cancelReservation();
-        log.debug("The purchase canceled");
+
+        log.debug("The purchase canceled for user with id: {}", userId);
     }
     // =============================================================================== |
     // ============================= HELPER METHODS ================================== |

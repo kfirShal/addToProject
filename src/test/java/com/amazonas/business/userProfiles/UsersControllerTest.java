@@ -8,7 +8,7 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.exceptions.PurchaseFailedException;
 import com.amazonas.exceptions.UserException;
 import com.amazonas.repository.*;
-import com.amazonas.utils.Box;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

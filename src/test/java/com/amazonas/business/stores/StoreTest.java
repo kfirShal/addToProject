@@ -3,13 +3,11 @@ package com.amazonas.business.stores;
 import com.amazonas.business.inventory.Product;
 import com.amazonas.business.inventory.ProductInventory;
 import com.amazonas.business.permissions.PermissionsController;
-import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.search.SearchRequestBuilder;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.TransactionRepository;
 import com.amazonas.utils.Rating;
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -571,7 +568,7 @@ class StoreTest {
 
     @Test
     void testConcurrentCancelReservation(){
-        Reservation reservation = new Reservation("userId","id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null);
+        Reservation reservation = new Reservation("userId","id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null, null);
         AtomicInteger counter = new AtomicInteger(0);
 
         ExecutorService service = Executors.newFixedThreadPool(2);

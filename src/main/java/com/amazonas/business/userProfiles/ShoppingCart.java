@@ -16,8 +16,6 @@ public class ShoppingCart {
     private final StoreBasketFactory storeBasketFactory;
     private final String userId;
     private final ReadWriteLock lock;
-    private final AtomicBoolean reserved;
-
 
     private final Map<String,StoreBasket> baskets; // storeName --> StoreBasket
     public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId){
@@ -25,7 +23,6 @@ public class ShoppingCart {
         this.userId = userId;
         baskets = new HashMap<>();
         lock = new ReadWriteLock();
-        reserved = new AtomicBoolean(false);
     }
 
     //====================================================================================== |
@@ -69,10 +66,11 @@ public class ShoppingCart {
     public Map<String, Reservation> reserveCart() throws PurchaseFailedException {
         try{
             lock.acquireWrite();
-            if(reserved.get()){
-                log.debug("Cart has already been reserved for user {}.", userId);
-                throw new PurchaseFailedException("Cart has already been reserved");
+            if(!isCartReservable()){
+                log.debug("Cart is already reserved for user {}.", userId);
+                throw new PurchaseFailedException("Cart is already reserved or failed to reserve.");
             }
+
             if(baskets.isEmpty()){
                 log.debug("Cart is empty");
                 throw new PurchaseFailedException("Cart is empty");
@@ -92,17 +90,17 @@ public class ShoppingCart {
                 // reservation was successful
                 reservations.put(entry.getKey(),r);
             }
-            reserved.set(true);
             return reservations;
         } finally {
             lock.releaseWrite();
         }
     }
 
-    public void cancelReservation() {
+    public void unReserve(String storeId) throws ShoppingCartException {
         try{
             lock.acquireWrite();
-            reserved.set(false);
+            StoreBasket basket = getBasketWithValidation(storeId);
+            basket.unReserve();
         } finally {
             lock.releaseWrite();
         }
@@ -155,13 +153,17 @@ public class ShoppingCart {
         return baskets.get(storeName);
     }
 
+    private boolean isCartReservable(){
+        return baskets.values().stream().noneMatch(StoreBasket::isReserved);
+    }
+
     //====================================================================================== |
     // =============================== GETTERS ============================================= |
     //====================================================================================== |
-
     public String userId() {
         return userId;
     }
+
     public Map<String, StoreBasket> getBaskets() {
         return baskets;
     }

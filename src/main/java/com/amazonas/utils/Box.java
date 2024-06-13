@@ -8,16 +8,15 @@ public class Box<T> {
 
     private volatile T value;
 
-    private Box(@Nullable T value) {
+    private Box(T value) {
         this.value = value;
     }
 
-    @Nullable
     public T get() {
         return value;
     }
 
-    public void set(@Nullable T value) {
+    public void set(T value) {
         this.value = value;
     }
 
@@ -35,7 +34,7 @@ public class Box<T> {
         return value;
     }
 
-    public static <T> Box<T> of(@Nullable T value) {
+    public static <T> Box<T> of(T value) {
         return new Box<>(value);
     }
 }

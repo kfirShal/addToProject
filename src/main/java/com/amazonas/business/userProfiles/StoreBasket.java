@@ -15,6 +15,7 @@ public class StoreBasket {
     private final Map<String, Integer> products; // productId --> quantity
     private final Function<Map<String,Integer>, Reservation> makeReservation;
     private final Function<Map<String, Integer>, Double> calculatePrice;
+    private boolean reserved;
 
     public StoreBasket (Function<Map<String,Integer>,
                         Reservation> makeReservation,
@@ -70,7 +71,15 @@ public class StoreBasket {
     }
 
     public Reservation reserveBasket() {
-        return makeReservation.apply(getProducts());
+        if(reserved){
+            log.debug("Basket has already been reserved");
+            return null;
+        }
+        Reservation reservation = makeReservation.apply(getProducts());
+        if(reservation != null){
+            reserved = true;
+        }
+        return reservation;
     }
 
     public double getTotalPrice() {
@@ -79,5 +88,13 @@ public class StoreBasket {
 
     public Map<String,Integer> getProducts() {
         return products;
+    }
+
+    public boolean isReserved() {
+        return reserved;
+    }
+
+    public void unReserve() {
+        reserved = false;
     }
 }

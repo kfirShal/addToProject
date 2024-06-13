@@ -13,6 +13,7 @@ public class Reservation {
     private final Map<String, Integer> productIdToQuantity;
     private final LocalDateTime expirationDate;
     private final Function<Reservation,Boolean> cancelCallback;
+    private final Runnable unReserveBasket;
     private ReservationState state;
     public Reservation(
             String userId,
@@ -20,13 +21,14 @@ public class Reservation {
             String storeId,
             Map<String, Integer> productIdToQuantity,
             LocalDateTime expirationDate,
-            Function<Reservation,Boolean> cancelCallback) {
+            Function<Reservation,Boolean> cancelCallback, Runnable unReserveBasket) {
         this.userId = userId;
         this.reservationId = reservationId;
         this.storeId = storeId;
         this.productIdToQuantity = productIdToQuantity;
         this.expirationDate = expirationDate;
         this.cancelCallback = cancelCallback;
+        this.unReserveBasket = unReserveBasket;
         state = ReservationState.PENDING;
     }
 
@@ -68,7 +70,9 @@ public class Reservation {
     }
 
     public void cancelReservation() {
-        cancelCallback.apply(this);
+        if(cancelCallback.apply(this)){
+            unReserveBasket.run();
+        }
     }
 
     public Map<String, Integer> productIdToQuantity() {

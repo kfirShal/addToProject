@@ -64,7 +64,9 @@ class ShoppingCartTest {
         doNothing().when(storeBasket).addProduct(PRODUCT_ID, 1);
         cart.addProduct(STORE_ID, PRODUCT_ID, 1);
         when(storeBasket.reserveBasket()).thenReturn(mock(Reservation.class));
+        when(storeBasket.isReserved()).thenReturn(false);
         cart.reserveCart();
+        when(storeBasket.isReserved()).thenReturn(true);
         assertThrows(PurchaseFailedException.class, () -> cart.reserveCart());
     }
     @Test
