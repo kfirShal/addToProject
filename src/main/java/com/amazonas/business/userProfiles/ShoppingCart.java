@@ -154,7 +154,12 @@ public class ShoppingCart {
     }
 
     private boolean isCartReservable(){
-        return baskets.values().stream().noneMatch(StoreBasket::isReserved);
+        for (StoreBasket basket : baskets.values()) {
+            if (basket.isReserved()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     //====================================================================================== |

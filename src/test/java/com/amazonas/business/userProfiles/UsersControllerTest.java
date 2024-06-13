@@ -12,6 +12,7 @@ import com.amazonas.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -202,18 +203,30 @@ class UsersControllerTest {
         assertThrows(UserException.class, ()-> usersController.payForPurchase(USER_ID));
     }
 
+    // ========================================================================================= |
+    // ================================ CONCURRENT TESTS ======================================= |
+    // ========================================================================================= |
+
+    @SuppressWarnings("unchecked")
     @Test
-    void testConcurrentStartPurchase() throws InterruptedException {
-        String userId = "userId";
-        when(userRepository.userIdExists(userId)).thenReturn(true);
-        when(shoppingCartRepository.getCart(userId)).thenReturn(cart);
+    void testConcurrentStartPurchase() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
+        
+        ShoppingCart cart = new ShoppingCart(storeBasketFactory, USER_ID);
+        StoreBasket basket = new StoreBasket(_->mock(Reservation.class), _->0.0);
+        Field basketsField = ShoppingCart.class.getDeclaredField("baskets");
+        basketsField.setAccessible(true);
+        Map<String,StoreBasket> baskets = (Map<String,StoreBasket>) basketsField.get(cart);
+        baskets.put("storeId", basket);
+
+        when(userRepository.userIdExists(USER_ID)).thenReturn(true);
+        when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
 
         AtomicInteger counter = new AtomicInteger(0);
 
         ExecutorService service = Executors.newFixedThreadPool(2);
         Runnable test = () -> {
             try {
-                usersController.startPurchase(userId);
+                usersController.startPurchase(USER_ID);
             } catch (UserException | PurchaseFailedException e) {
                 counter.incrementAndGet();
             }
@@ -225,7 +238,7 @@ class UsersControllerTest {
         service.awaitTermination(1, TimeUnit.SECONDS);
 
         // Verify that startPurchase was called twice
-        verify(shoppingCartRepository, times(2)).getCart(userId);
+        verify(shoppingCartRepository, times(2)).getCart(USER_ID);
 
         // Check that one of the purchases failed
         assertEquals(1, counter.get());
