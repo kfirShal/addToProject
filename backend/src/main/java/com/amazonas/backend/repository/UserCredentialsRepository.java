@@ -26,7 +26,6 @@ public class UserCredentialsRepository extends AbstractCachingRepository<UserCre
         permissionsProfileLock = new ReadWriteLock();
     }
 
-
     public String getHashedPassword(String userId) {
         permissionsProfileLock.acquireRead();
         try {
@@ -43,5 +42,25 @@ public class UserCredentialsRepository extends AbstractCachingRepository<UserCre
         } finally {
             permissionsProfileLock.releaseWrite();
         }
+    }
+
+    public void insert(UserCredentials newUser) {
+        saveHashedPassword(newUser.userId(), newUser.password());
+    }
+
+    public void save(UserCredentials updatedUser) {
+        saveHashedPassword(updatedUser.userId(), updatedUser.password());
+    }
+
+    public void deleteById(String username) {
+        userIdToHashedPassword.remove(username);
+    }
+
+    public UserCredentials findById(String username) {
+        return new UserCredentials(username, userIdToHashedPassword.get(username));
+    }
+
+    public boolean existsById(String username) {
+        return userIdToHashedPassword.containsKey(username);
     }
 }
