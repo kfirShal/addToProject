@@ -126,7 +126,7 @@ public class AppointmentSystem {
 
     /**
      * The method returns details of the founder of the store.
-     * @return StorePosition with the founder's username
+     * @return StorePosition with the founder's userId
      */
     public StorePosition getFounder() {
         try {

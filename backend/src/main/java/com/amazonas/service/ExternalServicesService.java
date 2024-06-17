@@ -11,7 +11,7 @@ import com.amazonas.service.requests.shipping.ShipmentRequest;
 import com.amazonas.service.requests.shipping.ShippingServiceManagementRequest;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("externalServicesService")
 public class ExternalServicesService {
     private final ShippingServiceController shippingServiceController;
     private final PaymentServiceController paymentServiceController;

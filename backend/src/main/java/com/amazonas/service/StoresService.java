@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Component("storesService")
 public class StoresService {
 
     private final StoreProxy proxy;

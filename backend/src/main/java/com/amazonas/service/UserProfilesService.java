@@ -104,7 +104,7 @@ public class UserProfilesService {
         }
     }
 
-    public String viewCart (String json){
+    public String viewCart(String json){
         Request request = Request.from(json);
         try{
             ShoppingCart cart = proxy.viewCart(request.userId(), request.token());

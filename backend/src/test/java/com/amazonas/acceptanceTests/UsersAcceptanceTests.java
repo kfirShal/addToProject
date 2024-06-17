@@ -133,12 +133,12 @@ public class UsersAcceptanceTests {
     void testLoginToRegisteredFailureWrongUsername() throws UserException, AuthenticationFailedException {
 
         String guestId = "guestId";
-        String userName = "testUser43"; // instead of "testUser" -- the correct username
+        String userName = "testUser43"; // instead of "testUser" -- the correct userId
         LoginRequest loginRequest = new LoginRequest(guestId, userName);
         Request request = new Request("userId","token",JsonUtils.serialize(loginRequest));
-        doThrow(new UserException("Failed to login - Wrong username")).when(usersController).loginToRegistered(guestId, userName,request.token());
+        doThrow(new UserException("Failed to login - Wrong userId")).when(usersController).loginToRegistered(guestId, userName,request.token());
         String result = userProfilesService.loginToRegistered(request.toJson());
-        assertEquals(Response.getError(new UserException("Failed to login - Wrong username")), result);
+        assertEquals(Response.getError(new UserException("Failed to login - Wrong userId")), result);
     }
 
 //---------------------------UseCase 2.2.3-------------------------

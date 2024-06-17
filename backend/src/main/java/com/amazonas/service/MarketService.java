@@ -7,7 +7,7 @@ import com.amazonas.common.utils.Response;
 import com.amazonas.service.requests.Request;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("marketService")
 public class MarketService {
 
     private final MarketProxy proxy;
