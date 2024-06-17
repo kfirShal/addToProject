@@ -107,11 +107,11 @@ public abstract class BaseLayout extends AppLayout {
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);
         dialog.add(layout);
-        dialog.addOpenedChangeListener(event -> {
-            if (!event.isOpened()) {
-                UI.getCurrent().getPage().setLocation("/");
-            }
-        });
+//        dialog.addOpenedChangeListener(event -> {
+//            if (!event.isOpened()) {
+//                UI.getCurrent().getPage().setLocation("/");
+//            }
+//        });
 
         content.add(dialog);
         dialog.open();
