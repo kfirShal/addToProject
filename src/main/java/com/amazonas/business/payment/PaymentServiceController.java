@@ -151,4 +151,41 @@ public class PaymentServiceController {
     public void disableAllPaymentMethods() {
 
     }
+
+    public boolean isPaymentServiceEnabled(String serviceId) {
+        try {
+            paymentServiceLock.acquireRead();
+            return activePaymentServices.containsKey(serviceId);
+        } finally {
+            paymentServiceLock.releaseRead();
+        }
+    }
+
+    public boolean isPaymentMethodEnabled(String methodId) {
+        try {
+            paymentMethodsLock.acquireRead();
+            return activePaymentMethods.containsKey(methodId);
+        } finally {
+            paymentMethodsLock.releaseRead();
+        }
+    }
+
+    public boolean areAllPaymentServicesEnabled() {
+        try {
+            paymentServiceLock.acquireRead();
+            return activePaymentServices.size() > 0;
+        } finally {
+            paymentServiceLock.releaseRead();
+        }
+    }
+
+    public boolean areAllPaymentMethodsEnabled() {
+        try {
+            paymentMethodsLock.acquireRead();
+            return activePaymentMethods.size() > 0;
+        } finally {
+            paymentMethodsLock.releaseRead();
+        }
+    }
+
 }

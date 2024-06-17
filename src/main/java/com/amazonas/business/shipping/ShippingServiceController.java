@@ -108,4 +108,23 @@ public class ShippingServiceController {
             lock.releaseWrite();
         }
     }
+
+    public boolean isShippingServiceEnabled(String serviceId) {
+        try {
+            lock.acquireRead();
+            return activeShippingServices.containsKey(serviceId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public boolean areAllShippingServicesEnabled() {
+        try {
+            lock.acquireRead();
+            return disabledShippingServices.isEmpty();
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
 }
