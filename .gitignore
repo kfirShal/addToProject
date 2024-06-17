@@ -34,3 +34,4 @@ build/
 
 frontend/frontend/generated/*
 compiled_jars/*
+**/logs/*
