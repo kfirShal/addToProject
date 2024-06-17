@@ -8,7 +8,7 @@ import com.amazonas.business.stores.reservations.Reservation;
 import com.amazonas.business.stores.reservations.ReservationFactory;
 import com.amazonas.business.stores.search.SearchRequestBuilder;
 import com.amazonas.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.common.exceptions.StoreException;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;

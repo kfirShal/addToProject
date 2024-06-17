@@ -1,7 +1,7 @@
 package com.amazonas.business.userProfiles;
 
 import com.amazonas.business.stores.reservations.Reservation;
-import com.amazonas.common.exceptions.ShoppingCartException;
+import com.amazonas.exceptions.ShoppingCartException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

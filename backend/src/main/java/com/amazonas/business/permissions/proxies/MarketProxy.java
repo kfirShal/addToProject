@@ -4,8 +4,8 @@ import com.amazonas.business.authentication.AuthenticationController;
 import com.amazonas.business.market.MarketInitializer;
 import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.MarketActions;
-import com.amazonas.common.exceptions.AuthenticationFailedException;
-import com.amazonas.common.exceptions.NoPermissionException;
+import com.amazonas.exceptions.AuthenticationFailedException;
+import com.amazonas.exceptions.NoPermissionException;
 import org.springframework.stereotype.Component;
 
 @Component("marketProxy")

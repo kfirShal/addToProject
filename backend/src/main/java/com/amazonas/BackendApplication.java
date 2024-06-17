@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = "com.amazonas.repository.mongoCollections")
 
-public class Application{
+public class BackendApplication {
 
     public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(BackendApplication.class, args);
 	}
 }

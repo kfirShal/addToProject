@@ -7,7 +7,7 @@ import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.stores.search.SearchRequest;
 import com.amazonas.business.stores.storePositions.StorePosition;
 import com.amazonas.business.transactions.Transaction;
-import com.amazonas.common.exceptions.StoreException;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.repository.StoreRepository;
 import com.amazonas.repository.TransactionRepository;
 import org.springframework.stereotype.Component;

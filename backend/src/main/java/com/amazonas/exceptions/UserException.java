@@ -1,4 +1,4 @@
-package com.amazonas.common.exceptions;
+package com.amazonas.exceptions;
 
 import java.security.PrivilegedActionException;
 

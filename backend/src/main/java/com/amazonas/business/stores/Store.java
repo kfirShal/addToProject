@@ -12,7 +12,7 @@ import com.amazonas.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.business.stores.storePositions.StorePosition;
 import com.amazonas.business.stores.storePositions.StoreRole;
 import com.amazonas.business.transactions.Transaction;
-import com.amazonas.common.exceptions.StoreException;
+import com.amazonas.exceptions.StoreException;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import com.amazonas.repository.TransactionRepository;

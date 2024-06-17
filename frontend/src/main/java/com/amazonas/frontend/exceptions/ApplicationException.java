@@ -1,17 +1,17 @@
-package com.amazonas.common.exceptions;
+package com.amazonas.frontend.exceptions;
 
 import java.security.PrivilegedActionException;
 
 /**
  * @apiNote  This exception does not create a stack trace.
  */
-public class InvalidTokenException extends Exception{
+public class ApplicationException extends Exception{
     /**
      * Constructs a new exception with {@code null} as its detail message.
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      */
-    public InvalidTokenException() {
+    public ApplicationException() {
         super(null, null, true, false);
     }
 
@@ -23,7 +23,7 @@ public class InvalidTokenException extends Exception{
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public InvalidTokenException(String message) {
+    public ApplicationException(String message) {
         super(message,null,true,false);
     }
 
@@ -41,7 +41,7 @@ public class InvalidTokenException extends Exception{
      *                unknown.)
      * @since 1.4
      */
-    public InvalidTokenException(String message, Throwable cause) {
+    public ApplicationException(String message, Throwable cause) {
         super(message, cause, true, false);
     }
 
@@ -59,7 +59,7 @@ public class InvalidTokenException extends Exception{
      *              unknown.)
      * @since 1.4
      */
-    public InvalidTokenException(Throwable cause) {
+    public ApplicationException(Throwable cause) {
         super(null,cause,true,false);
     }
 }

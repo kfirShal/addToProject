@@ -38,36 +38,36 @@ public class ExternalServicesService {
     public String addShippingService(String json) {
         ShippingServiceManagementRequest request = JsonUtils.deserialize(json, ShippingServiceManagementRequest.class);
         shippingServiceController.addShippingService(request.serviceId(), request.shippingService());
-        return new Response(true).toJson();
+        return Response.getOk();
     }
 
     public String removeShippingService(String json) {
         ShippingServiceManagementRequest request = JsonUtils.deserialize(json, ShippingServiceManagementRequest.class);
         shippingServiceController.removeShippingService(request.serviceId());
-        return new Response(true).toJson();
+        return Response.getOk();
     }
 
     public String updateShippingService(String json) {
         ShippingServiceManagementRequest request = JsonUtils.deserialize(json, ShippingServiceManagementRequest.class);
         shippingServiceController.updateShippingService(request.serviceId(), request.shippingService());
-        return new Response(true).toJson();
+        return Response.getOk();
     }
 
     public String addPaymentService(String json) {
         PaymentServiceManagementRequest request = JsonUtils.deserialize(json, PaymentServiceManagementRequest.class);
         paymentServiceController.addPaymentService(request.serviceId(), request.paymentService());
-        return new Response(true).toJson();
+        return Response.getOk();
     }
 
     public String removePaymentService(String json) {
         PaymentServiceManagementRequest request = JsonUtils.deserialize(json, PaymentServiceManagementRequest.class);
         paymentServiceController.removePaymentService(request.serviceId());
-        return new Response(true).toJson();
+        return Response.getOk();
     }
 
     public String updatePaymentService(String json) {
         PaymentServiceManagementRequest request = JsonUtils.deserialize(json, PaymentServiceManagementRequest.class);
         paymentServiceController.updatePaymentService(request.serviceId(), request.paymentService());
-        return new Response(true).toJson();
+        return Response.getOk();
     }
 }

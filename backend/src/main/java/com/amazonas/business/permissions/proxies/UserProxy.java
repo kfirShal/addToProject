@@ -6,7 +6,7 @@ import com.amazonas.business.permissions.actions.UserActions;
 import com.amazonas.business.transactions.Transaction;
 import com.amazonas.business.userProfiles.ShoppingCart;
 import com.amazonas.business.userProfiles.UsersController;
-import com.amazonas.common.exceptions.*;
+import com.amazonas.exceptions.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

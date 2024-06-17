@@ -1,6 +1,6 @@
 package com.amazonas.business.inventory;
 
-import com.amazonas.common.exceptions.StoreException;
+import com.amazonas.exceptions.StoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

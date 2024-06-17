@@ -1,41 +1,31 @@
 package com.amazonas.common.utils;
 
-
-
-
-import com.amazonas.common.exceptions.NegativeResponseException;
-
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Response {
 
     private final String message;
     private final boolean success;
-    private final String data;
+    private final List<String> payload;
 
     /**
-     * The data parameter will be serialized using {@link JsonUtils#serialize(Object)}
+     * Each object in the payload list parameter will be serialized using {@link JsonUtils#serialize(Object)}
      */
-    public <T> Response(String message, boolean success, T data) {
+    public <T> Response(String message, boolean success, List<T> payload) {
         this.message = message;
         this.success = success;
-        this.data = JsonUtils.serialize(data);
+        this.payload = payload.stream().map(JsonUtils::serialize).toList();
     }
 
     /**
      * this constructor takes a string as data and does not serialize it
      */
-    public Response(String message, boolean success, String data) {
+    public Response(String message, boolean success, String payload) {
         this.message = message;
         this.success = success;
-        this.data = data;
-    }
-
-    /**
-     * This constructor is used when there is no data to be sent. The data field will be an empty string.
-     */
-    public Response(String message, boolean success) {
-        this(message, success, "");
+        this.payload = List.of(payload);
     }
 
     /**
@@ -43,10 +33,6 @@ public class Response {
      */
     public Response(boolean success) {
         this("", success, "");
-    }
-
-    public <T> Response(boolean success,T data) {
-        this("", success, data);
     }
 
     public String message() {
@@ -60,31 +46,25 @@ public class Response {
     /**
      * @param typeOfT Type of the object for deserialization
      * @return Deserialized object of type T
-     * @apiNote If you want to get the raw data as a string, use {@link #data()} instead
+     * @apiNote If you want to get the raw data as a string, use {@link #payload()} instead
      * <br/><br/><br/>examples for a type definition:<br/><br/><code>1) Type type = new TypeToken&lt;LinkedList&lt;SomeClass&gt;&gt;(){}.getType();</code>
      * <br/><br/><code>2) Type type = SomeClass.class;</code>
      */
-    public <T> T data(Type typeOfT) {
-        if(data == null) {
+    public <T> List<T> payload(Type typeOfT) {
+        if(payload == null) {
             return null;
         }
-        return JsonUtils.deserialize(data,typeOfT);
+        List<T> list = new ArrayList<>();
+        payload.forEach(p -> list.add(JsonUtils.deserialize(p, typeOfT)));
+        return list;
     }
 
     /**
      * @return Raw data as a string. Object must be deserialized manually
-     * @apiNote If you want to get a deserialized object Use {@link #data(Type)} instead
+     * @apiNote If you want to get a deserialized object Use {@link #payload(Type)} instead
      */
-    public String data(){
-        return data;
-    }
-
-    public Integer dataToInt(){
-        return Integer.parseInt(data);
-    }
-
-    public Boolean dataToBoolean(){
-        return Boolean.parseBoolean(data);
+    public List<String> payload(){
+        return payload;
     }
 
     /**
@@ -100,15 +80,26 @@ public class Response {
     public static Response fromJson(String json){
         return JsonUtils.deserialize(json, Response.class);
     }
-    
-    public static Response fromJsonWithValidation(String json) throws NegativeResponseException {
-        Response response = JsonUtils.deserialize(json, Response.class);
-        if (! response.success){
-            String causeMessage = response.data == null ? "" : response.data;
-            String message = response.message == null ? "" : response.message;
-            throw new NegativeResponseException(message, new Throwable(causeMessage));
-        }
-        return response;
+
+    /**
+     * Equivalent to {@code new Response("",true,List.of()).toJson()}
+     */
+    public static <T> String getOk(){
+        return getOk(List.of());
+    }
+
+    /**
+     * Equivalent to {@code new Response("",true,List.of(payload)).toJson()}
+     */
+    public static <T> String getOk(T payload) {
+        return getOk(List.of(payload));
+    }
+
+    /**
+     * Equivalent to {@code new Response("",true,payload).toJson()}
+     */
+    public static <T> String getOk(List<T> payload) {
+        return new Response("",true, payload).toJson();
     }
 
     /**
@@ -116,12 +107,19 @@ public class Response {
      * @apiNote if the exception has a cause, the cause message will be added to the response object in the data field as a string.
      * Otherwise, the data field will be an empty string
      */
-    public static Response getErrorResponse(Exception e){
+    public static String getError(Exception e){
 
         String cause = "";
         if(e.getCause() != null){
             cause = e.getCause().getMessage();
         }
-        return new Response(e.getMessage(), false, cause);
+        return new Response(e.getMessage(), false, cause).toJson();
+    }
+
+    /**
+     * Equivalent to {@code new Response(error,false,List.of()).toJson()}
+     */
+    public static String getError(String error) {
+        return new Response(error,false, List.of()).toJson();
     }
 }

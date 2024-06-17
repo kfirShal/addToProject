@@ -25,7 +25,11 @@
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot-starter</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.amazonas</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+    </dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

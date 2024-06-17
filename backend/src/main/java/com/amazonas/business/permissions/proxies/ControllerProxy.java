@@ -5,8 +5,8 @@ import com.amazonas.business.permissions.PermissionsController;
 import com.amazonas.business.permissions.actions.MarketActions;
 import com.amazonas.business.permissions.actions.StoreActions;
 import com.amazonas.business.permissions.actions.UserActions;
-import com.amazonas.common.exceptions.AuthenticationFailedException;
-import com.amazonas.common.exceptions.NoPermissionException;
+import com.amazonas.exceptions.AuthenticationFailedException;
+import com.amazonas.exceptions.NoPermissionException;
 
 import java.util.function.Function;
 

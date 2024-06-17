@@ -2,9 +2,9 @@ package com.amazonas.acceptanceTests;
 
 import com.amazonas.business.permissions.proxies.UserProxy;
 import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.common.exceptions.*;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
+import com.amazonas.exceptions.*;
 import com.amazonas.service.UserProfilesService;
 import com.amazonas.service.requests.Request;
 import com.amazonas.service.requests.users.CartRequest;
@@ -39,7 +39,7 @@ public class UsersAcceptanceTests {
 
         when(usersController.enterAsGuest()).thenReturn("guestId");
         String result = userProfilesService.enterAsGuest();
-        assertEquals(new Response(true,"guestId").toJson(), result);
+        assertEquals(Response.getOk("guestId"), result);
 
 
     }
@@ -52,7 +52,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("guestId","token","");
         doNothing().when(usersController).logoutAsGuest(request.userId(),request.token());
         String result = userProfilesService.logoutAsGuest(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("NotGuestId","token","");
         doThrow(new UserException("Failed to logout as guest")).when(usersController).logoutAsGuest(request.userId(),request.token());
         String result = userProfilesService.logoutAsGuest(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to logout as guest")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to logout as guest")), result);
     }
 
 
@@ -75,7 +75,7 @@ public class UsersAcceptanceTests {
         RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class UsersAcceptanceTests {
         RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Registration failed - Illegal Password")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Registration failed - Illegal Password")), result);
     }
     @Test
     void testRegisterFailureInvalidEmail() throws UserException {
@@ -100,7 +100,7 @@ public class UsersAcceptanceTests {
         RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Invalid email address.")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Invalid email address.")), result);
     }
     @Test
     void testRegisterFailureUsernameAlreadyExists() throws UserException {
@@ -114,8 +114,7 @@ public class UsersAcceptanceTests {
         doThrow(new UserException("Registration failed - Username Already Exists"))
                 .when(usersController).register(email, userName, password);
         String result = userProfilesService.register(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Registration failed - Username Already Exists"))
-                .toJson(), result);
+        assertEquals(Response.getError(new UserException("Registration failed - Username Already Exists")), result);
     }
 //-------------------------UseCase 2.1.4-------------------------
     @Test
@@ -127,7 +126,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("userId","token",JsonUtils.serialize(loginRequest));
         when(usersController.loginToRegistered(guestId, userName,request.token())).thenReturn(shoppingCart);
         String result = userProfilesService.loginToRegistered(request.toJson());
-        assertEquals(new Response(true,shoppingCart).toJson(), result);
+        assertEquals(Response.getOk(shoppingCart), result);
     }
 
     @Test
@@ -139,7 +138,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("userId","token",JsonUtils.serialize(loginRequest));
         doThrow(new UserException("Failed to login - Wrong username")).when(usersController).loginToRegistered(guestId, userName,request.token());
         String result = userProfilesService.loginToRegistered(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to login - Wrong username")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to login - Wrong username")), result);
     }
 
 //---------------------------UseCase 2.2.3-------------------------
@@ -153,7 +152,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("userId","token",JsonUtils.serialize(cartRequest));
         doNothing().when(usersController).addProductToCart(userId, storeName, productId, 1,request.token());
         String result = userProfilesService.addProductToCart(request.toJson());
-        assertEquals(new Response( true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -166,7 +165,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("userId","token",JsonUtils.serialize(cartRequest));
         doThrow(new ShoppingCartException("Failed to add product to cart - the product is out of stock")).when(usersController).addProductToCart(userId, storeName, productId, 1,request.token());
         String result = userProfilesService.addProductToCart(request.toJson());
-        assertEquals(Response.getErrorResponse(new ShoppingCartException("Failed to add product to cart - the product is out of stock")).toJson(), result);
+        assertEquals(Response.getError(new ShoppingCartException("Failed to add product to cart - the product is out of stock")), result);
     }
 //---------------------------UseCase 2.2.4-------------------------
     @Test
@@ -176,7 +175,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         when(usersController.viewCart(request.userId(),request.token())).thenReturn(shoppingCart);
         String result = userProfilesService.viewCart(request.toJson());
-        assertEquals(new Response(true,shoppingCart).toJson(), result);
+        assertEquals(Response.getOk(shoppingCart), result);
     }
 
     @Test
@@ -186,7 +185,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new UserException("Failed to find cart - Wrong ID")).when(usersController).viewCart(request.userId(),request.token());
         String result = userProfilesService.viewCart(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to find cart - Wrong ID")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to find cart - Wrong ID")), result);
     }
 
     @Test
@@ -199,7 +198,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token",JsonUtils.serialize(cartRequest));
         doNothing().when(usersController).removeProductFromCart(userId,storeName , productId,request.token());
         String result = userProfilesService.removeProductFromCart(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -212,7 +211,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token",JsonUtils.serialize(cartRequest));
         doThrow(new UserException("Failed to remove product from cart - Wrong user id")).when(usersController).removeProductFromCart(userId, storeName, productId,request.token());
         String result = userProfilesService.removeProductFromCart(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to remove product from cart - Wrong user id")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to remove product from cart - Wrong user id")), result);
     }
 
     @Test
@@ -225,7 +224,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token",JsonUtils.serialize(cartRequest));
         doThrow(new ShoppingCartException("Failed to remove product from cart - Wrong store name")).when(usersController).removeProductFromCart(userId, storeName, productId,request.token());
         String result = userProfilesService.removeProductFromCart(request.toJson());
-        assertEquals(Response.getErrorResponse(new ShoppingCartException("Failed to remove product from cart - Wrong store name")).toJson(), result);
+        assertEquals(Response.getError(new ShoppingCartException("Failed to remove product from cart - Wrong store name")), result);
     }
 
     @Test
@@ -238,7 +237,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token",JsonUtils.serialize(cartRequest));
         doThrow(new ShoppingCartException("Failed to remove product from cart - Wrong product id")).when(usersController).removeProductFromCart(userId, storeName, productId,request.token());
         String result = userProfilesService.removeProductFromCart(request.toJson());
-        assertEquals(Response.getErrorResponse(new ShoppingCartException("Failed to remove product from cart - Wrong product id")).toJson(), result);
+        assertEquals(Response.getError(new ShoppingCartException("Failed to remove product from cart - Wrong product id")), result);
     }
 
     @Test
@@ -251,7 +250,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token",JsonUtils.serialize(cartRequest));
         doNothing().when(usersController).changeProductQuantity(userId, storeName, productId, 1,request.token());
         String result = userProfilesService.changeProductQuantity(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -264,7 +263,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("userId","token",JsonUtils.serialize(cartRequest));
         doThrow(new ShoppingCartException("Failed to change product quantity - Negative quantity")).when(usersController).changeProductQuantity(userId, storeName, productId, -2,request.token());
         String result = userProfilesService.changeProductQuantity(request.toJson());
-        assertEquals(Response.getErrorResponse(new ShoppingCartException("Failed to change product quantity - Negative quantity")).toJson(), result);
+        assertEquals(Response.getError(new ShoppingCartException("Failed to change product quantity - Negative quantity")), result);
     }
 
     @Test
@@ -278,7 +277,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token",JsonUtils.serialize(cartRequest));
         doThrow(new ShoppingCartException("Failed to change product quantity - quantity too high")).when(usersController).changeProductQuantity(userId, storeName, productId, quantity,request.token());
         String result = userProfilesService.changeProductQuantity(request.toJson());
-        assertEquals(Response.getErrorResponse(new ShoppingCartException("Failed to change product quantity - quantity too high")).toJson(), result);
+        assertEquals(Response.getError(new ShoppingCartException("Failed to change product quantity - quantity too high")), result);
     }
 
 //---------------------------UseCase 2.2.5-------------------------
@@ -289,7 +288,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doNothing().when(usersController).startPurchase(userId,request.token());
         String result = userProfilesService.startPurchase(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -299,7 +298,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new UserException("Failed to start purchase - Wrong ID")).when(usersController).startPurchase(userId,request.token());
         String result = userProfilesService.startPurchase(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to start purchase - Wrong ID")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to start purchase - Wrong ID")), result);
     }
 
     @Test
@@ -308,7 +307,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new PurchaseFailedException("Failed to start purchase - cart is empty")).when(usersController).startPurchase(userId,request.token());
         String result = userProfilesService.startPurchase(request.toJson());
-        assertEquals(Response.getErrorResponse(new PurchaseFailedException("Failed to start purchase - cart is empty")).toJson(), result);
+        assertEquals(Response.getError(new PurchaseFailedException("Failed to start purchase - cart is empty")), result);
     }
 
     @Test
@@ -317,7 +316,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new PurchaseFailedException("Failed to start purchase - Could not reserve some of the products in the cart.")).when(usersController).startPurchase(userId,request.token());
         String result = userProfilesService.startPurchase(request.toJson());
-        assertEquals(Response.getErrorResponse(new PurchaseFailedException("Failed to start purchase - Could not reserve some of the products in the cart.")).toJson(), result);
+        assertEquals(Response.getError(new PurchaseFailedException("Failed to start purchase - Could not reserve some of the products in the cart.")), result);
     }
 
     @Test
@@ -327,7 +326,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doNothing().when(usersController).payForPurchase(userId,request.token());
         String result = userProfilesService.payForPurchase(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -337,7 +336,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new UserException("Failed to pay for purchase - Wrong ID")).when(usersController).payForPurchase(userId,request.token());
         String result = userProfilesService.payForPurchase(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to pay for purchase - Wrong ID")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to pay for purchase - Wrong ID")), result);
     }
     @Test
     void testPayForPurchaseFailurePaymentFail() throws PurchaseFailedException, NoPermissionException, AuthenticationFailedException, UserException {
@@ -346,7 +345,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new PurchaseFailedException("Failed to complete the purchase - Payment failed")).when(usersController).payForPurchase(userId,request.token());
         String result = userProfilesService.payForPurchase(request.toJson());
-        assertEquals(Response.getErrorResponse(new PurchaseFailedException("Failed to complete the purchase - Payment failed")).toJson(), result);
+        assertEquals(Response.getError(new PurchaseFailedException("Failed to complete the purchase - Payment failed")), result);
     }
 
     @Test
@@ -356,7 +355,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doNothing().when(usersController).cancelPurchase(userId,request.token());
         String result = userProfilesService.cancelPurchase(request.toJson());
-        assertEquals(new Response(true).toJson(), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -366,7 +365,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new UserException("Failed to cancel purchase - Wrong ID")).when(usersController).cancelPurchase(userId,request.token());
         String result = userProfilesService.cancelPurchase(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to cancel purchase - Wrong ID")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to cancel purchase - Wrong ID")), result);
     }
 
 // -------------------------UseCase 2.3.1-------------------------
@@ -378,7 +377,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         when(usersController.logout(userId,request.token())).thenReturn(guestId);
         String result = userProfilesService.logout(request.toJson());
-        assertEquals(new Response( true,guestId).toJson(), result);
+        assertEquals(Response.getOk(guestId), result);
     }
 
     @Test
@@ -388,7 +387,7 @@ public class UsersAcceptanceTests {
         Request request = new Request(userId,"token","");
         doThrow(new UserException("Failed to logout - Wrong ID")).when(usersController).logout(userId,request.token());
         String result = userProfilesService.logout(request.toJson());
-        assertEquals(Response.getErrorResponse(new UserException("Failed to logout - Wrong ID")).toJson(), result);
+        assertEquals(Response.getError(new UserException("Failed to logout - Wrong ID")), result);
     }
 
 }

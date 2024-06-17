@@ -1,17 +1,17 @@
-package com.amazonas.common.exceptions;
+package com.amazonas.exceptions;
 
 import java.security.PrivilegedActionException;
 
 /**
  * @apiNote  This exception does not create a stack trace.
  */
-public class NegativeResponseException extends Exception{
+public class AuthenticationFailedException extends Exception{
     /**
      * Constructs a new exception with {@code null} as its detail message.
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      */
-    public NegativeResponseException() {
+    public AuthenticationFailedException() {
         super(null, null, true, false);
     }
 
@@ -23,7 +23,7 @@ public class NegativeResponseException extends Exception{
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public NegativeResponseException(String message) {
+    public AuthenticationFailedException(String message) {
         super(message,null,true,false);
     }
 
@@ -41,7 +41,7 @@ public class NegativeResponseException extends Exception{
      *                unknown.)
      * @since 1.4
      */
-    public NegativeResponseException(String message, Throwable cause) {
+    public AuthenticationFailedException(String message, Throwable cause) {
         super(message, cause, true, false);
     }
 
@@ -59,7 +59,7 @@ public class NegativeResponseException extends Exception{
      *              unknown.)
      * @since 1.4
      */
-    public NegativeResponseException(Throwable cause) {
+    public AuthenticationFailedException(Throwable cause) {
         super(null,cause,true,false);
     }
 }

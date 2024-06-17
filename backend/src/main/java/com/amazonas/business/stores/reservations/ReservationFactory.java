@@ -2,7 +2,7 @@ package com.amazonas.business.stores.reservations;
 
 import com.amazonas.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.common.exceptions.ShoppingCartException;
+import com.amazonas.exceptions.ShoppingCartException;
 import com.amazonas.repository.ShoppingCartRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -10,9 +10,9 @@ import com.amazonas.business.stores.search.GlobalSearchRequest;
 import com.amazonas.business.stores.search.SearchRequest;
 import com.amazonas.business.stores.storePositions.StorePosition;
 import com.amazonas.business.transactions.Transaction;
-import com.amazonas.common.exceptions.AuthenticationFailedException;
-import com.amazonas.common.exceptions.NoPermissionException;
-import com.amazonas.common.exceptions.StoreException;
+import com.amazonas.exceptions.AuthenticationFailedException;
+import com.amazonas.exceptions.NoPermissionException;
+import com.amazonas.exceptions.StoreException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

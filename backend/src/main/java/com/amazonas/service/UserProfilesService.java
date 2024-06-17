@@ -2,9 +2,9 @@ package com.amazonas.service;
 
 import com.amazonas.business.permissions.proxies.UserProxy;
 import com.amazonas.business.userProfiles.ShoppingCart;
-import com.amazonas.common.exceptions.*;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
+import com.amazonas.exceptions.*;
 import com.amazonas.service.requests.Request;
 import com.amazonas.service.requests.users.CartRequest;
 import com.amazonas.service.requests.users.LoginRequest;
@@ -21,13 +21,11 @@ public class UserProfilesService {
     }
 
     public String enterAsGuest(){
-
-
         try{
             String guestId = proxy.enterAsGuest();
-            return new Response(true,guestId).toJson();
+            return Response.getOk(guestId);
         } catch ( Exception e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -36,9 +34,9 @@ public class UserProfilesService {
         try{
             RegisterRequest toAdd = JsonUtils.deserialize(request.payload(), RegisterRequest.class);
             proxy.register(toAdd.email(), toAdd.userId(), toAdd.password());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -47,9 +45,9 @@ public class UserProfilesService {
         try{
             LoginRequest toAdd = JsonUtils.deserialize(request.payload(), LoginRequest.class);
             ShoppingCart cart = proxy.loginToRegistered(toAdd.guestInitialId(), toAdd.userId(), request.token());
-            return new Response(true,cart).toJson();
+            return Response.getOk(cart);
         } catch (AuthenticationFailedException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -57,9 +55,9 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             String guestId = proxy.logout(request.userId(), request.token());
-            return new Response(true,guestId).toJson();
+            return Response.getOk(guestId);
         } catch (AuthenticationFailedException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -67,9 +65,9 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             proxy.logoutAsGuest(request.userId(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -78,9 +76,9 @@ public class UserProfilesService {
         try{
             CartRequest toAdd = JsonUtils.deserialize(request.payload(), CartRequest.class);
             proxy.addProductToCart(request.userId(),toAdd.storeId(), toAdd.productId(), toAdd.quantity(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -89,9 +87,9 @@ public class UserProfilesService {
         try {
             CartRequest toRemove = JsonUtils.deserialize(request.payload(), CartRequest.class);
             proxy.removeProductFromCart(request.userId(), toRemove.storeId(), toRemove.productId(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -100,9 +98,9 @@ public class UserProfilesService {
         try {
             CartRequest toChange = JsonUtils.deserialize(request.payload(), CartRequest.class);
             proxy.changeProductQuantity(request.userId(), toChange.storeId(), toChange.productId(), toChange.quantity(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -110,9 +108,9 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             ShoppingCart cart = proxy.viewCart(request.userId(), request.token());
-            return new Response(true,cart).toJson();
+            return Response.getOk(cart);
         } catch (AuthenticationFailedException | NoPermissionException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
 
     }
@@ -121,9 +119,9 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             proxy.startPurchase(request.userId(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | PurchaseFailedException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -131,9 +129,9 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             proxy.payForPurchase(request.userId(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | PurchaseFailedException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
@@ -141,18 +139,18 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             proxy.cancelPurchase(request.userId(), request.token());
-            return new Response(true).toJson();
+            return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 
     public String getUserTransactionHistory(String json){
         Request request = Request.from(json);
         try{
-            return new Response(true,proxy.getUserTransactionHistory(request.userId(), request.token())).toJson();
+            return Response.getOk(proxy.getUserTransactionHistory(request.userId(), request.token()));
         } catch (AuthenticationFailedException | NoPermissionException | UserException e){
-            return Response.getErrorResponse(e).toJson();
+            return Response.getError(e);
         }
     }
 }
