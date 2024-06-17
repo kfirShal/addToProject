@@ -1,0 +1,1 @@
+in order to run the project, first run build_jars.bat and then run start.bat
