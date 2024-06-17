@@ -92,6 +92,18 @@ public class POJOBinder<T> {
             this.converter = (Converter<Object,Object>)converter;
         }
 
+        public void withIntegerConverter(){
+            withConverter(new IntegerToStringConverter());
+        }
+
+        public void withDoubleConverter(){
+            withConverter(new DoubleToStringConverter());
+        }
+
+        public void withBooleanConverter(){
+            withConverter(new BooleanToStringConverter());
+        }
+
         protected void read() {
             try {
                 Object value =  field.get(object);
@@ -101,7 +113,6 @@ public class POJOBinder<T> {
                 component.setValue(value);
             } catch (IllegalAccessException ignored) {}
         }
-
 
         protected void write() {
             Object value = component.getValue();
