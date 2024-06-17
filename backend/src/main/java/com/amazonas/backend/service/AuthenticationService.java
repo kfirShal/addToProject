@@ -28,8 +28,7 @@ public class AuthenticationService {
 
     public String authenticateGuest(String json) {
         Request request = Request.from(json);
-        AuthenticationRequest authReq = JsonUtils.deserialize(request.payload(), AuthenticationRequest.class);
-        AuthenticationResponse authResp = controller.authenticateGuest(authReq.userId());
+        AuthenticationResponse authResp = controller.authenticateGuest(request.userId());
         String data = authResp.success() ? authResp.token() : "";
         String message = authResp.success() ? "Authentication successful" : "Authentication failed";
         return new Response(message,authResp.success(), data).toJson();

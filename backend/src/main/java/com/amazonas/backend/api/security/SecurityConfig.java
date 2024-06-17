@@ -3,6 +3,7 @@ package com.amazonas.backend.api.security;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -35,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .requestMatchers("userprofiles/enterasguest").permitAll()
+                                .requestMatchers("/auth/guest").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .formLogin(FormLoginConfigurer::disable)
@@ -46,8 +48,21 @@ public class SecurityConfig {
                     @Override
                     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
                         HttpServletRequest request = (HttpServletRequest) servletRequest;
+
                         String token = request.getHeader("Authorization");
-                        System.out.println("Token: " + token);
+                        if (token == null) {
+                            filterChain.doFilter(servletRequest, servletResponse);
+                        } else {
+                            if(token.contains("Bearer ")){
+                                token = token.replace("Bearer ", "");
+                                String userId = request.getHeader("userId");
+                                if(userId != null){
+                                    if(authenticationController.validateToken( userId,token)){
+                                        filterChain.doFilter(servletRequest, servletResponse);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }, UsernamePasswordAuthenticationFilter.class)
                 .authenticationManager(userManager)

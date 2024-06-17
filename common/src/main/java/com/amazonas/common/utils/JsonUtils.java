@@ -51,6 +51,7 @@ public class JsonUtils {
             .create();
 
     public static <T> String serialize(T obj) {
+        if(obj instanceof String str) return str;
         return gson.toJson(obj);
     }
 
