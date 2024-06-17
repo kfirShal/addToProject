@@ -5,6 +5,7 @@ import com.vaadin.flow.component.HasValue;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class POJOBinder<T> {
 
@@ -82,7 +83,7 @@ public class POJOBinder<T> {
         private final HasValue<?,Object> component;
         private Converter<Object,Object> converter;
 
-        protected FieldBinder(Field field, HasValue<?,Object> component) {
+        private FieldBinder(Field field, HasValue<?,Object> component) {
             this.field = field;
             this.component = component;
         }
@@ -104,7 +105,7 @@ public class POJOBinder<T> {
             withConverter(new BooleanToStringConverter());
         }
 
-        protected void read() {
+        private void read() {
             try {
                 Object value =  field.get(object);
                 if(converter != null){
@@ -114,7 +115,7 @@ public class POJOBinder<T> {
             } catch (IllegalAccessException ignored) {}
         }
 
-        protected void write() {
+        private void write() {
             Object value = component.getValue();
             try {
                 if(converter != null){
@@ -126,8 +127,64 @@ public class POJOBinder<T> {
             }
         }
 
-        protected void clear() {
+        private void clear() {
             component.clear();
+        }
+    }
+
+    private static class IntegerToStringConverter implements Converter<Integer,String> {
+
+        @Override
+        public Function<Integer, String> to() {
+            return String::valueOf;
+        }
+
+        @Override
+        public Function<String, Integer> from() {
+            return str -> {
+                try {
+                    return Integer.parseInt(str);
+                } catch (Exception e) {
+                    return null;
+                }
+            };
+        }
+    }
+
+    private static class DoubleToStringConverter implements Converter<Double,String> {
+
+        @Override
+        public Function<Double, String> to() {
+            return String::valueOf;
+        }
+
+        @Override
+        public Function<String,Double> from() {
+            return str -> {
+                try {
+                    return Double.parseDouble(str);
+                } catch (Exception e) {
+                    return null;
+                }
+            };
+        }
+    }
+
+    private static class BooleanToStringConverter implements Converter<Boolean,String> {
+        @Override
+        public Function<Boolean, String> to() {
+            return String::valueOf;
+        }
+
+        @Override
+        public Function<String, Boolean> from() {
+            return str -> {
+                try {
+                    return Boolean.parseBoolean(str);
+                } catch (Exception e) {
+                    return null;
+                }
+            };
         }
     }
 }
