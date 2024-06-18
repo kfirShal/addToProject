@@ -17,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Component;
@@ -56,23 +55,13 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         }
     }
 
-    public String authenticateGuest(String userid){
+    public AuthenticationResponse authenticateGuest(String userid){
         log.debug("Generating token for guest user {}", userid);
-        return getToken(userid);
-    }
-
-    public String getToken(String userId) {
-        //generate a unique UUID
-        log.trace("Generating new UUID for user {}", userId);
-        String uuid = UUID.randomUUID().toString();
-        String payload = userId+":"+uuid;
-
-        //store the UUID and associate it with the user
-        log.trace("Storing new UUID for user {}", userId);
-        lock.acquireWrite();
-        userIdToUUID.put(userId, uuid);
-        lock.releaseWrite();
-        return generateJwt(payload);
+        if(userExists(userid)){
+           return new AuthenticationResponse(true,getToken(userid));
+        } else {
+            return new AuthenticationResponse(false,null);
+        }
     }
 
     public boolean revokeAuthentication(String userId) {
@@ -108,6 +97,14 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         return answer;
     }
 
+    public AuthenticationResponse authenticateUser(String userId, String password) {
+        if(authenticate(userId,password)){
+            return new AuthenticationResponse(true,getToken(userId));
+        } else {
+            return new AuthenticationResponse(false,null);
+        }
+    }
+
     /**
      * This operation logs out all users by resetting the secret key
      */
@@ -127,7 +124,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         UserDetails userDetails = loadUserByUsername(authentication.getName());
         String credentials = (String) authentication.getCredentials();
-        if(authenticateUser(userDetails.getUsername(),credentials)) {
+        if(authenticate(userDetails.getUsername(),credentials)) {
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         } else {
             throw new AccessDeniedException("Bad credentials");
@@ -204,7 +201,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     //========================= PRIVATE METHODS ================================== |
     //============================================================================ |
 
-    private boolean authenticateUser(String userId, String password) {
+    private boolean authenticate(String userId, String password) {
         log.debug("Authenticating user: {}", userId);
         String hashedPassword = repository.getHashedPassword(userId);
 
@@ -235,5 +232,19 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
                 .content(payload, "text/plain")
                 .signWith(key,alg)
                 .compact();
+    }
+
+    private String getToken(String userId) {
+        //generate a unique UUID
+        log.trace("Generating new UUID for user {}", userId);
+        String uuid = UUID.randomUUID().toString();
+        String payload = userId+":"+uuid;
+
+        //store the UUID and associate it with the user
+        log.trace("Storing new UUID for user {}", userId);
+        lock.acquireWrite();
+        userIdToUUID.put(userId, uuid);
+        lock.releaseWrite();
+        return generateJwt(payload);
     }
 }
