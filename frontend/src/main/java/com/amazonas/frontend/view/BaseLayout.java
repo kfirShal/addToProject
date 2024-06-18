@@ -83,9 +83,7 @@ public abstract class BaseLayout extends AppLayout {
         // set up guest user if needed
         if(! isGuestLoggedIn()){
             if (! appController.enterAsGuest() || ! appController.authenticateAsGuest()) {
-                clearSession();
-                openErrorDialog("Failed to connect to server",
-                        () -> UI.getCurrent().getPage().reload());
+                openErrorDialog("Failed to connect to server", AppController::clearSession);
             }
         }
     }
