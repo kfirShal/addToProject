@@ -56,6 +56,10 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     public AuthenticationResponse authenticateGuest(String userid){
         log.debug("Generating token for guest user {}", userid);
+        if(!userExists(userid)){
+            log.debug("User {} already exists", userid);
+            return new AuthenticationResponse(false,null);
+        }
         return new AuthenticationResponse(true,getToken(userid));
     }
 

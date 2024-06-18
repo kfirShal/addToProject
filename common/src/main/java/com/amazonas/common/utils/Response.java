@@ -14,15 +14,15 @@ public class Response {
      * Each object in the payload list parameter will be serialized using {@link JsonUtils#serialize(Object)}
      */
     public <T> Response(String message, boolean success, List<T> payload) {
-        this.message = message;
+        this.message = message == null ? "" : message;
         this.success = success;
-        this.payload = payload.stream()
+        this.payload = payload == null ? List.of() : payload.stream()
                 .map(obj -> obj instanceof String str ? str : JsonUtils.serialize(obj))
                 .toList();
     }
 
     public Response(String message, boolean success, String payload) {
-        this(message, success, List.of(payload));
+        this(message, success, payload == null ? List.of() : List.of(payload));
     }
 
     /**
@@ -89,7 +89,7 @@ public class Response {
      * Equivalent to {@code new Response("",true,List.of(payload)).toJson()}
      */
     public static <T> String getOk(T payload) {
-        return getOk(List.of(payload));
+        return getOk(payload == null ? List.of() : List.of(payload));
     }
 
     /**
