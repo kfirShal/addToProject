@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,9 +48,31 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         encoder = new BCryptPasswordEncoder();
     }
 
-    public AuthenticationResponse authenticateGuest(String userid){
+    //TODO: REMOVE THIS
+    @EventListener
+    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
+        if(!userExists("admin")) {
+            createUser(new UserCredentials("admin", "123"));
+        }
+    }
+
+    public String authenticateGuest(String userid){
         log.debug("Generating token for guest user {}", userid);
-        return new AuthenticationResponse(true, getToken(userid));
+        return getToken(userid);
+    }
+
+    public String getToken(String userId) {
+        //generate a unique UUID
+        log.trace("Generating new UUID for user {}", userId);
+        String uuid = UUID.randomUUID().toString();
+        String payload = userId+":"+uuid;
+
+        //store the UUID and associate it with the user
+        log.trace("Storing new UUID for user {}", userId);
+        lock.acquireWrite();
+        userIdToUUID.put(userId, uuid);
+        lock.releaseWrite();
+        return generateJwt(payload);
     }
 
     public boolean revokeAuthentication(String userId) {
@@ -116,6 +140,10 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     @Override
     public void createUser(UserDetails user) {
+        if(userExists(user.getUsername())){
+            throw new AccessDeniedException("user already exists");
+        }
+
         log.debug("Adding user credentials for user {}", user.getUsername());
         String hashedPassword = encoder.encode(user.getPassword());
         repository.saveHashedPassword(user.getUsername(),hashedPassword);
@@ -123,12 +151,21 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     @Override
     public void updateUser(UserDetails user) {
+        if(!userExists(user.getUsername())){
+            throw new UsernameNotFoundException("User not found");
+        }
 
-
+        String hashedPassword = encoder.encode(user.getPassword());
+        UserCredentials updatedUser = new UserCredentials(user.getUsername(), hashedPassword);
+        repository.save(updatedUser);
     }
 
     @Override
     public void deleteUser(String username) {
+        if(!userExists(username)){
+            throw new UsernameNotFoundException("User not found");
+        }
+
         repository.deleteById(username);
     }
 
@@ -190,21 +227,6 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     private boolean isPasswordsMatch(String password, String hashedPassword) {
         return encoder.matches(password, hashedPassword);
-    }
-
-    private String getToken(String userId) {
-        //generate a unique UUID
-        log.trace("Generating new UUID for user {}", userId);
-        String uuid = UUID.randomUUID().toString();
-        String payload = userId+":"+uuid;
-
-        //store the UUID and associate it with the user
-        log.trace("Storing new UUID for user {}", userId);
-        lock.acquireWrite();
-        userIdToUUID.put(userId, uuid);
-        lock.releaseWrite();
-
-        return generateJwt(payload);
     }
 
     private String generateJwt(String payload) {

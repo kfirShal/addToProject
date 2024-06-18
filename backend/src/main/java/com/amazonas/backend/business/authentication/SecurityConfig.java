@@ -1,6 +1,5 @@
-package com.amazonas.backend.api.security;
+package com.amazonas.backend.business.authentication;
 
-import com.amazonas.backend.business.authentication.AuthenticationController;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,12 +18,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    private final UserManager userManager;
     private final AuthenticationController authenticationController;
 
-
-    public SecurityConfig(UserManager UserManager, AuthenticationController authenticationController) {
-        this.userManager = UserManager;
+    public SecurityConfig(AuthenticationController authenticationController) {
         this.authenticationController = authenticationController;
     }
 
@@ -58,8 +54,8 @@ public class SecurityConfig {
                     }
                     filterChain.doFilter(servletRequest, servletResponse);
                 }, UsernamePasswordAuthenticationFilter.class)
-                .authenticationManager(userManager)
-                .userDetailsService(userManager);
+                .authenticationManager(authenticationController)
+                .userDetailsService(authenticationController);
         return http.build();
     }
 
