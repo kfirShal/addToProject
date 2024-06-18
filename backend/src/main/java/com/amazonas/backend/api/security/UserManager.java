@@ -6,26 +6,23 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 @Service("UserManager")
-public class UserManager implements UserDetailsManager, AuthenticationManager {
+public class UserManager implements UserDetailsManager, AuthenticationManager, AuthenticationProvider {
 
     private final PasswordEncoder passwordEncoder;
     private final UserCredentialsRepository credentialsRepository;
-    private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
-
 
     public UserManager(UserCredentialsRepository credentialsRepository) {
         this.credentialsRepository = credentialsRepository;
@@ -53,7 +50,7 @@ public class UserManager implements UserDetailsManager, AuthenticationManager {
 
     @Override
     public void changePassword(String oldPassword, String newPassword) {
-        Authentication currentUser = this.securityContextHolderStrategy.getContext().getAuthentication();
+        Authentication currentUser = SecurityContextHolder.getContext().getAuthentication();
         if (currentUser == null) {
             throw new AccessDeniedException("Can't change password as no Authentication object found in context for current user.");
         } else {
@@ -91,13 +88,6 @@ public class UserManager implements UserDetailsManager, AuthenticationManager {
         return passwordEncoder.matches(toTest, known);
     }
 
-    private UserDetails buildUserDetails(UserCredentials user) {
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .build();
-    }
-
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         UserDetails userDetails = loadUserByUsername(authentication.getName());
@@ -109,15 +99,16 @@ public class UserManager implements UserDetailsManager, AuthenticationManager {
         }
     }
 
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return false;
+    }
+
+    //TODO: REMOVE THIS
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         if(!userExists("admin")) {
             createUser(new UserCredentials("admin", "123"));
         }
-    }
-
-    public void setSecurityContextHolderStrategy(SecurityContextHolderStrategy securityContextHolderStrategy) {
-        Assert.notNull(securityContextHolderStrategy, "securityContextHolderStrategy cannot be null");
-        this.securityContextHolderStrategy = securityContextHolderStrategy;
     }
 }

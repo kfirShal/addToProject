@@ -76,17 +76,20 @@ public class AuthenticationController {
         log.debug("Validating token for user {}", userId);
         boolean answer;
         try{
-            String uuidFromToken = new String(Jwts.parser()
+            String[] parts = new String(Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedContent(token)
-                    .getPayload());
+                    .getPayload()).split(":");
+
+            String uuidFromToken = parts[1];
+            String userIdFromToken = parts[0];
 
             log.trace("Checking if the UUID from the token matches the stored UUID for user {}", userId);
             lock.acquireRead();
             String uuid = userIdToUUID.get(userId);
             lock.releaseRead();
-            answer = uuid != null && uuid.equals(uuidFromToken);
+            answer = uuid != null && uuid.equals(uuidFromToken) && userId.equals(userIdFromToken);
         } catch (Exception ignored) {
             answer = false;
         }
@@ -113,6 +116,7 @@ public class AuthenticationController {
         //generate a unique UUID
         log.trace("Generating new UUID for user {}", userId);
         String uuid = UUID.randomUUID().toString();
+        String payload = userId+":"+uuid;
 
         //store the UUID and associate it with the user
         log.trace("Storing new UUID for user {}", userId);
@@ -120,7 +124,7 @@ public class AuthenticationController {
         userIdToUUID.put(userId, uuid);
         lock.releaseWrite();
 
-        return generateJwt(uuid);
+        return generateJwt(payload);
     }
 
     private String generateJwt(String payload) {
@@ -135,5 +139,17 @@ public class AuthenticationController {
         log.debug("Adding user credentials for user {}", userId);
         String encodedPassword = encoder.encode(passwordStorageFormat+password);
         repository.saveHashedPassword(userId, encodedPassword);
+    }
+
+    public String extractUserId(String token) {
+        try{
+            return new String(Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedContent(token)
+                    .getPayload()).split(":")[0];
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
