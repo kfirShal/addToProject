@@ -1,10 +1,7 @@
 package com.amazonas.backend.api.security;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
-import com.amazonas.backend.business.authentication.UserCredentials;
-import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,17 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 @EnableWebSecurity
 @Configuration
@@ -53,7 +42,6 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
-                .authenticationProvider(userManager)
                 .addFilterBefore((servletRequest, servletResponse, filterChain) -> {
                     HttpServletRequest request = (HttpServletRequest) servletRequest;
                     String token = request.getHeader("Authorization");
@@ -73,5 +61,11 @@ public class SecurityConfig {
                 .authenticationManager(userManager)
                 .userDetailsService(userManager);
         return http.build();
+    }
+
+    public static class JWTAuthentication extends UsernamePasswordAuthenticationToken {
+        public JWTAuthentication() {
+            super(null,null,null);
+        }
     }
 }
