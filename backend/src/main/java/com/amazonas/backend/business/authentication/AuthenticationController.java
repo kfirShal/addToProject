@@ -57,8 +57,12 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     public AuthenticationResponse authenticateGuest(String userid){
         log.debug("Generating token for guest user {}", userid);
-        if(userExists(userid)){
-           return new AuthenticationResponse(true,getToken(userid));
+        return new AuthenticationResponse(true,getToken(userid));
+    }
+
+    public AuthenticationResponse authenticateUser(String userId, String password) {
+        if(authenticate(userId,password)){
+            return new AuthenticationResponse(true,getToken(userId));
         } else {
             return new AuthenticationResponse(false,null);
         }
@@ -95,14 +99,6 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         }
         log.debug("Token validation for user {} was {}", userId, answer ? "successful" : "unsuccessful");
         return answer;
-    }
-
-    public AuthenticationResponse authenticateUser(String userId, String password) {
-        if(authenticate(userId,password)){
-            return new AuthenticationResponse(true,getToken(userId));
-        } else {
-            return new AuthenticationResponse(false,null);
-        }
     }
 
     /**

@@ -34,17 +34,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests((authorize) ->
-                        authorize
-                                .requestMatchers("userprofiles/enterasguest").permitAll()
-                                .requestMatchers("/auth/guest").permitAll()
-                                .anyRequest().authenticated()
-                )
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("userprofiles/enterasguest").permitAll()
+                        .requestMatchers("/auth/guest").permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(FormLoginConfigurer::disable)
                 .csrf(CsrfConfigurer::disable)
-                .sessionManagement(sessionManagement -> sessionManagement
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
+                .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authenticationManager(authenticationController)
                 .userDetailsService(authenticationController);
@@ -64,7 +61,7 @@ public class SecurityConfig {
             if (token != null) {
                 if(token.startsWith("Bearer ")){
                     token = token.substring(7);
-                    String userId = request.getHeader("userId");
+                    String userId = request.getHeader("userid");
                     if(userId != null){
                         if(authenticationController.validateToken(userId,token)){
                             SecurityContextHolder.getContext().setAuthentication(new JWTAuthentication());

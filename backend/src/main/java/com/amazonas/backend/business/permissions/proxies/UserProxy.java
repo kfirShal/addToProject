@@ -21,7 +21,8 @@ public class UserProxy extends ControllerProxy {
         this.real = usersController;
     }
 
-    public void register(String email, String userName, String password) throws UserException {
+    public void register(String email, String userName, String password, String guestId, String token) throws UserException, AuthenticationFailedException {
+        authenticateToken(guestId, token);
         real.register(email, userName, password);
     }
 
