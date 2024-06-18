@@ -33,31 +33,16 @@ public class AppController {
     // ==================================================================================== |
 
     public boolean enterAsGuest() {
-        if(getCurrentUserId() != null) {
-            return false;
-        }
-
-        List<String> fetched;
-        try {
-            fetched = getByEndpoint(Endpoints.ENTER_AS_GUEST);
-        } catch (ApplicationException e) {
-            return false;
-        }
-        if(fetched == null || fetched.isEmpty()) {
-            return false;
-        }
-
-        setCurrentUserId(fetched.getFirst());
-        return true;
-    }
-
-    public boolean authenticateAsGuest() {
         if(isUserLoggedIn() || isGuestLoggedIn()) {
             return false;
         }
 
         List<String> fetched;
         try {
+            fetched = getByEndpoint(Endpoints.ENTER_AS_GUEST);
+            if(fetched == null || fetched.isEmpty()) {
+                return false;
+            }
             User entity = new User(null, getCurrentUserId(),null);
             fetched = postByEndpoint(Endpoints.LOGIN_GUEST, entity);
         } catch (ApplicationException e) {
@@ -66,6 +51,7 @@ public class AppController {
         if(fetched == null || fetched.isEmpty()) {
             return false;
         }
+        setCurrentUserId(fetched.getFirst());
         setGuestLoggedIn(true);
         setToken(fetched.getFirst());
         return true;
