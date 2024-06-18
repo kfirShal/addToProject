@@ -19,7 +19,7 @@ public class MarketService {
     public String startMarket(String json) {
         Request request = Request.from(json);
         try {
-            proxy.start(request.userid(), request.token());
+            proxy.start(request.userId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException e) {
             return Response.getError(e);
@@ -29,7 +29,7 @@ public class MarketService {
     public String shutdown(String json) {
         Request request = Request.from(json);
         try {
-            proxy.shutdown(request.userid(), request.token());
+            proxy.shutdown(request.userId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException e) {
             return Response.getError(e);

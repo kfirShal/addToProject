@@ -1,10 +1,16 @@
 package com.amazonas.common.utils;
 
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +57,7 @@ public class APIFetcher {
 
         // send request
         HttpResponse<String> response;
-        try (HttpClient client = HttpClient.newHttpClient()) {
+        try (HttpClient client = createHttpClient()) {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         }
         return response.body();
@@ -114,5 +120,53 @@ public class APIFetcher {
 
     public static APIFetcher create() {
         return new APIFetcher();
+    }
+
+    private HttpClient createHttpClient(){
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            TrustManager[] trustAllCerts = new TrustManager[]{new TrustAllCertificates()};
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            return HttpClient.newBuilder()
+                    .sslContext(sslContext)
+                    .build();
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class TrustAllCertificates extends X509ExtendedTrustManager {
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[]{};
+        }
+
+        @Override
+        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
+
+        }
     }
 }

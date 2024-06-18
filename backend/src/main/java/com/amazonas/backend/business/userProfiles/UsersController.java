@@ -206,7 +206,7 @@ public class UsersController {
     public List<Transaction> getUserTransactionHistory(String userId) throws UserException {
         if(!userRepository.userIdExists(userId)){
             log.debug("User with id: {} does not exist", userId);
-            throw new UserException("Invalid userid");
+            throw new UserException("Invalid userId");
         }
         return transactionRepository.getTransactionHistoryByUser(userId);
     }
@@ -289,8 +289,8 @@ public class UsersController {
 
     public boolean cancelPurchase(String userId) throws UserException {
         if(!userRepository.userIdExists(userId)){
-            log.debug("Cancel Purchase - invalid userid");
-            throw new UserException("Invalid userid");
+            log.debug("Cancel Purchase - invalid userId");
+            throw new UserException("Invalid userId");
         }
 
         try{
@@ -333,7 +333,7 @@ public class UsersController {
     private ShoppingCart getCartWithValidation(String userId) throws UserException {
         ShoppingCart cart = shoppingCartRepository.getCart(userId);
         if(cart == null){
-            throw new UserException("Invalid userid");
+            throw new UserException("Invalid userId");
         }
         return cart;
     }

@@ -1,7 +1,6 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
-import com.amazonas.frontend.model.User;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -14,6 +13,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.WebStorage;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -21,9 +21,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import static com.amazonas.frontend.control.AppController.*;
+import static com.vaadin.flow.component.page.WebStorage.Storage.SESSION_STORAGE;
 
 @PageTitle("Amazonas")
 @Component
@@ -62,20 +64,29 @@ public abstract class BaseLayout extends AppLayout {
         addToDrawer(scroller);
         addToNavbar(toggle, title);
 
-        if(! isUserLoggedIn){
+        // set up login/logout button
+        if (! isUserLoggedIn()) {
             Button loginButton = new Button("Login", event -> openLoginDialog());
             loginButton.getStyle().setMarginLeft("75%");
             addToNavbar(loginButton);
         } else {
-            H4 username = new H4("Hello, " + currentUser.username());
+            H4 username = new H4("Hello, " + getCurrentUserId());
             username.getStyle().set("margin-left", "65%");
             Button logoutButton = new Button("Logout", event -> {
-                isUserLoggedIn = false;
-                currentUser = null;
+                clearSession();
                 UI.getCurrent().getPage().setLocation("/");
             });
             logoutButton.getStyle().set("margin-left", "50px");
             addToNavbar(username, logoutButton);
+        }
+
+        // set up guest user if needed
+        if(! isGuestLoggedIn()){
+            if (! appController.enterAsGuest() || ! appController.authenticateAsGuest()) {
+                clearSession();
+                openErrorDialog("Failed to connect to server",
+                        () -> UI.getCurrent().getPage().reload());
+            }
         }
     }
 
@@ -107,11 +118,6 @@ public abstract class BaseLayout extends AppLayout {
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);
         dialog.add(layout);
-//        dialog.addOpenedChangeListener(event -> {
-//            if (!event.isOpened()) {
-//                UI.getCurrent().getPage().setLocation("/");
-//            }
-//        });
 
         content.add(dialog);
         dialog.open();
@@ -119,6 +125,14 @@ public abstract class BaseLayout extends AppLayout {
     }
 
     protected void openErrorDialog(String message) {
+        openErrorDialog(message, null);
+    }
+
+    /**
+     * @param message Error message to display
+     * @param onClose Runnable to run when the dialog is closed. if null is passed, nothing will happen
+     */
+    protected void openErrorDialog(String message, @Nullable Runnable onClose) {
         Dialog dialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
         H1 h1 = new H1("Error");
@@ -126,6 +140,13 @@ public abstract class BaseLayout extends AppLayout {
         Button closeButton = new Button("Close", event -> dialog.close());
         layout.add(h1, h4, closeButton);
         dialog.add(layout);
+        if(onClose != null){
+            dialog.addOpenedChangeListener(event -> {
+                if (!event.isOpened()) {
+                    onClose.run();
+                }
+            });
+        }
         content.add(dialog);
         dialog.open();
     }

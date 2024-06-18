@@ -83,7 +83,7 @@ public final class Transaction {
         return "Transaction[" +
                 "transactionId=" + transactionId + ", " +
                 "storeId=" + storeId + ", " +
-                "userid=" + userId + ", " +
+                "userId=" + userId + ", " +
                 "dateOfTransaction=" + dateOfTransaction + ", " +
                 "productToPrice=" + productToQuantity + ']';
     }
