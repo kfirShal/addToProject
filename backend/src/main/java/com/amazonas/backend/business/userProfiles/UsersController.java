@@ -1,6 +1,7 @@
 package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
+import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.inventory.Product;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.stores.reservations.Reservation;
@@ -89,7 +90,7 @@ public class UsersController {
         RegisteredUser newRegisteredUser = new RegisteredUser(userId,email);
         userRepository.saveUser(newRegisteredUser);
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
-        authenticationController.addUserCredentials(userId, password);
+        authenticationController.createUser(new UserCredentials(userId, password));
         log.debug("User with id: {} registered successfully", userId);
     }
 
