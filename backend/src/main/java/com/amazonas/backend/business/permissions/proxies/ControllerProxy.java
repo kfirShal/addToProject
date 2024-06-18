@@ -21,7 +21,7 @@ public abstract class ControllerProxy {
     }
 
     protected void authenticateToken(String userId, String token) throws AuthenticationFailedException {
-        if (! auth.validateToken(userId,token)) {
+        if (! auth.validateTokenOwnership(userId,token)) {
             throw new AuthenticationFailedException("Failed to validate authenticity of the user");
         }
     }

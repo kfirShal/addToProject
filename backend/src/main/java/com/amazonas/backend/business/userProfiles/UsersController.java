@@ -102,6 +102,7 @@ public class UsersController {
             lock.acquireWrite();
             guests.put(guestInitialId,newGuest);
             guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
+            authenticationController.createGuest(guestInitialId);
             log.debug("Guest with id: {} entered the market", guestInitialId);
             return guestInitialId;
         }
@@ -126,6 +127,7 @@ public class UsersController {
             guests.remove(guestInitialId);
             authenticationController.revokeAuthentication(guestInitialId);
             cartOfGuest = guestCarts.remove(guestInitialId);
+            authenticationController.removeGuest(guestInitialId);
 
             //add the registered user to the online users
             onlineRegisteredUsers.put(userId,loggedInUser);
@@ -170,6 +172,7 @@ public class UsersController {
             throw new UserException("Guest with id: " + guestInitialId + " is not in the market");
         }
         authenticationController.revokeAuthentication(guestInitialId);
+        authenticationController.removeGuest(guestInitialId);
 
         try{
             lock.acquireWrite();

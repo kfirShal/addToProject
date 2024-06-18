@@ -63,4 +63,14 @@ public class UserCredentialsRepository extends AbstractCachingRepository<UserCre
     public boolean existsById(String username) {
         return userIdToHashedPassword.containsKey(username);
     }
+
+    public void saveGuest(String userId, String hashedPassword) {
+        //TODO: change this when we have a database. don't save to the db. just in memory.
+        saveHashedPassword(userId, hashedPassword);
+    }
+
+    public void deleteGuest(String userId) {
+        //TODO: change this when we have a database. don't save to the db. just in memory.
+        deleteById(userId);
+    }
 }

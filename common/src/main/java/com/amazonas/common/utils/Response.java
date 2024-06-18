@@ -16,16 +16,13 @@ public class Response {
     public <T> Response(String message, boolean success, List<T> payload) {
         this.message = message;
         this.success = success;
-        this.payload = payload.stream().map(JsonUtils::serialize).toList();
+        this.payload = payload.stream()
+                .map(obj -> obj instanceof String str ? str : JsonUtils.serialize(obj))
+                .toList();
     }
 
-    /**
-     * this constructor takes a string as data and does not serialize it
-     */
     public Response(String message, boolean success, String payload) {
-        this.message = message;
-        this.success = success;
-        this.payload = List.of(payload);
+        this(message, success, List.of(payload));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.authentication;
 
+import com.amazonas.common.utils.Pair;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,11 +62,8 @@ public class SecurityConfig {
             if (token != null) {
                 if(token.startsWith("Bearer ")){
                     token = token.substring(7);
-                    String userId = request.getHeader("userid");
-                    if(userId != null){
-                        if(authenticationController.validateToken(userId,token)){
-                            SecurityContextHolder.getContext().setAuthentication(new JWTAuthentication());
-                        }
+                    if(authenticationController.validateTokenAuthenticity(token)){
+                        SecurityContextHolder.getContext().setAuthentication(new JWTAuthentication());
                     }
                 }
             }
