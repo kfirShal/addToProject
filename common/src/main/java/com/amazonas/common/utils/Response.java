@@ -14,22 +14,27 @@ public class Response {
      * Each object in the payload list parameter will be serialized using {@link JsonUtils#serialize(Object)}
      */
     public <T> Response(String message, boolean success, List<T> payload) {
-        this.message = message == null ? "" : message;
+        this.message = message;
         this.success = success;
-        this.payload = payload == null ? List.of() : payload.stream()
+        this.payload = payload == null ? null : payload.isEmpty() ? null : payload.stream()
                 .map(obj -> obj instanceof String str ? str : JsonUtils.serialize(obj))
                 .toList();
+
     }
 
     public Response(String message, boolean success, String payload) {
-        this(message, success, payload == null ? List.of() : List.of(payload));
+        this.message = message;
+        this.success = success;
+        this.payload = payload == null ? null : List.of(payload);
     }
 
     /**
      * @param success If the request was successful or not
      */
     public Response(boolean success) {
-        this("", success, "");
+        this.message = null;
+        this.success = success;
+        this.payload = null;
     }
 
     public String message() {
@@ -43,7 +48,6 @@ public class Response {
     /**
      * @param typeOfT Type of the object for deserialization
      * @return Deserialized object of type T
-     * @apiNote If you want to get the raw data as a string, use {@link #payload()} instead
      * <br/><br/><br/>examples for a type definition:<br/><br/><code>1) Type type = new TypeToken&lt;LinkedList&lt;SomeClass&gt;&gt;(){}.getType();</code>
      * <br/><br/><code>2) Type type = SomeClass.class;</code>
      */
@@ -54,14 +58,6 @@ public class Response {
         List<T> list = new ArrayList<>();
         payload.forEach(p -> list.add(JsonUtils.deserialize(p, typeOfT)));
         return list;
-    }
-
-    /**
-     * @return Raw data as a string. Object must be deserialized manually
-     * @apiNote If you want to get a deserialized object Use {@link #payload(Type)} instead
-     */
-    public List<String> payload(){
-        return payload;
     }
 
     /**
@@ -89,14 +85,14 @@ public class Response {
      * Equivalent to {@code new Response("",true,List.of(payload)).toJson()}
      */
     public static <T> String getOk(T payload) {
-        return getOk(payload == null ? List.of() : List.of(payload));
+        return getOk(payload == null ? null : List.of(payload));
     }
 
     /**
      * Equivalent to {@code new Response("",true,payload).toJson()}
      */
     public static <T> String getOk(List<T> payload) {
-        return new Response("",true, payload).toJson();
+        return new Response(null,true, payload).toJson();
     }
 
     /**
