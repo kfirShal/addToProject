@@ -126,6 +126,18 @@ public class AppController {
         return true;
     }
 
+    public boolean logout() {
+        if(!isUserLoggedIn()){
+            return false;
+        }
+        try {
+             postByEndpoint(Endpoints.LOGOUT, null);
+        } catch (ApplicationException e) {
+            return false;
+        }
+        return true;
+    }
+
     // ==================================================================================== |
     // ============================= API FETCHING METHODS ================================= |
     // ==================================================================================== |

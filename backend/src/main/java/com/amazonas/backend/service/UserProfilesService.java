@@ -53,8 +53,8 @@ public class UserProfilesService {
     public String logout(String json){
         Request request = Request.from(json);
         try{
-            String guestId = proxy.logout(request.userId(), request.token());
-            return Response.getOk(guestId);
+            proxy.logout(request.userId(), request.token());
+            return Response.getOk();
         } catch (AuthenticationFailedException | UserException e){
             return Response.getError(e);
         }

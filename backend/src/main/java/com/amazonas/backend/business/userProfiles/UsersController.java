@@ -152,23 +152,18 @@ public class UsersController {
         log.debug("Guest cart merged with user cart successfully");
     }
 
-    public String logout(String userId) throws UserException {
+    public void logout(String userId) throws UserException {
         if(!onlineRegisteredUsers.containsKey(userId)){
             log.debug("User with id: {} is not online", userId);
             throw new UserException("User with id: " + userId + " is not online");
         }
 
         authenticationController.revokeAuthentication(userId);
-        guestInitialId = UUID.randomUUID().toString();
-        Guest guest = new Guest(guestInitialId);
 
         try{
             lock.acquireWrite();
             onlineRegisteredUsers.remove(userId);
-            guests.put(guestInitialId,guest);
-            guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
             log.debug("User with id: {} logged out successfully", userId);
-            return guestInitialId;
         }
         finally {
             lock.releaseWrite();

@@ -76,8 +76,13 @@ public abstract class BaseLayout extends AppLayout {
             H4 username = new H4("Hello, " + getCurrentUserId());
             username.getStyle().set("margin-left", "65%");
             Button logoutButton = new Button("Logout", event -> {
-                clearSession();
-                UI.getCurrent().getPage().setLocation("/");
+                if(appController.logout()){
+                    clearSession();
+                    UI.getCurrent().getPage().setLocation("/");
+                    showNotification("Logout successful");
+                } else {
+                    showNotification("Logout failed");
+                }
             });
             logoutButton.getStyle().set("margin-left", "50px");
             addToNavbar(username, logoutButton);
@@ -108,11 +113,10 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             if (appController.login(username, password)) {
-                Notification.show("Login successful");
-                dialog.close();
+                showNotification("Login successful");
                 UI.getCurrent().getPage().reload();
             } else {
-                Notification.show("Login failed");
+                showNotification("Login failed");
             }
         });
         submitButton.addClickShortcut(Key.ENTER);
@@ -161,20 +165,19 @@ public abstract class BaseLayout extends AppLayout {
             String password = passwordField.getValue();
             String confirmPassword = confirmPasswordField.getValue();
             if(!password.equals(confirmPassword)){
-                Notification.show("Passwords do not match");
+                showNotification("Passwords do not match");
                 confirmErrorIcon.setVisible(true);
                 return;
             }
             if (appController.register(email, username, password, confirmPassword)) {
                 if(appController.login(username, password)){
-                    Notification.show("Registration successful");
-                    dialog.close();
+                    showNotification("Registration successful");
                     UI.getCurrent().getPage().reload();
                 } else {
                     openErrorDialog("could not log in after registration, please try logging in manually.");
                 }
             } else {
-                Notification.show("Registration failed");
+                showNotification("Registration failed");
             }
         });
         submitButton.addClickShortcut(Key.ENTER);
@@ -189,6 +192,10 @@ public abstract class BaseLayout extends AppLayout {
 
         content.add(dialog);
         dialog.open();
+    }
+
+    protected void showNotification(String msg) {
+        Notification.show(msg,5000, Notification.Position.TOP_CENTER);
     }
 
     protected void openErrorDialog(String message) {

@@ -36,9 +36,9 @@ public class UserProxy extends ControllerProxy {
         real.loginToRegistered(guestInitialId,userId);
     }
 
-    public String logout(String userId, String token) throws AuthenticationFailedException, UserException {
+    public void logout(String userId, String token) throws AuthenticationFailedException, UserException {
         authenticateToken(userId, token);
-        return real.logout(userId);
+        real.logout(userId);
     }
 
     public void logoutAsGuest(String guestInitialId, String token) throws AuthenticationFailedException, UserException {
