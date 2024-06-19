@@ -1,21 +1,21 @@
 package com.amazonas.backend.business.stores;
 
-import com.amazonas.backend.business.inventory.Product;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
-import com.amazonas.backend.business.stores.search.SearchRequest;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.TransactionRepository;
+import com.amazonas.common.requests.store.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
-import com.amazonas.backend.repository.TransactionRepository;
 import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
@@ -176,26 +176,26 @@ public class Store {
             lock.acquireRead();
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
-                if(product.price() < request.getMinPrice() || product.price() > request.getMaxPrice()){
+                if(product.price() < request.minPrice() || product.price() > request.maxPrice()){
                     continue;
                 }
-                if(product.rating().ordinal() < request.getProductRating().ordinal()){
+                if(product.rating().ordinal() < request.productRating().ordinal()){
                     continue;
                 }
-                if(!request.getProductName().isBlank() && product.productName().toLowerCase().contains(request.getProductName())){
+                if(!request.productName().isBlank() && product.productName().toLowerCase().contains(request.productName())){
                     toReturn.add(product);
                     continue;
                 }
-                if(!request.getProductCategory().isBlank() && product.category().toLowerCase().contains(request.getProductCategory())){
+                if(!request.productCategory().isBlank() && product.category().toLowerCase().contains(request.productCategory())){
                     toReturn.add(product);
                     continue;
                 }
-                if(!request.getProductName().isBlank() && product.description().toLowerCase().contains(request.getProductName())){
+                if(!request.productName().isBlank() && product.description().toLowerCase().contains(request.productName())){
                     toReturn.add(product);
                     continue;
                 }
                 Set<String> keywords = product.keyWords();
-                if(request.getKeyWords().stream().anyMatch(keywords::contains)){
+                if(request.keyWords().stream().anyMatch(keywords::contains)){
                     toReturn.add(product);
                 }
             }

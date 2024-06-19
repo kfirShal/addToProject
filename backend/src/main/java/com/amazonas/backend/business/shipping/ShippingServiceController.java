@@ -1,7 +1,7 @@
 package com.amazonas.backend.business.shipping;
 
-import com.amazonas.common.utils.ReadWriteLock;
 import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
+import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

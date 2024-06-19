@@ -31,9 +31,9 @@ public class UserProxy extends ControllerProxy {
     }
 
     //this is when the guest logs in to the market and turn to registeredUser
-    public ShoppingCart loginToRegistered(String guestInitialId,String userId, String token) throws AuthenticationFailedException, UserException {
+    public void loginToRegistered(String guestInitialId,String userId, String token) throws AuthenticationFailedException, UserException {
         authenticateToken(guestInitialId, token);
-        return real.loginToRegistered(guestInitialId,userId);
+        real.loginToRegistered(guestInitialId,userId);
     }
 
     public String logout(String userId, String token) throws AuthenticationFailedException, UserException {

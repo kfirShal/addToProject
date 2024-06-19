@@ -1,6 +1,5 @@
 package com.amazonas.backend.repository.mongoCollections;
 
-import com.amazonas.backend.business.authentication.UserCredentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

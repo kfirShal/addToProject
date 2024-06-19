@@ -1,7 +1,7 @@
 package com.amazonas.backend;
 
-import com.amazonas.backend.service.requests.Request;
-import com.amazonas.backend.service.requests.users.RegisterRequest;
+import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.users.RegisterRequest;
 import com.amazonas.common.utils.JsonUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

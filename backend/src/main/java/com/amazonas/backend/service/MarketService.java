@@ -3,8 +3,8 @@ package com.amazonas.backend.service;
 import com.amazonas.backend.business.permissions.proxies.MarketProxy;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
+import com.amazonas.common.requests.Request;
 import com.amazonas.common.utils.Response;
-import com.amazonas.backend.service.requests.Request;
 import org.springframework.stereotype.Component;
 
 @Component("marketService")

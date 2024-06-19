@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.search;
+package com.amazonas.common.requests.store;
 
 import com.amazonas.common.utils.Rating;
 

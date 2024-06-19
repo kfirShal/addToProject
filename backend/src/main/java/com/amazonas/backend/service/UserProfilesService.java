@@ -2,13 +2,13 @@ package com.amazonas.backend.service;
 
 import com.amazonas.backend.business.permissions.proxies.UserProxy;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
+import com.amazonas.backend.exceptions.*;
+import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.users.CartRequest;
+import com.amazonas.common.requests.users.LoginRequest;
+import com.amazonas.common.requests.users.RegisterRequest;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
-import com.amazonas.backend.exceptions.*;
-import com.amazonas.backend.service.requests.Request;
-import com.amazonas.backend.service.requests.users.CartRequest;
-import com.amazonas.backend.service.requests.users.LoginRequest;
-import com.amazonas.backend.service.requests.users.RegisterRequest;
 import org.springframework.stereotype.Component;
 
 @Component("userProfilesService")
@@ -40,8 +40,8 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             LoginRequest toAdd = JsonUtils.deserialize(request.payload(), LoginRequest.class);
-            ShoppingCart cart = proxy.loginToRegistered(toAdd.guestInitialId(), toAdd.userId(), request.token());
-            return Response.getOk(cart);
+            proxy.loginToRegistered(toAdd.guestInitialId(), toAdd.userId(), request.token());
+            return Response.getOk();
         } catch (AuthenticationFailedException | UserException e){
             return Response.getError(e);
         }

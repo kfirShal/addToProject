@@ -1,6 +1,6 @@
 package com.amazonas.backend.business.transactions;
 
-import com.amazonas.backend.business.inventory.Product;
+import com.amazonas.common.dtos.Product;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

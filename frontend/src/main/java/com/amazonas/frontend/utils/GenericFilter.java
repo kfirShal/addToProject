@@ -2,9 +2,7 @@ package com.amazonas.frontend.utils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.util.HashMap;

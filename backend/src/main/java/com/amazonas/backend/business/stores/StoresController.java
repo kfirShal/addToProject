@@ -1,15 +1,15 @@
 package com.amazonas.backend.business.stores;
 
-import com.amazonas.backend.business.inventory.Product;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.business.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
-import com.amazonas.backend.business.stores.search.GlobalSearchRequest;
-import com.amazonas.backend.business.stores.search.SearchRequest;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
+import com.amazonas.common.requests.store.GlobalSearchRequest;
+import com.amazonas.common.requests.store.SearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -98,8 +98,8 @@ public class StoresController {
     public List<Product> searchProductsGlobally(GlobalSearchRequest request) {
         List<Product> ret = new LinkedList<>();
         for (Store store : repository.getAllStores()) {
-            if (store.getStoreRating().ordinal() >= request.getStoreRating().ordinal()) {
-                ret.addAll(store.searchProduct(request));
+            if (store.getStoreRating().ordinal() >= request.storeRating().ordinal()) {
+                ret.addAll(store.searchProduct(request.searchRequest()));
             }
         }
         return ret;

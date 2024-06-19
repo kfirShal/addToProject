@@ -2,16 +2,15 @@ package com.amazonas.backend.service;
 
 import com.amazonas.backend.business.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
-import com.amazonas.backend.business.stores.search.GlobalSearchRequest;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.store.*;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
-import com.amazonas.backend.service.requests.Request;
-import com.amazonas.backend.service.requests.store.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

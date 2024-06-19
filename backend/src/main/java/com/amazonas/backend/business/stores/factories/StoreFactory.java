@@ -6,8 +6,8 @@ import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.common.utils.Rating;
 import com.amazonas.backend.repository.TransactionRepository;
+import com.amazonas.common.utils.Rating;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;

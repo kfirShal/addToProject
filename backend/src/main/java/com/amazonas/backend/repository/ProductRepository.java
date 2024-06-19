@@ -1,9 +1,9 @@
 package com.amazonas.backend.repository;
 
-import com.amazonas.backend.business.inventory.Product;
-import com.amazonas.common.utils.ReadWriteLock;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.mongoCollections.ProductMongoCollection;
+import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;

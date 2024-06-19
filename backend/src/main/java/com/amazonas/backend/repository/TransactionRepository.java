@@ -2,9 +2,9 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.business.transactions.TransactionState;
-import com.amazonas.common.utils.ReadWriteLock;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.mongoCollections.TransactionMongoCollection;
+import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

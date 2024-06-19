@@ -2,15 +2,15 @@ package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.UserCredentials;
-import com.amazonas.backend.business.inventory.Product;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.exceptions.UserException;
-import com.amazonas.common.utils.ReadWriteLock;
 import com.amazonas.backend.repository.*;
+import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -112,7 +112,7 @@ public class UsersController {
 
     }
 
-    public ShoppingCart loginToRegistered(String guestInitialId,String userId) throws UserException {
+    public void loginToRegistered(String guestInitialId,String userId) throws UserException {
 
         if(! userRepository.userIdExists(userId)){
             log.debug("User with id: {} does not exist in the system", userId);
@@ -140,7 +140,6 @@ public class UsersController {
         ShoppingCart mergedShoppingCart = cartOfUser.mergeGuestCartWithRegisteredCart(cartOfGuest);
         shoppingCartRepository.saveCart(mergedShoppingCart);
         log.debug("Guest cart merged with user cart successfully");
-        return mergedShoppingCart;
     }
 
     public String logout(String userId) throws UserException {

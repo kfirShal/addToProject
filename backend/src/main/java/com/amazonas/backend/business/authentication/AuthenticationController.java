@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.authentication;
 
+import com.amazonas.backend.repository.UserCredentialsRepository;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.common.utils.ReadWriteLock;
-import com.amazonas.backend.repository.UserCredentialsRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.slf4j.Logger;

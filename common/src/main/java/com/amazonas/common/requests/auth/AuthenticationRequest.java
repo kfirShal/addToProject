@@ -1,4 +1,4 @@
-package com.amazonas.backend.service.requests.auth;
+package com.amazonas.common.requests.auth;
 
 public record AuthenticationRequest (String userId, String password) {
 }

@@ -13,12 +13,11 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.WebStorage;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
@@ -28,7 +27,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import static com.amazonas.frontend.control.AppController.*;
-import static com.vaadin.flow.component.page.WebStorage.Storage.SESSION_STORAGE;
 
 @PageTitle("Amazonas")
 @Component
@@ -109,7 +107,6 @@ public abstract class BaseLayout extends AppLayout {
         Button submitButton = new Button("Submit", event -> {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
-            // Perform login logic here
             if (appController.login(username, password)) {
                 Notification.show("Login successful");
                 dialog.close();
@@ -137,6 +134,8 @@ public abstract class BaseLayout extends AppLayout {
         Dialog dialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
         FormLayout formLayout = new FormLayout();
+        EmailField emailField = new EmailField("Email");
+        emailField.setPlaceholder("Email");
         TextField usernameField = new TextField("Username");
         usernameField.setPlaceholder("Username");
         PasswordField passwordField = new PasswordField("Password");
@@ -157,6 +156,7 @@ public abstract class BaseLayout extends AppLayout {
         headline.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
 
         Button submitButton = new Button("Submit", event -> {
+            String email = emailField.getValue();
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             String confirmPassword = confirmPasswordField.getValue();
@@ -165,7 +165,7 @@ public abstract class BaseLayout extends AppLayout {
                 confirmErrorIcon.setVisible(true);
                 return;
             }
-            if (appController.register(username, password, confirmPassword)) {
+            if (appController.register(email, username, password, confirmPassword)) {
                 if(appController.login(username, password)){
                     Notification.show("Registration successful");
                     dialog.close();
@@ -180,7 +180,7 @@ public abstract class BaseLayout extends AppLayout {
         submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
-        formLayout.add(headlineLayout,usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
+        formLayout.add(headlineLayout,emailField,usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
         formLayout.setWidth("80%");
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);

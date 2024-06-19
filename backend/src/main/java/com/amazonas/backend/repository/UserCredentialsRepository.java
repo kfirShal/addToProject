@@ -1,9 +1,9 @@
 package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.authentication.UserCredentials;
-import com.amazonas.common.utils.ReadWriteLock;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.mongoCollections.UserCredentialsMongoCollection;
+import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

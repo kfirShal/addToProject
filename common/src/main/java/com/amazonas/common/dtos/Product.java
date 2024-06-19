@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.inventory;
+package com.amazonas.common.dtos;
 
 import com.amazonas.common.utils.Rating;
 
@@ -90,16 +90,6 @@ public class Product implements Cloneable {
 
     public void removeKeyWords(String key){
         keyWords.remove(key.toLowerCase());
-    }
-
-    @Override
-    public String toString() {
-        return "Product[" +
-                "productID=" + productId + ", " +
-                "nameProduct=" + productName + ", " +
-                "price=" + price + ", " +
-                "category=" + category + ", " +
-                "rate=" + rating + ']';
     }
 
     @Override

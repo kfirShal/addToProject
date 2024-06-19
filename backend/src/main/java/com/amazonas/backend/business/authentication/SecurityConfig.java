@@ -1,6 +1,5 @@
 package com.amazonas.backend.business.authentication;
 
-import com.amazonas.common.utils.Pair;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

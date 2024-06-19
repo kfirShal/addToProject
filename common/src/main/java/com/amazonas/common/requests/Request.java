@@ -1,4 +1,4 @@
-package com.amazonas.backend.service.requests;
+package com.amazonas.common.requests;
 
 import com.amazonas.common.utils.JsonUtils;
 
