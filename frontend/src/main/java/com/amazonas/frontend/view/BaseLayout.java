@@ -10,8 +10,10 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.WebStorage;
@@ -100,6 +102,10 @@ public abstract class BaseLayout extends AppLayout {
         PasswordField passwordField = new PasswordField("Password");
         passwordField.setPlaceholder("Password");
 
+        H4 headline = new H4("Login");
+        VerticalLayout headlineLayout = new VerticalLayout(headline);
+        headline.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
+
         Button submitButton = new Button("Submit", event -> {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
@@ -115,10 +121,11 @@ public abstract class BaseLayout extends AppLayout {
         submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
-        formLayout.add(usernameField, passwordField, submitButton, cancelButton);
-        formLayout.setWidth("50%");
+        formLayout.add(headlineLayout,usernameField, passwordField, submitButton, cancelButton);
+        formLayout.setWidth("80%");
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);
+        dialog.setWidth("30%");
         dialog.add(layout);
 
         content.add(dialog);
@@ -136,12 +143,28 @@ public abstract class BaseLayout extends AppLayout {
         passwordField.setPlaceholder("Password");
         PasswordField confirmPasswordField = new PasswordField("Confirm Password");
         confirmPasswordField.setPlaceholder("Confirm Password");
+        Icon confirmErrorIcon = VaadinIcon.EXCLAMATION_CIRCLE_O.create();
+        confirmErrorIcon.getStyle().setMarginLeft("50px");
+        confirmErrorIcon.setVisible(false);
+        confirmErrorIcon.setColor("red");
+        confirmErrorIcon.setTooltipText("Passwords do not match");
+        confirmPasswordField.addValueChangeListener(event -> confirmErrorIcon.setVisible(false));
+        passwordField.addValueChangeListener(event -> confirmErrorIcon.setVisible(false));
+        confirmPasswordField.setSuffixComponent(confirmErrorIcon);
+
+        H4 headline = new H4("Register");
+        VerticalLayout headlineLayout = new VerticalLayout(headline);
+        headline.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
 
         Button submitButton = new Button("Submit", event -> {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             String confirmPassword = confirmPasswordField.getValue();
-            // Perform register logic here
+            if(!password.equals(confirmPassword)){
+                Notification.show("Passwords do not match");
+                confirmErrorIcon.setVisible(true);
+                return;
+            }
             if (appController.register(username, password, confirmPassword)) {
                 if(appController.login(username, password)){
                     Notification.show("Registration successful");
@@ -157,11 +180,12 @@ public abstract class BaseLayout extends AppLayout {
         submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
-        formLayout.add(usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
-        formLayout.setWidth("50%");
+        formLayout.add(headlineLayout,usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
+        formLayout.setWidth("80%");
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);
         dialog.add(layout);
+        dialog.setWidth("30%");
 
         content.add(dialog);
         dialog.open();
