@@ -13,6 +13,8 @@ import com.amazonas.backend.repository.*;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -63,6 +65,14 @@ public class UsersController {
         onlineRegisteredUsers = new HashMap<>();
         guestCarts = new HashMap<>();
         lock = new ReadWriteLock();
+    }
+
+    //TODO: REMOVE THIS
+    @EventListener
+    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
+        try {
+            register("adminEmail@email.com","admin","Admin12#");
+        } catch (UserException ignored) {}
     }
 
     // =============================================================================== |

@@ -62,7 +62,7 @@ public class AppController {
         String credentialsString = "%s:%s".formatted(userId, password);
         String auth = "Basic " + new String(Base64.getEncoder().encode(credentialsString.getBytes()));
 
-        String body,token;
+        String body,token, guestId = getCurrentUserId();
         Response authResponse, loginResponse;
         try {
             body = RequestBuilder.create()
@@ -81,9 +81,8 @@ public class AppController {
             }
             // ---------> passed authentication
             token = authResponse.<String>payload(String.class).getFirst();
-            String guestId = getCurrentUserId();
             body = RequestBuilder.create()
-                    .withUserId(guestId)
+                    .withUserId(userId)
                     .withToken(token)
                     .withPayload(new LoginRequest(guestId, userId))
                     .build()
@@ -113,7 +112,7 @@ public class AppController {
         if(isUserLoggedIn()){
             return false;
         }
-        
+
         if (!password.equals(confirmPassword)) {
             return false;
         }

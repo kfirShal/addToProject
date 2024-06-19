@@ -1,5 +1,6 @@
 package com.amazonas.backend.service;
 
+import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.permissions.proxies.UserProxy;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.exceptions.*;
@@ -9,6 +10,8 @@ import com.amazonas.common.requests.users.LoginRequest;
 import com.amazonas.common.requests.users.RegisterRequest;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component("userProfilesService")

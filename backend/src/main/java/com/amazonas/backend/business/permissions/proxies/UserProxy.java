@@ -32,7 +32,7 @@ public class UserProxy extends ControllerProxy {
 
     //this is when the guest logs in to the market and turn to registeredUser
     public void loginToRegistered(String guestInitialId,String userId, String token) throws AuthenticationFailedException, UserException {
-        authenticateToken(guestInitialId, token);
+        authenticateToken(userId, token);
         real.loginToRegistered(guestInitialId,userId);
     }
 

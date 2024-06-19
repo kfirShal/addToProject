@@ -46,14 +46,6 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         encoder = new BCryptPasswordEncoder();
     }
 
-    //TODO: REMOVE THIS
-    @EventListener
-    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
-        if(!userExists("admin")) {
-            createUser(new UserCredentials("admin", "123"));
-        }
-    }
-
     public AuthenticationResponse authenticateGuest(String userid){
         log.debug("Generating token for guest user {}", userid);
         if(!userExists(userid)){
