@@ -192,4 +192,7 @@ public class AppController {
         return VaadinService.getCurrentRequest().getWrappedSession();
     }
 
+    public boolean register(String username, String password, String confirmPassword) {
+        return false;
+    }
 }

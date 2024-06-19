@@ -1,6 +1,7 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -67,8 +68,10 @@ public abstract class BaseLayout extends AppLayout {
         // set up login/logout button
         if (! isUserLoggedIn()) {
             Button loginButton = new Button("Login", event -> openLoginDialog());
+            Button registerButton = new Button("Register", event -> openRegisterDialog());
             loginButton.getStyle().setMarginLeft("75%");
-            addToNavbar(loginButton);
+            registerButton.getStyle().set("margin-left", "10px");
+            addToNavbar(loginButton, registerButton);
         } else {
             H4 username = new H4("Hello, " + getCurrentUserId());
             username.getStyle().set("margin-left", "65%");
@@ -109,6 +112,7 @@ public abstract class BaseLayout extends AppLayout {
                 Notification.show("Login failed");
             }
         });
+        submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
         formLayout.add(usernameField, passwordField, submitButton, cancelButton);
@@ -120,6 +124,47 @@ public abstract class BaseLayout extends AppLayout {
         content.add(dialog);
         dialog.open();
 
+    }
+
+    protected void openRegisterDialog(){
+        Dialog dialog = new Dialog();
+        VerticalLayout layout = new VerticalLayout();
+        FormLayout formLayout = new FormLayout();
+        TextField usernameField = new TextField("Username");
+        usernameField.setPlaceholder("Username");
+        PasswordField passwordField = new PasswordField("Password");
+        passwordField.setPlaceholder("Password");
+        PasswordField confirmPasswordField = new PasswordField("Confirm Password");
+        confirmPasswordField.setPlaceholder("Confirm Password");
+
+        Button submitButton = new Button("Submit", event -> {
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
+            String confirmPassword = confirmPasswordField.getValue();
+            // Perform register logic here
+            if (appController.register(username, password, confirmPassword)) {
+                if(appController.login(username, password)){
+                    Notification.show("Registration successful");
+                    dialog.close();
+                    UI.getCurrent().getPage().reload();
+                } else {
+                    openErrorDialog("could not log in after registration, please try logging in manually.");
+                }
+            } else {
+                Notification.show("Registration failed");
+            }
+        });
+        submitButton.addClickShortcut(Key.ENTER);
+        Button cancelButton = new Button("Cancel", event -> dialog.close());
+
+        formLayout.add(usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
+        formLayout.setWidth("50%");
+        formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
+        layout.add(formLayout);
+        dialog.add(layout);
+
+        content.add(dialog);
+        dialog.open();
     }
 
     protected void openErrorDialog(String message) {
