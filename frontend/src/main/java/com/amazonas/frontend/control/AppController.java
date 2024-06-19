@@ -8,9 +8,15 @@ import com.amazonas.common.utils.APIFetcher;
 import com.amazonas.common.utils.Response;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.google.gson.JsonSyntaxException;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.WrappedSession;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -137,6 +143,20 @@ public class AppController {
         }
         return true;
     }
+
+    public boolean logoutAsGuest() {
+        if(!isGuestLoggedIn()){
+            return false;
+        }
+        try {
+            postByEndpoint(Endpoints.LOGOUT_AS_GUEST, null);
+        } catch (ApplicationException e) {
+            return false;
+        }
+        return true;
+    }
+
+
 
     // ==================================================================================== |
     // ============================= API FETCHING METHODS ================================= |
