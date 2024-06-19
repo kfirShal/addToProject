@@ -37,23 +37,18 @@ public class AppController {
             return false;
         }
 
-        List<String> fetched;
+        String userId;
+        String token;
         try {
-            fetched = getByEndpoint(Endpoints.ENTER_AS_GUEST);
-            if(fetched == null || fetched.isEmpty()) {
-                return false;
-            }
-            User entity = new User(null, getCurrentUserId(),null);
-            fetched = postByEndpoint(Endpoints.LOGIN_GUEST, entity);
+            userId = (String) getByEndpoint(Endpoints.ENTER_AS_GUEST).getFirst();
+            User entity = new User(null, userId, null);
+            token = (String) postByEndpoint(Endpoints.LOGIN_GUEST, entity).getFirst();
         } catch (ApplicationException e) {
             return false;
         }
-        if(fetched == null || fetched.isEmpty()) {
-            return false;
-        }
-        setCurrentUserId(fetched.getFirst());
+        setCurrentUserId(userId);
         setGuestLoggedIn(true);
-        setToken(fetched.getFirst());
+        setToken(token);
         return true;
     }
 
