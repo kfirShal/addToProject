@@ -55,11 +55,15 @@ public class AppController {
     }
 
     public boolean login(String userId, String password) {
+        if(isUserLoggedIn()){
+            return false;
+        }
+
         String credentialsString = "%s:%s".formatted(userId, password);
         String auth = "Basic " + new String(Base64.getEncoder().encode(credentialsString.getBytes()));
 
         String body,token;
-        Response authResponse;
+        Response authResponse, loginResponse;
         try {
             body = RequestBuilder.create()
                     .withPayload(new AuthenticationRequest(userId, password))
@@ -72,8 +76,11 @@ public class AppController {
                     .withPost()
                     .fetch();
             authResponse = Response.fromJson(fetched);
-            token = authResponse.<String>payload(String.class).getFirst();
+            if(authResponse == null || ! authResponse.success()){
+                return false;
+            }
             // ---------> passed authentication
+            token = authResponse.<String>payload(String.class).getFirst();
             String guestId = getCurrentUserId();
             body = RequestBuilder.create()
                     .withUserId(guestId)
@@ -81,12 +88,16 @@ public class AppController {
                     .withPayload(new LoginRequest(guestId, userId))
                     .build()
                     .toJson();
-            APIFetcher.create()
+            fetched = APIFetcher.create()
                     .withUri(BACKEND_URI + Endpoints.LOGIN_TO_REGISTERED.location())
                     .withHeader("Authorization", getBearerAuth())
                     .withBody(body)
                     .withPost()
                     .fetch();
+            loginResponse = Response.fromJson(fetched);
+            if(loginResponse == null || ! loginResponse.success()){
+                return false;
+            }
             // ---------> logged in
         } catch (IOException | InterruptedException | JsonSyntaxException e) {
             return false;
@@ -99,6 +110,10 @@ public class AppController {
     }
 
     public boolean register(String email, String username, String password, String confirmPassword) {
+        if(isUserLoggedIn()){
+            return false;
+        }
+        
         if (!password.equals(confirmPassword)) {
             return false;
         }
