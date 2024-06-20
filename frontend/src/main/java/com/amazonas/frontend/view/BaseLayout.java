@@ -40,7 +40,9 @@ public abstract class BaseLayout extends AppLayout {
         content = new VerticalLayout();
         setContent(content);
 
-        appController.addSessionDestroyListener();
+        if(getSessionAttribute("sessionRegistered") == null){
+            appController.addSession();
+        }
 
         SideNav nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
