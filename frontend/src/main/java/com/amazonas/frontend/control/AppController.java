@@ -44,6 +44,81 @@ public class AppController {
     }
 
     // ==================================================================================== |
+    // ============================= API FETCHING METHODS ================================= |
+    // ==================================================================================== |
+
+    public <T> List<T> getByEndpoint(Endpoints endpoint) throws ApplicationException {
+        return get(endpoint.location(), endpoint.clazz());
+    }
+
+    public <T> List<T> postByEndpoint(Endpoints endpoint, Object payload) throws ApplicationException {
+        return post(endpoint.location(), endpoint.clazz(), payload);
+    }
+
+    private <T> List<T> get(String location, Type t) throws ApplicationException {
+        ApplicationException fetchFailed = new ApplicationException("Failed to fetch data");
+
+        Response response;
+        try {
+            String fetched = APIFetcher.create()
+                    .withUri(BACKEND_URI + location)
+                    .withHeader("Authorization", getBearerAuth())
+                    .fetch();
+            response = Response.fromJson(fetched);
+        } catch (IOException | InterruptedException | JsonSyntaxException e) {
+            throw fetchFailed;
+        }
+
+        if (response == null) {
+            throw fetchFailed;
+        }
+        if (!response.success()) {
+            throw new ApplicationException(response.message());
+        }
+        return response.payload(t);
+    }
+
+    private <T> List<T> post(String location, Type t, Object payload) throws ApplicationException {
+        ApplicationException postFailed = new ApplicationException("Failed to send data");
+
+        String body = RequestBuilder.create()
+                .withUserId(getCurrentUserId())
+                .withToken(getToken())
+                .withPayload(payload)
+                .build()
+                .toJson();
+
+        Response response;
+        try {
+            String fetched = APIFetcher.create()
+                    .withUri(BACKEND_URI + location)
+                    .withHeader("Authorization", getBearerAuth())
+                    .withBody(body)
+                    .withPost()
+                    .fetch();
+            response = Response.fromJson(fetched);
+        } catch (IOException | InterruptedException | JsonSyntaxException e) {
+            throw postFailed;
+        }
+
+        if (response == null) {
+            throw postFailed;
+        }
+        if (!response.success()) {
+            throw new ApplicationException(response.message());
+        }
+        return response.payload(t);
+    }
+
+    private String getBearerAuth() {
+        String token = getToken();
+        if (token == null) {
+            return "";
+        }
+        return "Bearer " + token;
+    }
+
+    // ==================================================================================== |
     // ============================= AUTHENTICATION METHODS =============================== |
     // ==================================================================================== |
 
@@ -171,81 +246,6 @@ public class AppController {
             return false;
         }
         return true;
-    }
-
-    // ==================================================================================== |
-    // ============================= API FETCHING METHODS ================================= |
-    // ==================================================================================== |
-
-    public <T> List<T> getByEndpoint(Endpoints endpoint) throws ApplicationException {
-        return get(endpoint.location(), endpoint.clazz());
-    }
-
-    public <T> List<T> postByEndpoint(Endpoints endpoint, Object payload) throws ApplicationException {
-        return post(endpoint.location(), endpoint.clazz(), payload);
-    }
-
-    private <T> List<T> get(String location, Type t) throws ApplicationException {
-        ApplicationException fetchFailed = new ApplicationException("Failed to fetch data");
-
-        Response response;
-        try {
-            String fetched = APIFetcher.create()
-                    .withUri(BACKEND_URI + location)
-                    .withHeader("Authorization", getBearerAuth())
-                    .fetch();
-            response = Response.fromJson(fetched);
-        } catch (IOException | InterruptedException | JsonSyntaxException e) {
-            throw fetchFailed;
-        }
-
-        if (response == null) {
-            throw fetchFailed;
-        }
-        if (!response.success()) {
-            throw new ApplicationException(response.message());
-        }
-        return response.payload(t);
-    }
-
-    private <T> List<T> post(String location, Type t, Object payload) throws ApplicationException {
-        ApplicationException postFailed = new ApplicationException("Failed to send data");
-
-        String body = RequestBuilder.create()
-                .withUserId(getCurrentUserId())
-                .withToken(getToken())
-                .withPayload(payload)
-                .build()
-                .toJson();
-
-        Response response;
-        try {
-            String fetched = APIFetcher.create()
-                    .withUri(BACKEND_URI + location)
-                    .withHeader("Authorization", getBearerAuth())
-                    .withBody(body)
-                    .withPost()
-                    .fetch();
-            response = Response.fromJson(fetched);
-        } catch (IOException | InterruptedException | JsonSyntaxException e) {
-            throw postFailed;
-        }
-
-        if (response == null) {
-            throw postFailed;
-        }
-        if (!response.success()) {
-            throw new ApplicationException(response.message());
-        }
-        return response.payload(t);
-    }
-
-    private String getBearerAuth() {
-        String token = getToken();
-        if (token == null) {
-            return "";
-        }
-        return "Bearer " + token;
     }
 
     // ==================================================================================== |
