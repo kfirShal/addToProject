@@ -1,5 +1,6 @@
 package com.amazonas.frontend.control;
 
+import com.amazonas.common.requests.Request;
 import com.amazonas.common.requests.RequestBuilder;
 import com.amazonas.common.requests.auth.AuthenticationRequest;
 import com.amazonas.common.requests.users.LoginRequest;
@@ -9,10 +10,7 @@ import com.amazonas.common.utils.Response;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.google.gson.JsonSyntaxException;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ServiceInitEvent;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.*;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -273,15 +271,6 @@ public class AppController {
         getSession().invalidate();
     }
 
-    private static void setSessionsAttribute(String key, Object value){
-        getSession().setAttribute(key, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T getSessionsAttribute(String key){
-        return (T) getSession().getAttribute(key);
-    }
-
     public void addSessionDestroyListener(){
         Boolean sessionDestroyListener = getSessionsAttribute("sessionDestroyListener");
         if(sessionDestroyListener != null && sessionDestroyListener){
@@ -289,12 +278,36 @@ public class AppController {
         }
         VaadinService service = VaadinService.getCurrent();
         service.addSessionDestroyListener(event -> {
-            if(isUserLoggedIn()){
-                logout();
-            } else if(isGuestLoggedIn()){
-                logoutAsGuest();
-            }
+            VaadinSession session = event.getSession();
+            Boolean isUserLoggedIn = (Boolean) session.getAttribute("isUserLoggedIn");
+            Boolean isGuestLoggedIn = (Boolean) session.getAttribute("isGuestLoggedIn");
+            String userId = (String) session.getAttribute("userId");
+            String token = (String) session.getAttribute("token");
+            Request request = RequestBuilder.create()
+                    .withUserId(userId)
+                    .withToken(token)
+                    .build();
+            APIFetcher fetcher = APIFetcher.create()
+                    .withHeader("Authorization", getBearerAuth())
+                    .withBody(request.toJson())
+                    .withPost();
+            try{
+                if(isGuestLoggedIn != null && isGuestLoggedIn){
+                    fetcher.withUri(BACKEND_URI + Endpoints.LOGOUT_AS_GUEST.location()).fetch();
+                } else if(isUserLoggedIn != null && isUserLoggedIn){
+                    fetcher.withUri(BACKEND_URI + Endpoints.LOGOUT.location()).fetch();
+                }
+            } catch (Exception ignored){}
         });
+    }
+
+    private static void setSessionsAttribute(String key, Object value){
+        getSession().setAttribute(key, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getSessionsAttribute(String key){
+        return (T) getSession().getAttribute(key);
     }
 
     private static WrappedSession getSession() {
