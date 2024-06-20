@@ -155,9 +155,7 @@ public class AppController {
         }
         return true;
     }
-
-
-
+    
     // ==================================================================================== |
     // ============================= API FETCHING METHODS ================================= |
     // ==================================================================================== |
@@ -238,7 +236,8 @@ public class AppController {
     // ==================================================================================== |
 
     public static boolean isUserLoggedIn() {
-        return getSession().getAttribute("isUserLoggedIn") != null;
+        Boolean isUserLoggedIn = getSessionsAttribute("isUserLoggedIn");
+        return isUserLoggedIn != null && isUserLoggedIn;
     }
 
     public static void setUserLoggedIn(boolean value) {
@@ -246,7 +245,8 @@ public class AppController {
     }
 
     public static boolean isGuestLoggedIn() {
-        return getSession().getAttribute("isGuestLoggedIn") != null;
+        Boolean isGuestLoggedIn = getSessionsAttribute("isGuestLoggedIn");
+        return isGuestLoggedIn != null && isGuestLoggedIn;
     }
 
     public static void setGuestLoggedIn(boolean value) {
@@ -254,23 +254,47 @@ public class AppController {
     }
 
     public static String getCurrentUserId(){
-        return (String) getSession().getAttribute("userId");
+        return getSessionsAttribute("userId");
     }
 
     public static void setCurrentUserId(String userId){
-        getSession().setAttribute("userId", userId);
+        setSessionsAttribute("userId", userId);
     }
 
     public static String getToken(){
-        return (String) getSession().getAttribute("token");
+        return getSessionsAttribute("token");
     }
 
     public static void setToken(String token){
-        getSession().setAttribute("token", token);
+        setSessionsAttribute("token", token);
     }
 
     public static void clearSession(){
         getSession().invalidate();
+    }
+
+    private static void setSessionsAttribute(String key, Object value){
+        getSession().setAttribute(key, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getSessionsAttribute(String key){
+        return (T) getSession().getAttribute(key);
+    }
+
+    public void addSessionDestroyListener(){
+        Boolean sessionDestroyListener = getSessionsAttribute("sessionDestroyListener");
+        if(sessionDestroyListener != null && sessionDestroyListener){
+            return;
+        }
+        VaadinService service = VaadinService.getCurrent();
+        service.addSessionDestroyListener(event -> {
+            if(isUserLoggedIn()){
+                logout();
+            } else if(isGuestLoggedIn()){
+                logoutAsGuest();
+            }
+        });
     }
 
     private static WrappedSession getSession() {

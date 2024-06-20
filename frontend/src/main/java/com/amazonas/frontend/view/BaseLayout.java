@@ -36,9 +36,11 @@ public abstract class BaseLayout extends AppLayout {
     private final AppController appController;
 
     public BaseLayout(AppController appController) {
-        content = new VerticalLayout();
         this.appController = appController;
+        content = new VerticalLayout();
         setContent(content);
+
+        appController.addSessionDestroyListener();
 
         SideNav nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
