@@ -2,6 +2,7 @@ package com.amazonas.backend.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.AuthenticationResponse;
+import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.payment.*;
 import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.business.shipping.ShippingServiceController;
@@ -102,7 +103,8 @@ public class SystemAcceptanceTests {
         String wrongAdminPassword = "wrongPassword";
         String correctAdminPassword = "correctPassword";
         String hashedPassword = simpleHash(correctAdminPassword);
-        authController.addUserCredentials(adminUserId, hashedPassword);
+        UserCredentials adminUser = new UserCredentials(adminUserId, hashedPassword);
+        authController.createUser(adminUser);
         when(repository.getHashedPassword(adminUserId)).thenReturn(hashedPassword);
 
         // Act

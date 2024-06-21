@@ -23,7 +23,7 @@ class PermissionsControllerTest {
     public PermissionsControllerTest() {
         PermissionsProfileRepository repository = mock(PermissionsProfileRepository.class);
         PermissionsProfile mockProfile = mock(PermissionsProfile.class);
-        pc = new PermissionsController(mockProfile, mockProfile, repository);
+        pc = new PermissionsController(mockProfile, mockProfile,mockProfile, repository);
         profile = mock(PermissionsProfile.class);
         when(repository.getPermissionsProfile(USER_ID)).thenReturn(profile);
     }

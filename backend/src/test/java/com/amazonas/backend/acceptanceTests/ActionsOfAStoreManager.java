@@ -1,24 +1,26 @@
 package com.amazonas.backend.acceptanceTests;
+
+import com.amazonas.backend.business.authentication.AuthenticationController;
+import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
-import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.stores.StoresController;
-import com.amazonas.backend.business.inventory.Product;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
-import com.amazonas.backend.business.stores.search.SearchRequest;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.repository.PermissionsProfileRepository;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.backend.repository.UserCredentialsRepository;
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.requests.store.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ActionsOfAStoreManager {
 
@@ -27,6 +29,7 @@ public class ActionsOfAStoreManager {
     private UserCredentialsRepository userCredentialsRepository;
     private PermissionsProfile defaultRegisteredUserPermissionsProfile;
     private PermissionsProfile guestPermissionsProfile;
+    private PermissionsProfile adminPermissionsProfile;
     private PermissionsProfileRepository permissionsProfileRepository;
     private StoreFactory storeFactory;
     private StoreRepository storeRepository;
@@ -35,7 +38,7 @@ public class ActionsOfAStoreManager {
 
     @BeforeEach
     public void setUp() {
-        PermissionsController permissionsController = new PermissionsController(defaultRegisteredUserPermissionsProfile, guestPermissionsProfile, permissionsProfileRepository);
+        PermissionsController permissionsController = new PermissionsController(defaultRegisteredUserPermissionsProfile, guestPermissionsProfile,adminPermissionsProfile, permissionsProfileRepository);
         AuthenticationController authenticationController = new AuthenticationController(userCredentialsRepository);
         StoresController storesController = new StoresController(storeFactory, storeRepository, transactionRepository);
         storeProxy = new StoreProxy(storesController, permissionsController, authenticationController);

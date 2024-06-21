@@ -2,14 +2,14 @@ package com.amazonas.backend.acceptanceTests;
 
 import com.amazonas.backend.business.permissions.proxies.UserProxy;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
-import com.amazonas.common.utils.JsonUtils;
-import com.amazonas.common.utils.Response;
 import com.amazonas.backend.exceptions.*;
 import com.amazonas.backend.service.UserProfilesService;
-import com.amazonas.backend.service.requests.Request;
-import com.amazonas.backend.service.requests.users.CartRequest;
-import com.amazonas.backend.service.requests.users.LoginRequest;
-import com.amazonas.backend.service.requests.users.RegisterRequest;
+import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.users.CartRequest;
+import com.amazonas.common.requests.users.LoginRequest;
+import com.amazonas.common.requests.users.RegisterRequest;
+import com.amazonas.common.utils.JsonUtils;
+import com.amazonas.common.utils.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -66,12 +66,12 @@ public class UsersAcceptanceTests {
 
 //-------------------------UseCase 2.1.3-------------------------
     @Test
-    void testRegisterSuccess() throws UserException {
+    void testRegisterSuccess() throws UserException, AuthenticationFailedException {
 
         String email = "test@example.com";
         String userName = "testUser";
         String password = "password123@";
-        doNothing().when(usersController).register(email, userName, password);
+        doNothing().when(usersController).register(email, userName, password,"","");
         RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
@@ -79,31 +79,31 @@ public class UsersAcceptanceTests {
     }
 
     @Test
-    void testRegisterFailureInvalidPassword() throws UserException {
+    void testRegisterFailureInvalidPassword() throws UserException, AuthenticationFailedException {
 
         String email = "test@example.com";
         String userName = "testUser";
         String password = "password";
-        doThrow(new UserException("Registration failed - Illegal Password")).when(usersController).register(email, userName, password);
+        doThrow(new UserException("Registration failed - Illegal Password")).when(usersController).register(email, userName, password,"","");
         RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getError(new UserException("Registration failed - Illegal Password")), result);
     }
     @Test
-    void testRegisterFailureInvalidEmail() throws UserException {
+    void testRegisterFailureInvalidEmail() throws UserException, AuthenticationFailedException {
 
         String email = "test@example";
         String userName = "testUser";
         String password = "password";
-        doThrow(new UserException("Invalid email address.")).when(usersController).register(email, userName, password);
+        doThrow(new UserException("Invalid email address.")).when(usersController).register(email, userName, password,"","");
         RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getError(new UserException("Invalid email address.")), result);
     }
     @Test
-    void testRegisterFailureUsernameAlreadyExists() throws UserException {
+    void testRegisterFailureUsernameAlreadyExists() throws UserException, AuthenticationFailedException {
 
         String email = "test@example.com";
         String userName = "existsTestUser";
@@ -112,7 +112,7 @@ public class UsersAcceptanceTests {
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         userProfilesService.register(request.toJson());
         doThrow(new UserException("Registration failed - Username Already Exists"))
-                .when(usersController).register(email, userName, password);
+                .when(usersController).register(email, userName, password,"","");
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getError(new UserException("Registration failed - Username Already Exists")), result);
     }
@@ -124,9 +124,8 @@ public class UsersAcceptanceTests {
         String userName = "testUser";
         LoginRequest loginRequest = new LoginRequest(guestId, userName);
         Request request = new Request("userId","token",JsonUtils.serialize(loginRequest));
-        when(usersController.loginToRegistered(guestId, userName,request.token())).thenReturn(shoppingCart);
         String result = userProfilesService.loginToRegistered(request.toJson());
-        assertEquals(Response.getOk(shoppingCart), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test
@@ -373,11 +372,9 @@ public class UsersAcceptanceTests {
     void testLogoutSuccess() throws AuthenticationFailedException, UserException {
 
         String userId = "userId";
-        String guestId = "guestId";
         Request request = new Request(userId,"token","");
-        when(usersController.logout(userId,request.token())).thenReturn(guestId);
         String result = userProfilesService.logout(request.toJson());
-        assertEquals(Response.getOk(guestId), result);
+        assertEquals(Response.getOk(), result);
     }
 
     @Test

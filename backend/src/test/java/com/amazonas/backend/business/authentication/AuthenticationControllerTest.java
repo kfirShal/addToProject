@@ -61,39 +61,39 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void validateTokenSuccess() {
+    void validateTokenOwnershipSuccess() {
         AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
         String token = response.token();
-        assertTrue(authenticationController.validateToken(userId, token));
+        assertTrue(authenticationController.validateTokenOwnership(userId, token));
     }
 
     @Test
-    void validateTokenFailureAfterAuthentication() {
+    void validateTokenOwnershipFailureAfterAuthentication() {
         AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
         String token = response.token();
-        assertFalse(authenticationController.validateToken(userId, token + "invalid"));
+        assertFalse(authenticationController.validateTokenOwnership(userId, token + "invalid"));
     }
 
     @Test
-    void validateTokenFailureBeforeAuthentication() {
-        assertFalse(authenticationController.validateToken(userId, "invalidToken"));
+    void validateTokenOwnershipFailureBeforeAuthentication() {
+        assertFalse(authenticationController.validateTokenOwnership(userId, "invalidToken"));
     }
 
     @Test
-    void validateTokenFailureAfterRevocation() {
+    void validateTokenOwnershipFailureAfterRevocation() {
         AuthenticationResponse response = authenticationController.authenticateUser(userId, password);
         assertTrue(response.success());
         assertNotNull(response.token());
 
         String token = response.token();
         assertTrue(authenticationController.revokeAuthentication(userId));
-        assertFalse(authenticationController.validateToken(userId, token));
+        assertFalse(authenticationController.validateTokenOwnership(userId, token));
     }
 
     @Test
@@ -104,6 +104,6 @@ class AuthenticationControllerTest {
 
         String token = response.token();
         authenticationController.resetSecretKey();
-        assertFalse(authenticationController.validateToken(userId, token));
+        assertFalse(authenticationController.validateTokenOwnership(userId, token));
     }
 }

@@ -1,16 +1,17 @@
 package com.amazonas.backend.business.stores;
 
-import com.amazonas.backend.business.inventory.Product;
+
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
-import com.amazonas.backend.business.stores.search.SearchRequestBuilder;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.common.utils.Rating;
 import com.amazonas.backend.repository.TransactionRepository;
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.requests.store.SearchRequestBuilder;
+import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

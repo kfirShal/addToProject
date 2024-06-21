@@ -3,6 +3,7 @@ package com.amazonas.backend.business.userProfiles;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.payment.PaymentMethod;
 import com.amazonas.backend.business.payment.PaymentService;
+import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.UserException;
@@ -39,6 +40,7 @@ class UsersControllerTest {
     private ProductRepository productRepository;
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCart cart;
+    private PermissionsController permissionsController;
 
     @BeforeEach
     void setUp() {
@@ -51,6 +53,7 @@ class UsersControllerTest {
         userRepository = mock(UserRepository.class);
         paymentService = mock(PaymentService.class);
         authenticationController = mock(AuthenticationController.class);
+        permissionsController = mock(PermissionsController.class);
         usersController = new UsersController(
                 userRepository,
                 reservationRepository,
@@ -59,7 +62,9 @@ class UsersControllerTest {
                 paymentService,
                 shoppingCartFactory,
                 authenticationController,
-                shoppingCartRepository);
+                shoppingCartRepository,
+                permissionsController
+                );
 
         cart = mock(ShoppingCart.class);
     }
@@ -123,9 +128,7 @@ class UsersControllerTest {
 
         String guestId = assertDoesNotThrow(()-> usersController.enterAsGuest());
         assertDoesNotThrow(()->usersController.loginToRegistered(guestId, USER_ID));
-        String guestId2 = assertDoesNotThrow(()-> usersController.logout(USER_ID));
-        assertNotNull(guestId2);
-        assertEquals(guestId2, assertDoesNotThrow(()-> usersController.getUser(guestId2).getUserId()));
+        assertDoesNotThrow(()-> usersController.logout(USER_ID));
     }
 
     @Test

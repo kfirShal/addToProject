@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.inventory;
 
+import com.amazonas.common.dtos.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

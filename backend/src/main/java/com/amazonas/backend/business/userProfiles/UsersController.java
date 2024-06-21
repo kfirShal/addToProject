@@ -276,7 +276,10 @@ public class UsersController {
             ShoppingCart cart = getCartWithValidation(userId);
             User user = userRepository.getUser(userId);
             if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
-                cancelPurchase(userId);
+                reservations.forEach(r -> {
+                    r.cancelReservation();
+                    reservationRepository.removeReservation(userId,r);
+                });
                 log.debug("Payment failed");
                 throw new PurchaseFailedException("Payment failed");
             }
@@ -317,6 +320,7 @@ public class UsersController {
                 log.debug("No reservations to cancel for user with id: {}", userId);
                 return false;
             }
+
             reservations.forEach(r -> {
                 r.cancelReservation();
                 reservationRepository.removeReservation(userId,r);

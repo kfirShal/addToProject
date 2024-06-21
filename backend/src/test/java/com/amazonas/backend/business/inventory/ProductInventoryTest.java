@@ -1,6 +1,7 @@
 package com.amazonas.backend.business.inventory;
 
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

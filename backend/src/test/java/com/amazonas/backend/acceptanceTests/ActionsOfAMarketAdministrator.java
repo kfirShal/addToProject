@@ -1,4 +1,4 @@
-package com.amazonas.backend.backend.acceptanceTests;
+package com.amazonas.backend.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.inventory.ProductInventory;
@@ -71,7 +71,8 @@ public class ActionsOfAMarketAdministrator {
                 new PaymentService(),
                 shoppingCartFactory,
                 authenticationController,
-                shoppingCartRepository
+                shoppingCartRepository,
+                permissionsController
         );
     }
 
