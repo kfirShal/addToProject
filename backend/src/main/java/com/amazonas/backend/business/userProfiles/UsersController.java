@@ -2,6 +2,7 @@ package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.UserCredentials;
+import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.stores.reservations.Reservation;
@@ -18,10 +19,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +34,7 @@ public class UsersController {
     private final ShoppingCartFactory shoppingCartFactory;
     private final ProductRepository productRepository;
     private final AuthenticationController authenticationController;
+    private final PermissionsController permissionsController;
 
     private final Map<String, ShoppingCart> guestCarts;
     private final Map<String,Guest> guests;
@@ -51,7 +50,8 @@ public class UsersController {
                            PaymentService paymentService,
                            ShoppingCartFactory shoppingCartFactory,
                            AuthenticationController authenticationController,
-                           ShoppingCartRepository shoppingCartRepository) {
+                           ShoppingCartRepository shoppingCartRepository,
+                           PermissionsController permissionsController) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;
@@ -60,6 +60,7 @@ public class UsersController {
         this.productRepository = productRepository;
         this.authenticationController = authenticationController;
         this.shoppingCartRepository = shoppingCartRepository;
+        this.permissionsController = permissionsController;
 
         guests = new HashMap<>();
         onlineRegisteredUsers = new HashMap<>();
@@ -67,12 +68,19 @@ public class UsersController {
         lock = new ReadWriteLock();
     }
 
-    //TODO: REMOVE THIS
+    //generate admin user
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         try {
-            register("adminEmail@email.com","admin","Admin12#");
-        } catch (UserException ignored) {}
+            String adminId = "admin";
+            String adminEmail = "admin@amazonas.com";
+            String adminPassword = generatePassword();
+            System.out.println("Admin password: " + adminPassword);
+            register(adminEmail, adminId, adminPassword);
+        } catch (UserException e) {
+            log.error("Failed to generate admin user");
+            throw new RuntimeException("Failed to generate admin user");
+        }
     }
 
     // =============================================================================== |
@@ -101,6 +109,7 @@ public class UsersController {
         userRepository.saveUser(newRegisteredUser);
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
         authenticationController.createUser(new UserCredentials(userId, password));
+        permissionsController.registerUser(userId);
         log.debug("User with id: {} registered successfully", userId);
     }
 
@@ -113,6 +122,7 @@ public class UsersController {
             guests.put(guestInitialId,newGuest);
             guestCarts.put(guestInitialId,shoppingCartFactory.get(guestInitialId));
             authenticationController.createGuest(guestInitialId);
+            permissionsController.registerGuest(guestInitialId);
             log.debug("Guest with id: {} entered the market", guestInitialId);
             return guestInitialId;
         }
@@ -138,6 +148,7 @@ public class UsersController {
             authenticationController.revokeAuthentication(guestInitialId);
             cartOfGuest = guestCarts.remove(guestInitialId);
             authenticationController.removeGuest(guestInitialId);
+            permissionsController.removeGuest(guestInitialId);
 
             //add the registered user to the online users
             onlineRegisteredUsers.put(userId,loggedInUser);
@@ -177,6 +188,7 @@ public class UsersController {
         }
         authenticationController.revokeAuthentication(guestInitialId);
         authenticationController.removeGuest(guestInitialId);
+        permissionsController.removeGuest(guestInitialId);
 
         try{
             lock.acquireWrite();
@@ -355,6 +367,20 @@ public class UsersController {
         Pattern emailPattern = Pattern.compile(emailRegex);
         Matcher matcher = emailPattern.matcher(email);
         return matcher.matches();
+    }
+
+    private String generatePassword(){
+        Random rand = new Random();
+        List<Character> chars = new ArrayList<>(32);
+        String specialChars = "!@#$%^&*()\\-=\\[\\]{};':\"<>?|";
+        for(int i = 0; i < 8; i++){
+            chars.add(specialChars.charAt(rand.nextInt(specialChars.length())));
+            chars.add((char)rand.nextInt('a','z'));
+            chars.add((char)rand.nextInt('A','Z'));
+            chars.add((char)rand.nextInt('0','9'));
+        }
+        Collections.shuffle(chars);
+        return chars.stream().map(String::valueOf).reduce("",String::concat);
     }
     // =============================================================================== |
     // ================================ GETTERS ====================================== |

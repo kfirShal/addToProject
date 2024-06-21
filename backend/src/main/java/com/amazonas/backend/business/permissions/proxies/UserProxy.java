@@ -22,6 +22,9 @@ public class UserProxy extends ControllerProxy {
     }
 
     public void register(String email, String userName, String password, String guestId, String token) throws UserException, AuthenticationFailedException {
+        if(userName.equals("admin")) {
+            throw new UserException();
+        }
         authenticateToken(guestId, token);
         real.register(email, userName, password);
     }

@@ -20,14 +20,17 @@ public class PermissionsController {
 
     private final PermissionsProfile defaultProfile;
     private final PermissionsProfile guestProfile;
+    private final PermissionsProfile adminProfile;
     private final ReadWriteLock lock;
     private final PermissionsProfileRepository repository;
 
     public PermissionsController(PermissionsProfile defaultRegisteredUserPermissionsProfile,
                                  PermissionsProfile guestPermissionsProfile,
+                                 PermissionsProfile adminPermissionsProfile,
                                  PermissionsProfileRepository permissionsProfileRepository) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
+        this.adminProfile = adminPermissionsProfile;
         lock = new ReadWriteLock();
         this.repository = permissionsProfileRepository;
     }
