@@ -22,7 +22,7 @@ should_skip() {
 mkdir -p "$DESTINATION_DIR"
 
 # Run mvn package
-mvn clean package -DskipTests -Pproduction
+mvn package -DskipTests -Pproduction
 
 # Traverse each subdirectory and copy jar
 for dir in */ ; do
