@@ -4,9 +4,9 @@ public enum Endpoints {
     ENTER_AS_GUEST("userprofiles/enterasguest", String.class),
     AUTHENTICATE_USER("auth/user", String.class),
     AUTHENTICATE_GUEST("auth/guest", String.class),
-    LOGIN_TO_REGISTERED("userprofiles/logintoregistered", Void.class),
+    LOGIN_TO_REGISTERED("userprofiles/logintoregistered", Boolean.class),
     REGISTER_USER("userprofiles/register", Boolean.class),
-    LOGOUT("userprofiles/logout", Void.class),
+    LOGOUT("userprofiles/logout", Boolean.class),
     LOGOUT_AS_GUEST("userprofiles/logoutasguest", Boolean.class);
 
 
