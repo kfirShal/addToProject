@@ -22,6 +22,7 @@ should_skip() {
 mkdir -p "$DESTINATION_DIR"
 
 # Run mvn package
+./generate_https_certs.sh
 mvn package -DskipTests -Pproduction
 
 # Traverse each subdirectory and copy jar
