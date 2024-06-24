@@ -10,7 +10,7 @@ import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.common.requests.store.SearchRequestBuilder;
+import com.amazonas.common.requests.stores.SearchRequestBuilder;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

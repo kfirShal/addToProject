@@ -11,8 +11,8 @@ import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.common.requests.store.GlobalSearchRequest;
-import com.amazonas.common.requests.store.SearchRequest;
+import com.amazonas.common.requests.stores.GlobalSearchRequest;
+import com.amazonas.common.requests.stores.SearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

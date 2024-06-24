@@ -31,7 +31,7 @@ public class UserProfilesService {
     public String register(String json){
         Request request = Request.from(json);
         try{
-            RegisterRequest toAdd = JsonUtils.deserialize(request.payload(), RegisterRequest.class);
+            RegisterRequest toAdd = RegisterRequest.from(request.payload());
             proxy.register(toAdd.email(), toAdd.userid(), toAdd.password(), request.userId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | UserException e){
@@ -42,7 +42,7 @@ public class UserProfilesService {
     public String loginToRegistered(String json){
         Request request = Request.from(json);
         try{
-            LoginRequest toAdd = JsonUtils.deserialize(request.payload(), LoginRequest.class);
+            LoginRequest toAdd = LoginRequest.from(request.payload());
             proxy.loginToRegistered(toAdd.guestInitialId(), toAdd.userId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | UserException e){
@@ -73,7 +73,7 @@ public class UserProfilesService {
     public String addProductToCart(String json){
         Request request = Request.from(json);
         try{
-            CartRequest toAdd = JsonUtils.deserialize(request.payload(), CartRequest.class);
+            CartRequest toAdd = CartRequest.from(request.payload());
             proxy.addProductToCart(request.userId(),toAdd.storeId(), toAdd.productId(), toAdd.quantity(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
@@ -84,7 +84,7 @@ public class UserProfilesService {
     public String removeProductFromCart(String json) {
         Request request = Request.from(json);
         try {
-            CartRequest toRemove = JsonUtils.deserialize(request.payload(), CartRequest.class);
+            CartRequest toRemove = CartRequest.from(request.payload());
             proxy.removeProductFromCart(request.userId(), toRemove.storeId(), toRemove.productId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {
@@ -95,7 +95,7 @@ public class UserProfilesService {
     public String changeProductQuantity(String json) {
         Request request = Request.from(json);
         try {
-            CartRequest toChange = JsonUtils.deserialize(request.payload(), CartRequest.class);
+            CartRequest toChange = CartRequest.from(request.payload());
             proxy.changeProductQuantity(request.userId(), toChange.storeId(), toChange.productId(), toChange.quantity(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | NoPermissionException | ShoppingCartException | UserException e) {

@@ -13,7 +13,7 @@ import com.amazonas.backend.business.stores.storePositions.StoreRole;
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
-import com.amazonas.common.requests.store.SearchRequest;
+import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;

@@ -8,7 +8,7 @@ import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.requests.Request;
-import com.amazonas.common.requests.store.*;
+import com.amazonas.common.requests.stores.*;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class StoresService {
     public String searchProductsGlobally(String json) {
         Request request = Request.from(json);
         try {
-            GlobalSearchRequest toSearch = JsonUtils.deserialize(request.payload(), GlobalSearchRequest.class);
+            GlobalSearchRequest toSearch = GlobalSearchRequest.from(request.payload());
             return JsonUtils.serialize(proxy.searchProductsGlobally(toSearch, request.userId(), request.token()));
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
@@ -37,7 +37,7 @@ public class StoresService {
     public String searchProductsInStore(String json){
         Request request = Request.from(json);
         try {
-            SearchInStoreRequest toSearch = JsonUtils.deserialize(request.payload(), SearchInStoreRequest.class);
+            SearchInStoreRequest toSearch = SearchInStoreRequest.from(request.payload());
             return JsonUtils.serialize(proxy.searchProductsInStore(toSearch.storeId(), toSearch.searchRequest(), request.userId(), request.token()));
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
@@ -47,7 +47,7 @@ public class StoresService {
     public String addStore(String json) {
         Request request = Request.from(json);
         try {
-            StoreCreationRequest toAdd = JsonUtils.deserialize(request.payload(), StoreCreationRequest.class);
+            StoreCreationRequest toAdd = StoreCreationRequest.from(request.payload());
             proxy.addStore(toAdd.ownerId(), toAdd.storeName(), toAdd.description(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException  e) {
@@ -78,7 +78,7 @@ public class StoresService {
     public String addProduct(String json) {
         Request request = Request.from(json);
         try {
-            ProductRequest toAdd = JsonUtils.deserialize(request.payload(), ProductRequest.class);
+            ProductRequest toAdd = ProductRequest.from(request.payload());
             proxy.addProduct(toAdd.storeId(), toAdd.product(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -89,7 +89,7 @@ public class StoresService {
     public String updateProduct(String json) {
         Request request = Request.from(json);
         try {
-            ProductRequest toUpdate = JsonUtils.deserialize(request.payload(), ProductRequest.class);
+            ProductRequest toUpdate = ProductRequest.from(request.payload());
             proxy.updateProduct(toUpdate.storeId(), toUpdate.product(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -100,7 +100,7 @@ public class StoresService {
     public String removeProduct(String json) {
         Request request = Request.from(json);
         try {
-            ProductRequest toRemove = JsonUtils.deserialize(request.payload(), ProductRequest.class);
+            ProductRequest toRemove = ProductRequest.from(request.payload());
             proxy.removeProduct(toRemove.storeId(), toRemove.product().productId(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -111,7 +111,7 @@ public class StoresService {
     public String disableProduct(String json) {
         Request request = Request.from(json);
         try {
-            ProductRequest toDisable = JsonUtils.deserialize(request.payload(), ProductRequest.class);
+            ProductRequest toDisable = ProductRequest.from(request.payload());
             proxy.disableProduct(toDisable.storeId(), toDisable.product().productId(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -122,7 +122,7 @@ public class StoresService {
     public String enableProduct(String json) {
         Request request = Request.from(json);
         try {
-            ProductRequest toEnable = JsonUtils.deserialize(request.payload(), ProductRequest.class);
+            ProductRequest toEnable = ProductRequest.from(request.payload());
             proxy.enableProduct(toEnable.storeId(), toEnable.product().productId(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -133,7 +133,7 @@ public class StoresService {
     public String addOwner(String json) {
         Request request = Request.from(json);
         try {
-            StoreStaffRequest toAdd = JsonUtils.deserialize(request.payload(), StoreStaffRequest.class);
+            StoreStaffRequest toAdd = StoreStaffRequest.from(request.payload());
             proxy.addOwner(toAdd.sourceActor(), toAdd.storeId(), toAdd.targetActor(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -144,7 +144,7 @@ public class StoresService {
     public String addManager(String json) {
         Request request = Request.from(json);
         try {
-            StoreStaffRequest toAdd = JsonUtils.deserialize(request.payload(), StoreStaffRequest.class);
+            StoreStaffRequest toAdd = StoreStaffRequest.from(request.payload());
             proxy.addManager(toAdd.sourceActor(), toAdd.storeId(), toAdd.targetActor(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -155,7 +155,7 @@ public class StoresService {
     public String removeOwner(String json) {
         Request request = Request.from(json);
         try {
-            StoreStaffRequest toRemove = JsonUtils.deserialize(request.payload(), StoreStaffRequest.class);
+            StoreStaffRequest toRemove = StoreStaffRequest.from(request.payload());
             proxy.removeOwner(toRemove.sourceActor(), toRemove.storeId(), toRemove.targetActor(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -166,7 +166,7 @@ public class StoresService {
     public String removeManager(String json) {
         Request request = Request.from(json);
         try {
-            StoreStaffRequest toRemove = JsonUtils.deserialize(request.payload(), StoreStaffRequest.class);
+            StoreStaffRequest toRemove = StoreStaffRequest.from(request.payload());
             proxy.removeManager(toRemove.sourceActor(), toRemove.storeId(), toRemove.targetActor(), request.userId(), request.token());
             return Response.getOk();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -177,7 +177,7 @@ public class StoresService {
     public String addPermissionToManager(String json) {
         Request request = Request.from(json);
         try {
-            StorePermissionRequest toAdd = JsonUtils.deserialize(request.payload(), StorePermissionRequest.class);
+            StorePermissionRequest toAdd = StorePermissionRequest.from(request.payload());
             boolean result = proxy.addPermissionToManager(toAdd.storeId(), toAdd.targetActor(), StoreActions.valueOf(toAdd.action()), request.userId(), request.token());
             return new Response(result).toJson();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
@@ -188,7 +188,7 @@ public class StoresService {
     public String removePermissionFromManager(String json) {
         Request request = Request.from(json);
         try {
-            StorePermissionRequest toRemove = JsonUtils.deserialize(request.payload(), StorePermissionRequest.class);
+            StorePermissionRequest toRemove = StorePermissionRequest.from(request.payload());
             boolean result = proxy.removePermissionFromManager(toRemove.storeId(), toRemove.targetActor(), StoreActions.valueOf(toRemove.action()), request.userId(), request.token());
             return new Response(result).toJson();
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {

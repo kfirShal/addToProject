@@ -3,10 +3,11 @@ package com.amazonas.backend.repository;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-@Component("reservationRepository")
+@Repository("reservationRepository")
 public class ReservationRepository{
 
 

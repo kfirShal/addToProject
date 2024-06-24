@@ -42,4 +42,9 @@ public class TempConfig {
         return new ShoppingCartMongoCollection(){};
     }
 
+    @Bean
+    public NotificationMongoCollection notificationMongoCollection() {
+        return new NotificationMongoCollection(){};
+    }
+
 }

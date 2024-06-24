@@ -94,7 +94,14 @@ public class API {
     }
 
     private String forwardNotifications(String endpoint, String body) {
-        return "";
+        return switch(endpoint) {
+            case "sendnotification" -> notificationsService.sendNotification(body);
+            case "setreadvalue" -> notificationsService.setReadValue(body);
+            case "getunreadnotifications" -> notificationsService.getUnreadNotifications(body);
+            case "getnotifications" -> notificationsService.getNotifications(body);
+            case "deletenotification" -> notificationsService.deleteNotification(body);
+            default -> "Invalid endpoint";
+        };
     }
 
     private String forwardMarket(String endpoint, String body) {

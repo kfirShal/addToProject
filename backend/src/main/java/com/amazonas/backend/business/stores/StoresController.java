@@ -8,8 +8,8 @@ import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
-import com.amazonas.common.requests.store.GlobalSearchRequest;
-import com.amazonas.common.requests.store.SearchRequest;
+import com.amazonas.common.requests.stores.GlobalSearchRequest;
+import com.amazonas.common.requests.stores.SearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
