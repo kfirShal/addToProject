@@ -106,7 +106,7 @@ public class API {
 
     private String forwardMarket(String endpoint, String body) {
         return switch(endpoint) {
-            case "startmarket" -> marketService.startMarket(body);
+            case "start" -> marketService.startMarket(body);
             case "shutdown" -> marketService.shutdown(body);
             default -> "Invalid endpoint";
         };

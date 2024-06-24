@@ -8,7 +8,6 @@ import com.amazonas.common.utils.APIFetcher;
 import com.amazonas.common.utils.Response;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.google.gson.JsonSyntaxException;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.*;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.session.StandardSessionFacade;
@@ -20,7 +19,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component("appController")
 public class AppController {
@@ -48,11 +46,11 @@ public class AppController {
     // ==================================================================================== |
 
     public <T> List<T> getByEndpoint(Endpoints endpoint) throws ApplicationException {
-        return get(endpoint.location(), endpoint.clazz());
+        return get(endpoint.location(), endpoint.returnType());
     }
 
     public <T> List<T> postByEndpoint(Endpoints endpoint, Object payload) throws ApplicationException {
-        return post(endpoint.location(), endpoint.clazz(), payload);
+        return post(endpoint.location(), endpoint.returnType(), payload);
     }
 
     private <T> List<T> get(String location, Type t) throws ApplicationException {
