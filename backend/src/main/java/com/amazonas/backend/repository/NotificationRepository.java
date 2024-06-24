@@ -59,7 +59,7 @@ public class NotificationRepository extends AbstractCachingRepository<Notificati
         notifications.remove(notificationId);
     }
 
-    public boolean existsById(String receiverId) {
+    public boolean existsByReceiverId(String receiverId) {
         return notifications.values().stream()
                 .anyMatch(notification -> notification.receiverId().equals(receiverId));
     }
