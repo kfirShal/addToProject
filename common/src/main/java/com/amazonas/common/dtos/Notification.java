@@ -20,7 +20,7 @@ public class Notification {
         this.receiverId = receiverId;
     }
 
-    public String id() {
+    public String notificationId() {
         return notificationId;
     }
 
