@@ -34,6 +34,9 @@ public abstract class BaseLayout extends AppLayout {
 
     protected final VerticalLayout content;
     private final AppController appController;
+    protected SideNav nav1;
+    protected SideNav nav2;
+    protected String user;
 
     public BaseLayout(AppController appController) {
         this.appController = appController;
@@ -44,13 +47,13 @@ public abstract class BaseLayout extends AppLayout {
             appController.addSession();
         }
 
-        SideNav nav1 = new SideNav();
+        nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
         nav1.addItem(new SideNavItem("example1", Example1View.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("example2", Example2View.class, VaadinIcon.FAMILY.create()));
 
-        SideNav nav2 = new SideNav();
-        nav2.setLabel("Example Header");
+        nav2 = new SideNav();
+        nav2.setLabel("------------------");
         nav2.addItem(new SideNavItem("example3", Example3View.class, VaadinIcon.TROPHY.create()));
         nav2.addItem(new SideNavItem("example4", Example4View.class, VaadinIcon.NURSE.create()));
 
@@ -79,6 +82,13 @@ public abstract class BaseLayout extends AppLayout {
         } else {
             H4 username = new H4("Hello, " + getCurrentUserId());
             username.getStyle().set("margin-left", "65%");
+
+            // Profile button with an icon and text "Profile", click on it should open the page with user profile
+            Button profileButton = new Button("Profile", new Icon(VaadinIcon.USER), event -> {
+                UI.getCurrent().navigate("Profile");
+            });
+            profileButton.getStyle().set("margin-left", "10px");
+
             Button logoutButton = new Button("Logout", event -> {
                 if(appController.logout()){
                     clearSession();
@@ -88,16 +98,26 @@ public abstract class BaseLayout extends AppLayout {
                     showNotification("Logout failed");
                 }
             });
-            logoutButton.getStyle().set("margin-left", "50px");
-            addToNavbar(username, logoutButton);
+            logoutButton.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+            logoutButton.getStyle().set("margin-left", "10px");
+
+            addToNavbar(username, profileButton, logoutButton);
         }
 
         // set up guest user if needed
         if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
             if (! appController.enterAsGuest()) {
-                openErrorDialog("Failed to connect to server", AppController::clearSession);
+                appController.enterAsGuest();
+                //openErrorDialog("Failed to connect to server", AppController::clearSession);
             }
         }
+    }
+
+    public void returnToMainIfNotLogged(){
+//        if (!isUserLoggedIn()) {
+//            UI.getCurrent().navigate("");
+//            return;
+//        }
     }
 
     protected void openLoginDialog() {
@@ -117,6 +137,7 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             if (appController.login(username, password)) {
+                this.user = username;
                 showNotification("Login successful");
                 UI.getCurrent().getPage().reload();
             } else {
@@ -136,6 +157,10 @@ public abstract class BaseLayout extends AppLayout {
         content.add(dialog);
         dialog.open();
 
+    }
+
+    public String getName() {
+        return user;
     }
 
     protected void openRegisterDialog(){
