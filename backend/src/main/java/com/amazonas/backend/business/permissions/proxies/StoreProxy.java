@@ -1,7 +1,6 @@
 package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
-import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.permissions.actions.MarketActions;
 import com.amazonas.backend.business.permissions.actions.StoreActions;
@@ -11,11 +10,13 @@ import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.stores.GlobalSearchRequest;
 import com.amazonas.common.requests.stores.SearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("storeProxy")
 public class StoreProxy extends ControllerProxy {
@@ -73,6 +74,18 @@ public class StoreProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.ENABLE_PRODUCT);
         real.enableProduct(storeId, productId);
+    }
+
+    public void setProductQuantity(String storeId, String productId, Integer quantity, String userId, String token) throws NoPermissionException, AuthenticationFailedException, StoreException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.SET_PRODUCT_QUANTITY);
+        real.setProductQuantity(storeId, productId, quantity);
+    }
+
+    public Set<Product> getStoreProducts(String storeId, String userId, String token) throws StoreException, NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.VIEW_STORES);
+        return real.getStoreProducts(storeId);
     }
 
     public void addOwner(String logged, String storeId, String username, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {

@@ -30,10 +30,7 @@ public class StoreCallbackFactory {
     }
 
     public Function<Reservation,Boolean> cancelReservation(String storeId){
-        return reservation ->{
-            storeRepository.getStore(storeId).cancelReservation(reservation);
-            return null;
-        };
+        return reservation ->storeRepository.getStore(storeId).cancelReservation(reservation);
     }
 
 }

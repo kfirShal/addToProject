@@ -89,6 +89,8 @@ public class API {
             case "removepermissionfrommanager" -> storesService.removePermissionFromManager(body);
             case "getstorerolesinformation" -> storesService.getStoreRolesInformation(body);
             case "getstoretransactionhistory" -> storesService.getStoreTransactionHistory(body);
+            case "setproductquantity" -> storesService.setProductQuantity(body);
+            case "getstoreproducts" -> storesService.getStoreProducts(body);
             default -> "Invalid endpoint";
         };
     }

@@ -1,4 +1,4 @@
-package com.amazonas.backend.acceptanceTests;
+package com.amazonas.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.inventory.ProductInventory;

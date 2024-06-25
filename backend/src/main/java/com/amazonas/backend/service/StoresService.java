@@ -130,6 +130,27 @@ public class StoresService {
         }
     }
 
+    public String setProductQuantity(String json) {
+        Request request = Request.from(json);
+        try {
+            ProductRequest toSet = ProductRequest.from(request.payload());
+            proxy.setProductQuantity(toSet.storeId(), toSet.product().productId(), toSet.quantity(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String getStoreProducts(String json) {
+        Request request = Request.from(json);
+        try {
+            String storeId = request.payload();
+            return JsonUtils.serialize(proxy.getStoreProducts(storeId, request.userId(), request.token()));
+        } catch (NoPermissionException | AuthenticationFailedException | StoreException e) {
+            return Response.getError(e);
+        }
+    }
+
     public String addOwner(String json) {
         Request request = Request.from(json);
         try {

@@ -100,7 +100,7 @@ public class ProductInventory {
 
     public Set<Product> getAllAvailableProducts(){
         return idToProduct.values().stream()
-                .filter(product -> !disabledProductsId.contains(product)
+                .filter(product -> !disabledProductsId.contains(product.productId())
                                     && idToQuantity.get(product.productId()) > 0)
                 .collect(Collectors.toSet());
     }
