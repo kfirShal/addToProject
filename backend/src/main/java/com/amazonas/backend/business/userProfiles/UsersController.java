@@ -2,15 +2,18 @@ package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.UserCredentials;
-import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.common.dtos.Product;
+import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
+import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +29,17 @@ import java.util.regex.Pattern;
 @Component("usersController")
 public class UsersController {
     private static final Logger log = LoggerFactory.getLogger(UsersController.class);
+    private final PaymentService paymentService;
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final TransactionRepository transactionRepository;
     private final ShoppingCartRepository shoppingCartRepository;
-    private final PaymentService paymentService;
-    private final ShoppingCartFactory shoppingCartFactory;
+    private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
+    private final ShoppingCartFactory shoppingCartFactory;
     private final AuthenticationController authenticationController;
     private final PermissionsController permissionsController;
+    private final NotificationController notificationController;
 
     private final Map<String, ShoppingCart> guestCarts;
     private final Map<String,Guest> guests;
@@ -50,7 +55,7 @@ public class UsersController {
                            ShoppingCartFactory shoppingCartFactory,
                            AuthenticationController authenticationController,
                            ShoppingCartRepository shoppingCartRepository,
-                           PermissionsController permissionsController) {
+                           PermissionsController permissionsController, NotificationController notificationController, StoreRepository storeRepository) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;
@@ -65,6 +70,8 @@ public class UsersController {
         onlineRegisteredUsers = new HashMap<>();
         guestCarts = new HashMap<>();
         lock = new ReadWriteLock();
+        this.notificationController = notificationController;
+        this.storeRepository = storeRepository;
     }
 
     //generate admin user
@@ -293,8 +300,21 @@ public class UsersController {
                 Transaction t = reservationToTransaction(userId, reservation, transactionTime);
                 transactionRepository.addNewTransaction(t);
 
+                // send notifications to owners of the store
+                Store store = storeRepository.getStore(reservation.storeId());
+                store.getOwners().forEach(ownerId -> {
+                    try {
+                        notificationController.sendNotification("Transaction "+t.transactionId(),
+                                "New transaction in your store: "+store.getStoreName(),
+                                "System",
+                                ownerId);
+                    } catch (NotificationException e) {
+                        log.error("Failed to send transaction notification to owner with id: {} in store {}", ownerId, store.getStoreName());
+                    }
+                });
+
             }
-            log.debug("Document the transactions successfully");
+            log.debug("Documented the transactions successfully");
 
             // give the user a new empty cart
             shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));

@@ -358,7 +358,12 @@ public class Store {
         return appointmentSystem.getAllRoles();
     }
 
-//    public void notifyOwners()
+    public List<String> getOwners(){
+        return getRolesInformation().stream()
+                .filter(storePosition -> storePosition.role() == StoreRole.STORE_OWNER)
+                .map(StorePosition::userId)
+                .toList();
+    }
 
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
