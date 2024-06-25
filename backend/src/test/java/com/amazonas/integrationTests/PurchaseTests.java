@@ -5,20 +5,28 @@ import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.shipping.ShippingService;
+import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
+import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
+import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.backend.business.transactions.TransactionState;
 import com.amazonas.backend.business.userProfiles.*;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.repository.*;
+import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +40,7 @@ public class PurchaseTests {
     private static final String STORE_ID = "storeId";
     private static final String USER_ID = "userId";
     private static final String PRODUCT_ID = "productId";
+    private static final String SHIPPING_SERVICE_ID = "serviceId";
     // ================================================= |
 
     // ===================== Mocks ===================== |
@@ -60,6 +69,8 @@ public class PurchaseTests {
     private ShoppingCart shoppingCart;
     private Product product;
     private User user;
+    private ShippingServiceController shippingServiceController;
+    private ShippingService shippingService;
     // ================================================= |
 
     @BeforeEach
@@ -113,6 +124,11 @@ public class PurchaseTests {
                 notificationController,
                 storeRepository);
 
+        // ========= ShippingServiceController setup ========= |
+        shippingService = mock(ShippingService.class);
+        shippingServiceController = new ShippingServiceController(storeRepository);
+        shippingServiceController.addShippingService(SHIPPING_SERVICE_ID, shippingService);
+
         // ============= Entities setup ============= |
         shoppingCart = new ShoppingCart(storeBasketFactory, USER_ID);
         product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS);
@@ -143,7 +159,7 @@ public class PurchaseTests {
         assertEquals(5, basket.getProducts().get(PRODUCT_ID));
         // check that the store basket was reserved
         assertTrue(basket.isReserved());
-        // check that the product quantity was reserved
+        // check that the product quantity has changed
         assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
         // check that the reservation was saved
         verify(reservationRepository,times(1)).saveReservation(any(),any());
@@ -191,6 +207,57 @@ public class PurchaseTests {
         assertFalse(basket.isReserved());
         // check that no reservations were saved
         verify(reservationRepository, times(0)).saveReservation(any(),any());
+    }
+
+    @Test
+    public void testShippingFails(){
+        // ================== Test setup ================== |
+        when(paymentService.charge(any(),any())).thenReturn(true); // payment will succeed
+        when(shippingService.ship(any())).thenReturn(false); // shipping will fail
+        assertDoesNotThrow(()->store.addProduct(product));
+        assertDoesNotThrow(()->store.setProductQuantity(PRODUCT_ID, 10));
+        assertDoesNotThrow(()->usersController.addProductToCart(USER_ID, STORE_ID, PRODUCT_ID, 5));
+        Map<String,StoreBasket> baskets = getField(shoppingCart, "baskets");
+        StoreBasket basket = baskets.get(STORE_ID);
+        // check that the basket was created
+        assertNotNull(basket);
+        // start the purchase
+        assertDoesNotThrow(()->usersController.startPurchase(USER_ID));
+        // check that the product is in the basket
+        assertEquals(5, basket.getProducts().get(PRODUCT_ID));
+        // check that the store basket was reserved
+        assertTrue(basket.isReserved());
+        // check that the product quantity has changed
+        assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
+        // check that the reservation was saved
+        verify(reservationRepository,times(1)).saveReservation(any(),any());
+        // pay for the purchase
+        assertDoesNotThrow(()->usersController.payForPurchase(USER_ID));
+        // check that the payment was attempted
+        verify(paymentService,times(1)).charge(any(),any());
+        // check that a transaction was created
+        verify(transactionRepository,times(1)).addNewTransaction(any());
+        // check that the shopping cart was reset
+        verify(shoppingCartRepository,times(1)).saveCart(any());
+        // get a transaction
+        Reservation reservation = reservationRepository.getReservations(USER_ID).getFirst();
+        Method reservationToTransaction =  assertDoesNotThrow (()->UsersController.class.getDeclaredMethod("reservationToTransaction",String.class, Reservation.class, LocalDateTime.class));
+        reservationToTransaction.setAccessible(true);
+        Transaction transaction = (Transaction) assertDoesNotThrow(()->reservationToTransaction.invoke(usersController, USER_ID, reservation, LocalDateTime.now()));
+
+        // ================== Test execution ================== |
+        ShipmentRequest request = new ShipmentRequest(transaction, SHIPPING_SERVICE_ID);
+        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(request)));
+
+        // ================== Test verification ================== |
+        // check that the shipping was attempted
+        verify(shippingService,times(1)).ship(any());
+        // check that the transaction was not updated
+        verify(transactionRepository,times(0)).updateTransaction(any());
+        // check that the transaction is not marked as shipped
+        assertEquals(transaction.state(), TransactionState.PENDING_SHIPMENT);
+        // check that the product quantity was not updated
+        assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
     }
 
 

@@ -7,6 +7,7 @@ import com.amazonas.backend.business.payment.*;
 import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.UserCredentialsRepository;
 import com.amazonas.backend.business.market.MarketInitializer;
 import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
@@ -27,13 +28,15 @@ public class SystemAcceptanceTests {
     private MarketInitializer marketInitializer;
     private UserCredentialsRepository repository;
     private CreditCard creditCard;
+    private StoreRepository storeRepository;
 
     @BeforeEach
     public void setUp() {
+        storeRepository = mock(StoreRepository.class);
         repository = mock(UserCredentialsRepository.class);
         authController = new AuthenticationController(repository); // Pass password encoder to controller
         paymentController = new PaymentServiceController();
-        shippingController = new ShippingServiceController();
+        shippingController = new ShippingServiceController(storeRepository);
         marketInitializer = new MarketInitializer(shippingController, paymentController);
         creditCard = new CreditCard();
     }
@@ -231,7 +234,7 @@ public class SystemAcceptanceTests {
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
         ShipmentRequest request = new ShipmentRequest(transaction, "shippingService1");
         ShippingService shippingService = mock(ShippingService.class);
-        ShippingServiceController shippingController = new ShippingServiceController();
+        ShippingServiceController shippingController = new ShippingServiceController(storeRepository);
 
         when(shippingService.ship(transaction)).thenThrow(new RuntimeException("Invalid address"));
 
@@ -254,7 +257,8 @@ public class SystemAcceptanceTests {
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
         ShipmentRequest request = new ShipmentRequest(transaction, "shippingService1");
         ShippingService shippingService = mock(ShippingService.class);
-        ShippingServiceController shippingController = new ShippingServiceController();
+
+        ShippingServiceController shippingController = new ShippingServiceController(storeRepository);
 
         when(shippingService.ship(transaction)).thenThrow(new RuntimeException("Invalid address"));
 
