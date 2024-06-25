@@ -69,7 +69,7 @@ public enum Endpoints {
     private final String location;
     private final Class<?> returnType;
 
-    <T> Endpoints(String location, Class<T> returnType) {
+    Endpoints(String location, Class<?> returnType) {
         this.location = location;
         this.returnType = returnType;
     }
@@ -78,7 +78,8 @@ public enum Endpoints {
         return location;
     }
     
-    public Class<?> returnType() {
-        return returnType;
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> returnType() {
+        return (Class<T>) returnType;
     }
 }

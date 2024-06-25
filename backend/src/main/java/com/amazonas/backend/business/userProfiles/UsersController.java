@@ -41,7 +41,6 @@ public class UsersController {
     private final Map<String,User> onlineRegisteredUsers;
 
     private final ReadWriteLock lock;
-    private String guestInitialId;
 
     public UsersController(UserRepository userRepository,
                            ReservationRepository reservationRepository,
@@ -115,7 +114,7 @@ public class UsersController {
 
     public String enterAsGuest() {
         try{
-            guestInitialId = UUID.randomUUID().toString();
+            String guestInitialId = UUID.randomUUID().toString();
             Guest newGuest = new Guest(guestInitialId);
 
             lock.acquireWrite();
