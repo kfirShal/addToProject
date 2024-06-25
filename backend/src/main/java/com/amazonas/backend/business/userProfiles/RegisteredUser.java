@@ -9,7 +9,6 @@ public class RegisteredUser extends User{
     public RegisteredUser(String userId, String email){
         super(userId);
         this.email = email;
-
     }
 
     @Override

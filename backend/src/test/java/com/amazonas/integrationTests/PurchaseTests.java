@@ -11,6 +11,7 @@ import com.amazonas.backend.business.stores.reservations.PendingReservationMonit
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.userProfiles.*;
+import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
@@ -18,11 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class PurchaseTests {
@@ -36,7 +37,6 @@ public class PurchaseTests {
     // ===================== Mocks ===================== |
     private UserRepository userRepository;
     private AuthenticationController authenticationController;
-    private ReservationRepository reservationRepository;
     private ShoppingCartRepository shoppingCartRepository;
     private ProductRepository productRepository;
     private PaymentService paymentService;
@@ -50,6 +50,7 @@ public class PurchaseTests {
     // ================================================= |
 
     // ================== Real instances =============== |
+    private ReservationRepository reservationRepository;
     private StoreCallbackFactory storeCallbackFactory;
     private StoreBasketFactory storeBasketFactory;
     private ShoppingCartFactory shoppingCartFactory;
@@ -57,8 +58,8 @@ public class PurchaseTests {
     private ProductInventory inventory;
     private UsersController usersController;
     private ShoppingCart shoppingCart;
-    private StoreBasket basket;
     private Product product;
+    private User user;
     // ================================================= |
 
     @BeforeEach
@@ -69,9 +70,12 @@ public class PurchaseTests {
         appointmentSystem = mock(AppointmentSystem.class);
         pendingReservationMonitor = mock(PendingReservationMonitor.class);
         permissionsController = mock(PermissionsController.class);
-        reservationFactory = mock(ReservationFactory.class);
         transactionRepository = mock(TransactionRepository.class);
+        shoppingCartRepository = mock(ShoppingCartRepository.class);
+        storeRepository = mock(StoreRepository.class);
         // Real instances
+        storeCallbackFactory = new StoreCallbackFactory(storeRepository);
+        reservationFactory = new ReservationFactory(storeCallbackFactory, shoppingCartRepository);
         inventory = new ProductInventory();
         store = new Store(
                 "storeId",
@@ -90,13 +94,10 @@ public class PurchaseTests {
         userRepository = mock(UserRepository.class);
         productRepository = mock(ProductRepository.class);
         authenticationController = mock(AuthenticationController.class);
-        storeRepository = mock(StoreRepository.class);
         paymentService = mock(PaymentService.class);
-        reservationRepository = mock(ReservationRepository.class);
-        shoppingCartRepository = mock(ShoppingCartRepository.class);
         notificationController = mock(NotificationController.class);
         // real instances
-        storeCallbackFactory = new StoreCallbackFactory(storeRepository);
+        reservationRepository = spy(new ReservationRepository());
         storeBasketFactory = new StoreBasketFactory(storeCallbackFactory);
         shoppingCartFactory = new ShoppingCartFactory(storeBasketFactory);
         usersController = new UsersController(
@@ -115,37 +116,81 @@ public class PurchaseTests {
         // ============= Entities setup ============= |
         shoppingCart = new ShoppingCart(storeBasketFactory, USER_ID);
         product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS);
+        user = new RegisteredUser(USER_ID, "email@email.com");
 
         // ============== Mocks configuration ============== |
         when(storeRepository.getStore(STORE_ID)).thenReturn(store);
         when(shoppingCartRepository.getCart(USER_ID)).thenReturn(shoppingCart);
         when(productRepository.getProduct(PRODUCT_ID)).thenReturn(product);
+        when(userRepository.getUser(USER_ID)).thenReturn(user);
 
     }
 
     @Test
     public void testPurchaseFailsDueToRejectedPayment(){
         // ================== Test setup ================== |
-        // make payment fail
-        when(paymentService.charge(any(),any())).thenReturn(false);
-        // add product to inventory to be able to add it to the cart
-        assertDoesNotThrow(()->inventory.addProduct(product));
-        assertDoesNotThrow(()->store.updateProduct(product));
+        when(paymentService.charge(any(),any())).thenReturn(false); // payment will fail
+        assertDoesNotThrow(()->store.addProduct(product));
+        assertDoesNotThrow(()->store.setProductQuantity(PRODUCT_ID, 10));
+        assertDoesNotThrow(()->usersController.addProductToCart(USER_ID, STORE_ID, PRODUCT_ID, 5));
+        Map<String,StoreBasket> baskets = getField(shoppingCart, "baskets");
+        StoreBasket basket = baskets.get(STORE_ID);
+        // check that the basket was created
+        assertNotNull(basket);
+        // start the purchase
+        assertDoesNotThrow(()->usersController.startPurchase(USER_ID));
+        // check that the product is in the basket
+        assertEquals(5, basket.getProducts().get(PRODUCT_ID));
+        // check that the store basket was reserved
+        assertTrue(basket.isReserved());
+        // check that the product quantity was reserved
+        assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
+        // check that the reservation was saved
+        verify(reservationRepository,times(1)).saveReservation(any(),any());
 
+        // ================== Test execution ================== |
+        assertThrows(PurchaseFailedException.class, ()-> usersController.payForPurchase(USER_ID));
 
+        // ================== Test verification ================== |
+        // check that the payment was attempted
+        verify(paymentService,times(1)).charge(any(),any());
+        // check that the product remained in the basket
+        assertEquals(5, basket.getProducts().get(PRODUCT_ID));
+        // check that the transaction was not created
+        verify(transactionRepository,times(0)).addNewTransaction(any());
+        // check that the notification was not sent
+        assertDoesNotThrow(()-> verify(notificationController, times(0)).sendNotification(any(),any(),any(),any()));
+        // check that the cart was not reset
+        verify(shoppingCartRepository,times(0)).saveCart(any());
+        // check that the product quantity returned to the initial value
+        assertEquals(10, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
+        // check that the store basket reservation flag was reset
+        assertFalse(basket.isReserved());
+    }
 
+    @Test
+    public void testPurchaseFailsDueToInsufficientStock(){
+        // ================== Test setup ================== |
+        when(paymentService.charge(any(),any())).thenReturn(false); // payment will fail
+        assertDoesNotThrow(()->store.addProduct(product));
+        assertDoesNotThrow(()->store.setProductQuantity(PRODUCT_ID, 3));
+        assertDoesNotThrow(()->usersController.addProductToCart(USER_ID, STORE_ID, PRODUCT_ID, 5));
+        Map<String,StoreBasket> baskets = getField(shoppingCart, "baskets");
+        StoreBasket basket = baskets.get(STORE_ID);
+        assertNotNull(basket); // check that the basket was created
 
+        // ================== Test execution ================== |
+        assertThrows(PurchaseFailedException.class, ()->usersController.startPurchase(USER_ID));
 
-
-
-
-
-
-
-
-
-        // Test execution
-
+        // ================== Test verification ================== |
+        // check that the product remained in the basket
+        assertEquals(5, basket.getProducts().get(PRODUCT_ID));
+        // check that the product quantity was not updated
+        assertEquals(3, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));
+        // check that the store basket was not reserved
+        assertFalse(basket.isReserved());
+        // check that no reservations were saved
+        verify(reservationRepository, times(0)).saveReservation(any(),any());
     }
 
 

@@ -2,7 +2,6 @@ package com.amazonas.backend.repository;
 
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.common.utils.ReadWriteLock;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -41,6 +40,9 @@ public class ReservationRepository{
         reservationLock.acquireWrite();
         try {
             reservationCache.getOrDefault(userId, Collections.emptyList()).remove(reservation);
+            if(reservationCache.get(userId).isEmpty()){
+                reservationCache.remove(userId);
+            }
         } finally {
             reservationLock.releaseWrite();
         }
