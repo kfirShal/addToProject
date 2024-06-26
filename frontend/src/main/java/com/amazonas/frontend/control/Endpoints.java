@@ -26,7 +26,6 @@ public enum Endpoints {
 
     // External Services Endpoints
     SEND_SHIPMENT("external/sendshipment", Void.class),
-    PROCESS_PAYMENT("external/processpayment", Void.class),
     ADD_SHIPPING_SERVICE("external/addshippingservice", Void.class),
     REMOVE_SHIPPING_SERVICE("external/removeshippingservice", Void.class),
     UPDATE_SHIPPING_SERVICE("external/updateshippingservice", Void.class),

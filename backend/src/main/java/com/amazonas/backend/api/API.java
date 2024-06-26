@@ -117,7 +117,6 @@ public class API {
     private String forwardExternal(String endpoint, String body) {
         return switch (endpoint) {
             case "sendshipment" -> externalServicesService.sendShipment(body);
-            case "processpayment" -> externalServicesService.processPayment(body);
             case "addshippingservice" -> externalServicesService.addShippingService(body);
             case "removeshippingservice" -> externalServicesService.removeShippingService(body);
             case "updateshippingservice" -> externalServicesService.updateShippingService(body);

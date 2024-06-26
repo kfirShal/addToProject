@@ -15,8 +15,9 @@ public enum StoreActions {
     OPEN_STORE,
     UPDATE_STORE_INFORMATION,
     VIEW_STORE_TRANSACTIONS,
+    SEND_SHIPMENT,
 
-    // permissions management
+    // permissions management,
     ADD_OWNER,
     REMOVE_OWNER,
     ADD_MANAGER,

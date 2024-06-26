@@ -307,12 +307,12 @@ public class UsersController {
                 Store store = storeRepository.getStore(reservation.storeId());
                 store.getOwners().forEach(ownerId -> {
                     try {
-                        notificationController.sendNotification("New transaction in your store: "+store.getStoreName(),
+                        notificationController.sendNotification("New transactionId in your store: "+store.getStoreName(),
                                 "Transaction id: "+t.transactionId(),
                                 "Amazonas",
                                 ownerId);
                     } catch (NotificationException e) {
-                        log.error("Failed to send transaction notification to owner with id: {} in store {}", ownerId, store.getStoreName());
+                        log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.getStoreName());
                     }
                 });
 
