@@ -31,8 +31,8 @@ public class PermissionsController {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
         this.adminProfile = adminPermissionsProfile;
-        lock = new ReadWriteLock();
         this.repository = permissionsProfileRepository;
+        lock = new ReadWriteLock();
     }
     
     public boolean addPermission(String userId, UserActions action) {
@@ -110,6 +110,11 @@ public class PermissionsController {
         registerUser(userId,guestProfile, "Guest already registered");
     }
 
+    public void registerAdmin(String userId) {
+        log.debug("Registering admin {}", userId);
+        registerUser(userId, adminProfile, "Admin already registered");
+    }
+
     public void removeUser(String userId) {
         log.debug("Removing user {}", userId);
         removeUser(userId, "User not registered");
@@ -120,6 +125,12 @@ public class PermissionsController {
         log.debug("Removing guest {}", userId);
         removeUser(userId, "Guest not registered");
         log.debug("Guest removed successfully");
+    }
+
+    public void removeAdmin(String userId) {
+        log.debug("Removing admin {}", userId);
+        removeUser(userId, "Admin not registered");
+        log.debug("Admin removed successfully");
     }
 
     private void registerUser(String userId, PermissionsProfile profile , String failMessage) {

@@ -26,6 +26,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.amazonas.backend.business.authentication.AuthenticationController.generatePassword;
+
 @Component("usersController")
 public class UsersController {
     private static final Logger log = LoggerFactory.getLogger(UsersController.class);
@@ -83,6 +85,7 @@ public class UsersController {
             String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
             register(adminEmail, adminId, adminPassword);
+            permissionsController.registerAdmin(adminId);
         } catch (UserException e) {
             log.error("Failed to generate admin user");
             throw new RuntimeException("Failed to generate admin user");
@@ -392,19 +395,6 @@ public class UsersController {
         return matcher.matches();
     }
 
-    private String generatePassword(){
-        Random rand = new Random();
-        List<Character> chars = new ArrayList<>(32);
-        String specialChars = "!@#$%^&*()\\-=\\[\\]{};':\"<>?|";
-        for(int i = 0; i < 8; i++){
-            chars.add(specialChars.charAt(rand.nextInt(specialChars.length())));
-            chars.add((char)rand.nextInt('a','z'));
-            chars.add((char)rand.nextInt('A','Z'));
-            chars.add((char)rand.nextInt('0','9'));
-        }
-        Collections.shuffle(chars);
-        return chars.stream().map(String::valueOf).reduce("",String::concat);
-    }
     // =============================================================================== |
     // ================================ GETTERS ====================================== |
     // =============================================================================== |

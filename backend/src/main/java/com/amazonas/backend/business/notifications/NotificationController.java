@@ -63,7 +63,7 @@ public class NotificationController {
 
     private void validateUserExists(String receiverId) throws NotificationException {
         if(! repo.existsByReceiverId(receiverId)){
-            throw new NotificationException("ReceiverId does not exist.");
+            throw new NotificationException("User does not exist.");
         }
     }
 }

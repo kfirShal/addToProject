@@ -7,8 +7,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -272,16 +270,14 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
         return Pair.of(parts[0],parts[1]);
     }
 
-    private String generatePassword(){
+    public static String generatePassword(){
         Random rand = new Random();
-        List<Character> chars = new ArrayList<>(20);
-        for(int i = 0; i < 10; i++){
+        List<Character> chars = new ArrayList<>(32);
+        String specialChars = "!@#$%^&*()\\-=\\[\\]{};':\"<>?|";
+        for(int i = 0; i < 8; i++){
+            chars.add(specialChars.charAt(rand.nextInt(specialChars.length())));
             chars.add((char)rand.nextInt('a','z'));
-        }
-        for(int i = 0; i < 5; i++){
             chars.add((char)rand.nextInt('A','Z'));
-        }
-        for(int i = 0; i < 5; i++){
             chars.add((char)rand.nextInt('0','9'));
         }
         Collections.shuffle(chars);
