@@ -147,6 +147,7 @@ public class AppController {
     }
 
     public boolean login(String userId, String password) {
+        userId = userId.toLowerCase();
         if (isUserLoggedIn()) {
             return false;
         }
