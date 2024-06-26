@@ -45,6 +45,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     }
 
     public AuthenticationResponse authenticateGuest(String userid){
+        userid = userid.toLowerCase();
         log.debug("Generating token for guest user {}", userid);
         if(!userExists(userid)){
             log.debug("User {} already exists", userid);
@@ -54,12 +55,14 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     }
 
     public AuthenticationResponse authenticateUser(String userId, String password) {
+        userId = userId.toLowerCase();
         log.debug("Authenticating user {}", userId);
         boolean answer = authenticate(userId, password);
         return new AuthenticationResponse(answer, answer ? getToken(userId) : null);
     }
 
     public boolean revokeAuthentication(String userId) {
+        userId = userId.toLowerCase();
         log.debug("Revoking authentication for user {}", userId);
         lock.acquireWrite();
         String uuid = userIdToUUID.remove(userId);
@@ -68,6 +71,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     }
 
     public boolean validateTokenOwnership(String userId, String token) {
+        userId = userId.toLowerCase();
         log.debug("Validating token ownership for user {}", userId);
         boolean answer;
         try{
@@ -121,7 +125,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         UserDetails userDetails = loadUserByUsername(authentication.getName());
         String credentials = (String) authentication.getCredentials();
-        if(authenticate(userDetails.getUsername(),credentials)) {
+        if(authenticate(userDetails.getUsername().toLowerCase(),credentials)) {
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         } else {
             throw new AccessDeniedException("Bad credentials");
@@ -129,6 +133,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     }
 
     public void createGuest(String userId){
+        userId = userId.toLowerCase();
         if(userExists(userId)){
             throw new AccessDeniedException("userId already exists");
         }
@@ -139,6 +144,7 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
     }
 
     public void removeGuest(String userId){
+        userId = userId.toLowerCase();
         if(!userExists(userId)){
             throw new UsernameNotFoundException("userId not found");
         }
@@ -151,27 +157,30 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     @Override
     public void createUser(UserDetails user) {
-        if(userExists(user.getUsername())){
+        String username = user.getUsername().toLowerCase();
+        if(userExists(username)){
             throw new AccessDeniedException("user already exists");
         }
 
-        log.debug("Adding user credentials for user {}", user.getUsername());
+        log.debug("Adding user credentials for user {}", username);
         String hashedPassword = encoder.encode(user.getPassword());
-        repository.saveHashedPassword(user.getUsername(),hashedPassword);
+        repository.saveHashedPassword(username,hashedPassword);
     }
 
     @Override
     public void updateUser(UserDetails user) {
-        if(!userExists(user.getUsername())){
+        String username = user.getUsername().toLowerCase();
+        if(!userExists(username)){
             throw new UsernameNotFoundException("User not found");
         }
 
         String hashedPassword = encoder.encode(user.getPassword());
-        repository.saveHashedPassword(user.getUsername(),hashedPassword);
+        repository.saveHashedPassword(username,hashedPassword);
     }
 
     @Override
     public void deleteUser(String username) {
+        username = username.toLowerCase();
         if(!userExists(username)){
             throw new UsernameNotFoundException("User not found");
         }
@@ -199,11 +208,12 @@ public class AuthenticationController implements UserDetailsManager, Authenticat
 
     @Override
     public boolean userExists(String username) {
-        return repository.existsById(username);
+        return repository.existsById(username.toLowerCase());
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        username = username.toLowerCase();
         if(!userExists(username)) {
             throw new UsernameNotFoundException("User not found");
         }
