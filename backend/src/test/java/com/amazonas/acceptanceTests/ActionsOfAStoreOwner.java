@@ -1,7 +1,8 @@
-package com.amazonas.backend.acceptanceTests;
+package com.amazonas.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.inventory.ProductInventory;
+import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.permissions.actions.StoreActions;
@@ -56,6 +57,7 @@ public class ActionsOfAStoreOwner {
     private UserRepository userRepository;
     private AuthenticationController authenticationController;
     private StoreProxy storeProxy;
+    private NotificationController notificationController;
 
     public ActionsOfAStoreOwner(StoreMongoCollection storeMongo){
         storeRepository = new StoreRepository(storeMongo);
@@ -82,7 +84,9 @@ public class ActionsOfAStoreOwner {
                 shoppingCartFactory,
                 authenticationController,
                 shoppingCartRepository,
-                permissionsController
+                permissionsController,
+                notificationController,
+                storeRepository
         );
     }
 

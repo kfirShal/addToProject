@@ -89,6 +89,8 @@ public class API {
             case "removepermissionfrommanager" -> storesService.removePermissionFromManager(body);
             case "getstorerolesinformation" -> storesService.getStoreRolesInformation(body);
             case "getstoretransactionhistory" -> storesService.getStoreTransactionHistory(body);
+            case "setproductquantity" -> storesService.setProductQuantity(body);
+            case "getstoreproducts" -> storesService.getStoreProducts(body);
             default -> "Invalid endpoint";
         };
     }
@@ -115,7 +117,6 @@ public class API {
     private String forwardExternal(String endpoint, String body) {
         return switch (endpoint) {
             case "sendshipment" -> externalServicesService.sendShipment(body);
-            case "processpayment" -> externalServicesService.processPayment(body);
             case "addshippingservice" -> externalServicesService.addShippingService(body);
             case "removeshippingservice" -> externalServicesService.removeShippingService(body);
             case "updateshippingservice" -> externalServicesService.updateShippingService(body);

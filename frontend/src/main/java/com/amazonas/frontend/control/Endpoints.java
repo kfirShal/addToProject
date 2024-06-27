@@ -26,7 +26,6 @@ public enum Endpoints {
 
     // External Services Endpoints
     SEND_SHIPMENT("external/sendshipment", Void.class),
-    PROCESS_PAYMENT("external/processpayment", Void.class),
     ADD_SHIPPING_SERVICE("external/addshippingservice", Void.class),
     REMOVE_SHIPPING_SERVICE("external/removeshippingservice", Void.class),
     UPDATE_SHIPPING_SERVICE("external/updateshippingservice", Void.class),
@@ -63,13 +62,14 @@ public enum Endpoints {
     ADD_PERMISSION_TO_MANAGER("stores/addpermissiontomanager", Void.class),
     REMOVE_PERMISSION_FROM_MANAGER("stores/removepermissionfrommanager", Void.class),
     GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
-    GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class);
-
+    GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
+    SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
+    GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class);
 
     private final String location;
     private final Class<?> returnType;
 
-    <T> Endpoints(String location, Class<T> returnType) {
+    Endpoints(String location, Class<?> returnType) {
         this.location = location;
         this.returnType = returnType;
     }
@@ -78,7 +78,8 @@ public enum Endpoints {
         return location;
     }
     
-    public Class<?> returnType() {
-        return returnType;
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> returnType() {
+        return (Class<T>) returnType;
     }
 }

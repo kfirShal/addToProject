@@ -2,15 +2,18 @@ package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.UserCredentials;
-import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.common.dtos.Product;
+import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
+import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,25 +26,28 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.amazonas.backend.business.authentication.AuthenticationController.generatePassword;
+
 @Component("usersController")
 public class UsersController {
     private static final Logger log = LoggerFactory.getLogger(UsersController.class);
+    private final PaymentService paymentService;
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final TransactionRepository transactionRepository;
     private final ShoppingCartRepository shoppingCartRepository;
-    private final PaymentService paymentService;
-    private final ShoppingCartFactory shoppingCartFactory;
+    private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
+    private final ShoppingCartFactory shoppingCartFactory;
     private final AuthenticationController authenticationController;
     private final PermissionsController permissionsController;
+    private final NotificationController notificationController;
 
     private final Map<String, ShoppingCart> guestCarts;
     private final Map<String,Guest> guests;
     private final Map<String,User> onlineRegisteredUsers;
 
     private final ReadWriteLock lock;
-    private String guestInitialId;
 
     public UsersController(UserRepository userRepository,
                            ReservationRepository reservationRepository,
@@ -51,7 +57,7 @@ public class UsersController {
                            ShoppingCartFactory shoppingCartFactory,
                            AuthenticationController authenticationController,
                            ShoppingCartRepository shoppingCartRepository,
-                           PermissionsController permissionsController) {
+                           PermissionsController permissionsController, NotificationController notificationController, StoreRepository storeRepository) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;
@@ -66,6 +72,8 @@ public class UsersController {
         onlineRegisteredUsers = new HashMap<>();
         guestCarts = new HashMap<>();
         lock = new ReadWriteLock();
+        this.notificationController = notificationController;
+        this.storeRepository = storeRepository;
     }
 
     //generate admin user
@@ -77,6 +85,7 @@ public class UsersController {
             String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
             register(adminEmail, adminId, adminPassword);
+            permissionsController.registerAdmin(adminId);
         } catch (UserException e) {
             log.error("Failed to generate admin user");
             throw new RuntimeException("Failed to generate admin user");
@@ -89,6 +98,9 @@ public class UsersController {
 
 
     public void register(String email, String userId, String password) throws UserException {
+
+        userId = userId.toLowerCase();
+        email = email.toLowerCase();
 
         if(userRepository.userIdExists(userId)){
             log.debug("User with id: {} already exists in the system", userId);
@@ -115,7 +127,7 @@ public class UsersController {
 
     public String enterAsGuest() {
         try{
-            guestInitialId = UUID.randomUUID().toString();
+            String guestInitialId = UUID.randomUUID().toString();
             Guest newGuest = new Guest(guestInitialId);
 
             lock.acquireWrite();
@@ -133,6 +145,7 @@ public class UsersController {
     }
 
     public void loginToRegistered(String guestInitialId,String userId) throws UserException {
+        userId = userId.toLowerCase();
 
         if(! userRepository.userIdExists(userId)){
             log.debug("User with id: {} does not exist in the system", userId);
@@ -164,6 +177,8 @@ public class UsersController {
     }
 
     public void logout(String userId) throws UserException {
+        userId = userId.toLowerCase();
+
         if(!onlineRegisteredUsers.containsKey(userId)){
             log.debug("User with id: {} is not online", userId);
             throw new UserException("User with id: " + userId + " is not online");
@@ -203,6 +218,8 @@ public class UsersController {
     }
 
     public User getUser(String userId) throws UserException {
+        userId = userId.toLowerCase();
+
         if(userRepository.userIdExists(userId)){
             return userRepository.getUser(userId);
         }
@@ -220,6 +237,7 @@ public class UsersController {
     }
 
     public List<Transaction> getUserTransactionHistory(String userId) throws UserException {
+        userId = userId.toLowerCase();
         if(!userRepository.userIdExists(userId)){
             log.debug("User with id: {} does not exist", userId);
             throw new UserException("Invalid userId");
@@ -231,24 +249,28 @@ public class UsersController {
     // =============================================================================== |
 
     public void addProductToCart(String userId, String storeId, String productId, int quantity) throws UserException, ShoppingCartException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.addProduct(storeId, productId,quantity);
         log.debug("Product with id: {} added to the cart of user with id: {}", productId, userId);
     }
 
     public void removeProductFromCart(String userId,String storeName,String productId) throws UserException, ShoppingCartException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.removeProduct(storeName,productId);
         log.debug("Product with id: {} removed from the cart of user with id: {}", productId, userId);
     }
 
     public void changeProductQuantity(String userId, String storeName, String productId, int quantity) throws UserException, ShoppingCartException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
         log.debug("Product with id: {} quantity changed in the cart of user with id: {}", productId, userId);
     }
 
     public ShoppingCart viewCart(String userId) throws UserException {
+        userId = userId.toLowerCase();
         return getCartWithValidation(userId);
     }
     // =============================================================================== |
@@ -256,13 +278,16 @@ public class UsersController {
     // =============================================================================== |
 
     public void startPurchase(String userId) throws PurchaseFailedException, UserException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         Map<String, Reservation> reservations = cart.reserveCart();
-        reservations.values().forEach(r -> reservationRepository.saveReservation(userId,r));
+        final String finalUserId = userId;
+        reservations.values().forEach(r -> reservationRepository.saveReservation(finalUserId,r));
         log.debug("Cart of user with id: {} reserved successfully", userId);
     }
 
     public void payForPurchase(String userId) throws PurchaseFailedException, UserException {
+        userId = userId.toLowerCase();
         try{
             lock.acquireWrite();
 
@@ -276,9 +301,10 @@ public class UsersController {
             ShoppingCart cart = getCartWithValidation(userId);
             User user = userRepository.getUser(userId);
             if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
+                final String finalUserId = userId;
                 reservations.forEach(r -> {
                     r.cancelReservation();
-                    reservationRepository.removeReservation(userId,r);
+                    reservationRepository.removeReservation(finalUserId,r);
                 });
                 log.debug("Payment failed");
                 throw new PurchaseFailedException("Payment failed");
@@ -294,8 +320,21 @@ public class UsersController {
                 Transaction t = reservationToTransaction(userId, reservation, transactionTime);
                 transactionRepository.addNewTransaction(t);
 
+                // send notifications to owners of the store
+                Store store = storeRepository.getStore(reservation.storeId());
+                store.getOwners().forEach(ownerId -> {
+                    try {
+                        notificationController.sendNotification("New transactionId in your store: "+store.getStoreName(),
+                                "Transaction id: "+t.transactionId(),
+                                "Amazonas",
+                                ownerId);
+                    } catch (NotificationException e) {
+                        log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.getStoreName());
+                    }
+                });
+
             }
-            log.debug("Document the transactions successfully");
+            log.debug("Documented the transactions successfully");
 
             // give the user a new empty cart
             shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
@@ -307,6 +346,7 @@ public class UsersController {
     }
 
     public boolean cancelPurchase(String userId) throws UserException {
+        userId = userId.toLowerCase();
         if(!userRepository.userIdExists(userId)){
             log.debug("Cancel Purchase - invalid userId");
             throw new UserException("Invalid userId");
@@ -321,9 +361,10 @@ public class UsersController {
                 return false;
             }
 
+            final String finalUserId = userId;
             reservations.forEach(r -> {
                 r.cancelReservation();
-                reservationRepository.removeReservation(userId,r);
+                reservationRepository.removeReservation(finalUserId,r);
             });
 
             log.debug("The purchase canceled for user with id: {}", userId);
@@ -373,19 +414,6 @@ public class UsersController {
         return matcher.matches();
     }
 
-    private String generatePassword(){
-        Random rand = new Random();
-        List<Character> chars = new ArrayList<>(32);
-        String specialChars = "!@#$%^&*()\\-=\\[\\]{};':\"<>?|";
-        for(int i = 0; i < 8; i++){
-            chars.add(specialChars.charAt(rand.nextInt(specialChars.length())));
-            chars.add((char)rand.nextInt('a','z'));
-            chars.add((char)rand.nextInt('A','Z'));
-            chars.add((char)rand.nextInt('0','9'));
-        }
-        Collections.shuffle(chars);
-        return chars.stream().map(String::valueOf).reduce("",String::concat);
-    }
     // =============================================================================== |
     // ================================ GETTERS ====================================== |
     // =============================================================================== |

@@ -8,15 +8,16 @@ import com.amazonas.common.utils.APIFetcher;
 import com.amazonas.common.utils.Response;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.google.gson.JsonSyntaxException;
-import com.vaadin.flow.server.*;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedSession;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.session.StandardSessionFacade;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -53,7 +54,7 @@ public class AppController {
         return post(endpoint.location(), endpoint.returnType(), payload);
     }
 
-    private <T> List<T> get(String location, Type t) throws ApplicationException {
+    private <T> List<T> get(String location, Class<T> clazz) throws ApplicationException {
         ApplicationException fetchFailed = new ApplicationException("Failed to fetch data");
 
         Response response;
@@ -73,10 +74,10 @@ public class AppController {
         if (!response.success()) {
             throw new ApplicationException(response.message());
         }
-        return response.payload(t);
+        return response.payload(clazz);
     }
 
-    private <T> List<T> post(String location, Type t, Object payload) throws ApplicationException {
+    private <T> List<T> post(String location, Class<T> clazz, Object payload) throws ApplicationException {
         ApplicationException postFailed = new ApplicationException("Failed to send data");
 
         String body = RequestBuilder.create()
@@ -105,7 +106,7 @@ public class AppController {
         if (!response.success()) {
             throw new ApplicationException(response.message());
         }
-        return response.payload(t);
+        return response.payload(clazz);
     }
 
     private String getBearerAuth() {
@@ -146,6 +147,7 @@ public class AppController {
     }
 
     public boolean login(String userId, String password) {
+        userId = userId.toLowerCase();
         if (isUserLoggedIn()) {
             return false;
         }

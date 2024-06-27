@@ -9,7 +9,6 @@ public abstract class User {
 
     public User(String initialId){
         this.initialId = initialId;
-
     }
 
     public String getUserId(){

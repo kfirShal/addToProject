@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @Component("storesController")
 public class StoresController {
@@ -59,12 +60,20 @@ public class StoresController {
         getStore(storeId).removeProduct(productId);
     }
 
-    public void disableProduct(String storeId,String productId){
+    public void disableProduct(String storeId,String productId) throws StoreException {
         getStore(storeId).disableProduct(productId);
     }
 
-    public void enableProduct(String storeId,String productId){
+    public void enableProduct(String storeId,String productId) throws StoreException {
         getStore(storeId).enableProduct(productId);
+    }
+
+    public void setProductQuantity(String storeId, String productId, Integer quantity) throws StoreException {
+        getStore(storeId).setProductQuantity(productId, quantity);
+    }
+
+    public Set<Product> getStoreProducts(String storeId) throws StoreException {
+        return getStore(storeId).getStoreProducts();
     }
 
     public void addOwner(String username, String storeId, String logged){

@@ -1,6 +1,7 @@
 package com.amazonas.backend.business.userProfiles;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
+import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentMethod;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
@@ -20,10 +21,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
 
 class UsersControllerTest {
     private static final String USER_ID = "userId";
@@ -41,6 +40,8 @@ class UsersControllerTest {
     private ShoppingCartRepository shoppingCartRepository;
     private ShoppingCart cart;
     private PermissionsController permissionsController;
+    private StoreRepository storeRepository;
+    private NotificationController notificationController;
 
     @BeforeEach
     void setUp() {
@@ -54,6 +55,8 @@ class UsersControllerTest {
         paymentService = mock(PaymentService.class);
         authenticationController = mock(AuthenticationController.class);
         permissionsController = mock(PermissionsController.class);
+        storeRepository = mock(StoreRepository.class);
+        notificationController = mock(NotificationController.class);
         usersController = new UsersController(
                 userRepository,
                 reservationRepository,
@@ -63,7 +66,9 @@ class UsersControllerTest {
                 shoppingCartFactory,
                 authenticationController,
                 shoppingCartRepository,
-                permissionsController
+                permissionsController,
+                notificationController,
+                storeRepository
                 );
 
         cart = mock(ShoppingCart.class);

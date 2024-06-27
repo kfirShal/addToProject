@@ -54,7 +54,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     public void addNewTransaction(Transaction transaction){
         try {
             lock.acquireWrite();
-            log.debug("Documenting transaction for user {} in store {}", transaction.userId(), transaction.storeId());
+            log.debug("Documenting transactionId for user {} in store {}", transaction.userId(), transaction.storeId());
             userIdToTransactions.computeIfAbsent(transaction.userId(), _ -> new LinkedList<>()).add(transaction);
             storeIdToTransactions.computeIfAbsent(transaction.storeId(), _ -> new LinkedList<>()).add(transaction);
             transactionIdToTransaction.put(transaction.transactionId(), transaction);

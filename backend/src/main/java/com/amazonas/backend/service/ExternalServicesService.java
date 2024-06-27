@@ -1,83 +1,99 @@
 package com.amazonas.backend.service;
 
-import com.amazonas.backend.business.payment.PaymentRequest;
-import com.amazonas.backend.business.payment.PaymentServiceController;
-import com.amazonas.backend.business.permissions.proxies.MarketProxy;
-import com.amazonas.backend.business.shipping.ShippingServiceController;
+import com.amazonas.backend.business.permissions.proxies.ExternalServicesProxy;
+import com.amazonas.backend.exceptions.AuthenticationFailedException;
+import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.service.requests.payment.PaymentServiceManagementRequest;
-import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
 import com.amazonas.backend.service.requests.shipping.ShippingServiceManagementRequest;
 import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.shipping.ShipmentRequest;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
 import org.springframework.stereotype.Component;
 
 @Component("externalServicesService")
 public class ExternalServicesService {
-    private final ShippingServiceController shippingServiceController;
-    private final PaymentServiceController paymentServiceController;
-    private final MarketProxy marketProxy;
 
-    public ExternalServicesService(ShippingServiceController shippingServiceController, PaymentServiceController paymentServiceController, MarketProxy marketProxy) {
-        this.shippingServiceController = shippingServiceController;
-        this.paymentServiceController = paymentServiceController;
-        this.marketProxy = marketProxy;
+    private final ExternalServicesProxy proxy;
+
+    public ExternalServicesService(ExternalServicesProxy externalServicesProxy) {
+        proxy = externalServicesProxy;
     }
-
-    //TODO: USE PROXY
 
     public String sendShipment(String json) {
         Request request = Request.from(json);
-        ShipmentRequest shipmentRequest = JsonUtils.deserialize(request.payload(), ShipmentRequest.class);
-        return new Response(shippingServiceController.sendShipment(shipmentRequest)).toJson();
-    }
-
-    public String processPayment(String json) {
-        Request request = Request.from(json);
-        PaymentRequest paymentRequest = JsonUtils.deserialize(request.payload(), PaymentRequest.class);
-        return new Response(paymentServiceController.processPayment(paymentRequest)).toJson();
+        try{
+            ShipmentRequest shipmentRequest = ShipmentRequest.from(request.payload());
+            boolean result = proxy.sendShipment(shipmentRequest.transactionId(), shipmentRequest.serviceId(),shipmentRequest.storeId(), request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
 
     public String addShippingService(String json) {
         Request request = Request.from(json);
-        ShippingServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), ShippingServiceManagementRequest.class);
-        shippingServiceController.addShippingService(serviceRequest.serviceId(), serviceRequest.shippingService());
-        return Response.getOk();
+        try{
+            ShippingServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), ShippingServiceManagementRequest.class);
+            proxy.addShippingService(serviceRequest.serviceId(), serviceRequest.shippingService(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
 
     public String removeShippingService(String json) {
         Request request = Request.from(json);
-        ShippingServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), ShippingServiceManagementRequest.class);
-        shippingServiceController.removeShippingService(serviceRequest.serviceId());
-        return Response.getOk();
+        try{
+            ShippingServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), ShippingServiceManagementRequest.class);
+            proxy.removeShippingService(serviceRequest.serviceId(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
 
     public String updateShippingService(String json) {
         Request request = Request.from(json);
-        ShippingServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), ShippingServiceManagementRequest.class);
-        shippingServiceController.updateShippingService(serviceRequest.serviceId(), serviceRequest.shippingService());
-        return Response.getOk();
+        try{
+            ShippingServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), ShippingServiceManagementRequest.class);
+            proxy.updateShippingService(serviceRequest.serviceId(), serviceRequest.shippingService(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
 
     public String addPaymentService(String json) {
         Request request = Request.from(json);
-        PaymentServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), PaymentServiceManagementRequest.class);
-        paymentServiceController.addPaymentService(serviceRequest.serviceId(), serviceRequest.paymentService());
-        return Response.getOk();
+        try{
+            PaymentServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), PaymentServiceManagementRequest.class);
+            proxy.addPaymentService(serviceRequest.serviceId(), serviceRequest.paymentService(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
 
     public String removePaymentService(String json) {
         Request request = Request.from(json);
-        PaymentServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), PaymentServiceManagementRequest.class);
-        paymentServiceController.removePaymentService(serviceRequest.serviceId());
-        return Response.getOk();
+        try{
+            PaymentServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), PaymentServiceManagementRequest.class);
+            proxy.removePaymentService(serviceRequest.serviceId(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
 
     public String updatePaymentService(String json) {
         Request request = Request.from(json);
-        PaymentServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), PaymentServiceManagementRequest.class);
-        paymentServiceController.updatePaymentService(serviceRequest.serviceId(), serviceRequest.paymentService());
-        return Response.getOk();
+        try{
+            PaymentServiceManagementRequest serviceRequest = JsonUtils.deserialize(request.payload(), PaymentServiceManagementRequest.class);
+            proxy.updatePaymentService(serviceRequest.serviceId(), serviceRequest.paymentService(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | NoPermissionException e) {
+            return Response.getError(e);
+        }
     }
-
 }

@@ -1,7 +1,8 @@
-package com.amazonas.backend.acceptanceTests;
+package com.amazonas.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.inventory.ProductInventory;
+import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.StoresController;
@@ -49,6 +50,7 @@ public class ActionsOfAMarketAdministrator {
     private StoresController storesController;
     private UserRepository userRepository;
     private AuthenticationController authenticationController;
+    private NotificationController notificationController;
 
     public ActionsOfAMarketAdministrator(StoreMongoCollection storeMongo) {
         storeRepository = new StoreRepository(storeMongo);
@@ -72,7 +74,9 @@ public class ActionsOfAMarketAdministrator {
                 shoppingCartFactory,
                 authenticationController,
                 shoppingCartRepository,
-                permissionsController
+                permissionsController,
+                notificationController,
+                storeRepository
         );
     }
 
@@ -95,7 +99,7 @@ public class ActionsOfAMarketAdministrator {
 
         // Assert
         assertNotNull(purchaseHistory);
-        assertEquals(1, purchaseHistory.size(), "Purchase history should contain one transaction");
+        assertEquals(1, purchaseHistory.size(), "Purchase history should contain one transactionId");
     }
 
     @Test

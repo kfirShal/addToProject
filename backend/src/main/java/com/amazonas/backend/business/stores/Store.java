@@ -120,18 +120,22 @@ public class Store {
 
     // TODO: All this can probably be moved to the controller
 
-    public Collection<Transaction> getPendingShipmentOrders(){
+    public Collection<Transaction> getPendingShipmentOrders() throws StoreException {
         try{
             lock.acquireRead();
+            checkIfOpen();
+
             return repository.getWaitingShipment(storeId);
         } finally {
             lock.releaseRead();
         }
     }
 
-    public void setOrderShipped(String transactionId){
+    public void setOrderShipped(String transactionId) throws StoreException {
         try{
             lock.acquireWrite();
+            checkIfOpen();
+
             Transaction transaction = repository.getTransactionById(transactionId);
             transaction.setShipped();
             repository.updateTransaction(transaction);
@@ -140,9 +144,11 @@ public class Store {
         }
     }
 
-    public void setOrderDelivered(String transactionId){
+    public void setOrderDelivered(String transactionId) throws StoreException {
         try{
             lock.acquireWrite();
+            checkIfOpen();
+
             Transaction transaction = repository.getTransactionById(transactionId);
             transaction.setDelivered();
             repository.updateTransaction(transaction);
@@ -151,9 +157,11 @@ public class Store {
         }
     }
 
-    public void setOrderCancelled(String transactionId){
+    public void setOrderCancelled(String transactionId) throws StoreException {
         try{
             lock.acquireWrite();
+            checkIfOpen();
+
             Transaction transaction = repository.getTransactionById(transactionId);
             transaction.setCancelled();
             repository.updateTransaction(transaction);
@@ -174,6 +182,10 @@ public class Store {
     public List<Product> searchProduct(SearchRequest request) {
         try{
             lock.acquireRead();
+            if(!isOpen){
+                return List.of();
+            }
+
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
                 if(product.price() < request.minPrice() || product.price() > request.maxPrice()){
@@ -205,10 +217,11 @@ public class Store {
         }
     }
 
-    public int availableCount(String productId){
+    public int availableCount(String productId) throws StoreException {
 
         try{
             lock.acquireRead();
+            checkIfOpen();
             return inventory.getQuantity(productId);
         } finally {
             lock.releaseRead();
@@ -246,21 +259,43 @@ public class Store {
         }
      }
 
-    public void enableProduct(String productId) {
+    public void enableProduct(String productId) throws StoreException {
         try {
             lock.acquireWrite();
+            checkIfOpen();
             inventory.enableProduct(productId);
         } finally {
             lock.releaseWrite();
         }
     }
 
-    public void disableProduct(String productId){
+    public void disableProduct(String productId) throws StoreException {
         try {
             lock.acquireWrite();
+            checkIfOpen();
             inventory.disableProduct(productId);
         } finally {
             lock.releaseWrite();
+        }
+    }
+
+    public void setProductQuantity(String productId, int quantity) throws StoreException {
+        try {
+            lock.acquireWrite();
+            checkIfOpen();
+            inventory.setQuantity(productId, quantity);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public Set<Product> getStoreProducts() throws StoreException {
+        try {
+            lock.acquireRead();
+            checkIfOpen();
+            return inventory.getAllAvailableProducts();
+        } finally {
+            lock.releaseRead();
         }
     }
 
@@ -272,6 +307,9 @@ public class Store {
     public Reservation reserveProducts(Map<String,Integer> toReserve, String userId){
         try{
             lock.acquireWrite();
+            if(!isOpen){
+                return null;
+            }
 
             // Check if the products are available
             for (var entry : toReserve.entrySet()) {
@@ -309,6 +347,9 @@ public class Store {
     public boolean cancelReservation(Reservation reservation) {
         try{
             lock.acquireWrite();
+            if(!isOpen){
+                return false;
+            }
 
             if(reservation.isCancelled()){
                 return false;
@@ -358,6 +399,13 @@ public class Store {
         return appointmentSystem.getAllRoles();
     }
 
+    public List<String> getOwners(){
+        return getRolesInformation().stream()
+                .filter(storePosition -> storePosition.role() == StoreRole.STORE_OWNER)
+                .map(StorePosition::userId)
+                .toList();
+    }
+
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |
     //====================================================================== |
@@ -401,7 +449,6 @@ public class Store {
     }
     //====================================================================== |
     //========================= GETTERS SETTERS ============================ |
-
     //====================================================================== |
 
     public Rating getStoreRating() {
