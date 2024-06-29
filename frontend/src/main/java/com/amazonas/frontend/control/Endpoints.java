@@ -65,6 +65,7 @@ public enum Endpoints {
     GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
+    GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class),
     GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class);
 
     private final String location;

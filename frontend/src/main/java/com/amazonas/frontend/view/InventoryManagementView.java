@@ -1,6 +1,7 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.requests.stores.ProductRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
@@ -11,7 +12,9 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Route("inventory")
 public class InventoryManagementView extends BaseLayout {
@@ -26,7 +29,17 @@ public class InventoryManagementView extends BaseLayout {
         this.appController = appController;
 
         grid = new Grid<>(Product.class);
-        grid.setItems(getProducts());
+        List<Product> products = getProducts();
+        Map<String,Integer> idToQuantity = new HashMap<>();
+        products.forEach(p -> {
+            ProductRequest payload = new ProductRequest(storeId, new Product(p.productId()));
+            try {
+                appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, payload);
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
+        });
+        grid.setItems(products);
 
         // Configure the columns
         grid.addColumn(Product::productId).setHeader("ID");
@@ -35,6 +48,8 @@ public class InventoryManagementView extends BaseLayout {
         grid.addColumn(Product::rating).setHeader("Rating");
         grid.addColumn(Product::price).setHeader("Price");
         grid.addColumn(Product::description).setHeader("Description");
+        grid.addColumn(p-> idToQuantity.get(p.productId())).setHeader("Quantity");
+
 
         // Add action buttons
         grid.addComponentColumn(product -> {

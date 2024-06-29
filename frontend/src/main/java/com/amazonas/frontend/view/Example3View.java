@@ -5,6 +5,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
@@ -25,7 +28,6 @@ public class Example3View extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-        // Create and configure the grids
         // Grid for store founder (assuming only one founder, displaying the user's name)
         H3 founderTitle = new H3("Store Founder");
         founderTitle.getStyle().set("margin-top", "30px");
@@ -39,32 +41,62 @@ public class Example3View extends BaseLayout {
         ownersTitle.getStyle().set("margin-top", "30px");
         Grid<String> ownersGrid = new Grid<>();
         List<String> owners = new ArrayList<>();
-        // Populate owners list with data if available
         ownersGrid.setItems(owners);
         ownersGrid.addColumn(name -> name).setHeader("Name");
+        ownersGrid.addColumn(name -> name).setHeader("Notifications & Respond");
         content.add(ownersTitle, ownersGrid);
 
-        // Add button for adding store owners
+        // Add buttons for adding and removing store owners
         Button addOwnerButton = new Button("Add Owner", event -> {
             // Logic to add a new owner
         });
-        content.add(addOwnerButton);
+        Button removeOwnerButton = new Button("Remove Owner", event -> {
+            // Logic to remove an owner
+        });
+        Button removeMyselfButton = new Button("Remove Myself", event -> {
+            // Logic to remove the current user as an owner
+        });
+
+        HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton, removeOwnerButton, removeMyselfButton);
+        content.add(ownersButtonsLayout);
+
 
         // Grid for store managers
         H3 managersTitle = new H3("Store Managers");
         managersTitle.getStyle().set("margin-top", "30px");
         Grid<String> managersGrid = new Grid<>();
         List<String> managers = new ArrayList<>();
-        // Populate managers list with data if available
         managersGrid.setItems(managers);
         managersGrid.addColumn(name -> name).setHeader("Name");
+        managersGrid.addColumn(name -> name).setHeader("Permissions");
         content.add(managersTitle, managersGrid);
 
         // Add button for adding store managers
         Button addManagerButton = new Button("Add Manager", event -> {
             // Logic to add a new manager
         });
-        content.add(addManagerButton);
+        // Add buttons for removing manager, editing permissions, and permissions field
+        Button removeManagerButton = new Button("Remove Manager", event -> {
+            // Logic to remove a manager
+        });
+        Button editPermissionsButton = new Button("Edit Permissions", event -> {
+            // Logic to edit manager permissions
+        });
 
+        HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton, removeManagerButton, editPermissionsButton);
+        content.add(managersButtonsLayout);
     }
+
+    //TODO:
+    // make components such as add manager visible to only certain people based on their permissions
+    // connect to:
+    // GET_STORE_ROLES_INFORMATION
+    // ADD_OWNER
+    // ADD_MANAGER
+    // REMOVE_OWNER
+    // REMOVE_MANAGER
+    // ADD_PERMISSION_TO_MANAGER
+    // REMOVE_PERMISSION_FROM_MANAGER
+
 }
+

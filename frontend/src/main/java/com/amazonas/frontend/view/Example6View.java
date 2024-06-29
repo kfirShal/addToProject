@@ -40,8 +40,8 @@ public class Example6View extends BaseLayout {
         Button reopenStoreButton = new Button("Reopen Store");
         reopenStoreButton.addClickListener(event -> reopenStore());
         VerticalLayout reopenStoreLayout = new VerticalLayout();
-        reopenStoreLayout.add(reopenStoreButton, new Paragraph("Reopening a store that was previously closed will lead to sending a\n" +
-                "notification to the owners and managers of the store."));
+        reopenStoreLayout.add(reopenStoreButton, new Paragraph("Reopening a store that was previously closed will lead to sending a \n" +
+                "notification to the owners and managers of the store"));
         content.add(reopenStoreLayout);
     }
 

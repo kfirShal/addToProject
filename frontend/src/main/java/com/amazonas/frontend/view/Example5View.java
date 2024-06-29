@@ -1,54 +1,100 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-@Route("purchase-discount-policy")
+import java.util.ArrayList;
+import java.util.List;
+
+@Route("example5")
 public class Example5View extends BaseLayout {
 
+    private final Grid<Transaction> grid;
     private final AppController appController;
+    private final List<Transaction> transactions;
 
     public Example5View(AppController appController) {
         super(appController);
         this.appController = appController;
 
+        // Sample transaction data
+        transactions = new ArrayList<>();
+        transactions.add(new Transaction("1", "User1", "2024-06-29", new ArrayList<>())); // Replace with actual data
+        // Add more sample transactions as needed
+
         // Set the window title
-        String newTitle = "Purchase & Discount Policy";
+        String newTitle = "Purchase History";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-        // Create and configure the grid for Purchase policy
-        H3 purchasePolicyTitle = new H3("Purchase Policy");
-        purchasePolicyTitle.getStyle().set("margin-top", "30px");
-        Grid<String> purchasePolicyGrid = new Grid<>();
-        // Add logic to populate purchase policy data
-        purchasePolicyGrid.setItems("Policy 1", "Policy 2", "Policy 3"); // Replace with actual data
-        purchasePolicyGrid.addColumn(policy -> policy);
-        Button editPurchasePolicyButton = new Button("Edit", event -> {
-            // Add logic to edit purchase policy
-        });
+        // Create and configure the grid
+        grid = new Grid<>(Transaction.class);
+        grid.setItems(transactions);
 
-        // Create and configure the grid for Discount policy
-        H3 discountPolicyTitle = new H3("Discount Policy");
-        discountPolicyTitle.getStyle().set("margin-top", "30px");
-        Grid<String> discountPolicyGrid = new Grid<>();
-        // Add logic to populate discount policy data
-        discountPolicyGrid.setItems("Discount 1", "Discount 2", "Discount 3"); // Replace with actual data
-        discountPolicyGrid.addColumn(policy -> policy);
-        Button editDiscountPolicyButton = new Button("Edit", event -> {
-            // Add logic to edit discount policy
-        });
+        // Clear default columns
+        grid.removeAllColumns();
 
-        // Add grids and buttons to the content
-        VerticalLayout policyLayout = new VerticalLayout();
-        policyLayout.add(purchasePolicyTitle, purchasePolicyGrid, editPurchasePolicyButton,
-                discountPolicyTitle, discountPolicyGrid, editDiscountPolicyButton);
-        content.add(policyLayout);
+        // Configure the columns manually
+        grid.addColumn(Transaction::getId).setHeader("ID");
+        grid.addColumn(Transaction::getUserId).setHeader("User ID");
+        grid.addColumn(Transaction::getDate).setHeader("Date");
+        grid.addColumn(Transaction::getProductsList).setHeader("Products");
+
+        content.add(grid); // Add grid to the content from BaseLayout
+    }
+
+    //TODO:
+    // make components such as add manager visible to only certain people based on their permissions
+    // connect to:
+    // GET_STORE_TRANSACTION_HISTORY
+
+
+    public static class Transaction {
+        private String id;
+        private String userId;
+        private String date;
+        private List<String> productsList;
+
+        public Transaction(String id, String userId, String date, List<String> productsList) {
+            this.id = id;
+            this.userId = userId;
+            this.date = date;
+            this.productsList = productsList;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        public List<String> getProductsList() {
+            return productsList;
+        }
+
+        public void setProductsList(List<String> productsList) {
+            this.productsList = productsList;
+        }
     }
 }
