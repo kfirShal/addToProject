@@ -1,0 +1,74 @@
+package com.amazonas.frontend.view;
+
+import com.amazonas.frontend.control.AppController;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
+@Route("example6")
+public class Example6View extends BaseLayout {
+
+    private final AppController appController;
+
+    public Example6View(AppController appController) {
+        super(appController);
+        this.appController = appController;
+
+        // Set the window title
+        String newTitle = "Close/Reopen Store";
+        H2 title = new H2(newTitle);
+        title.getStyle().set("align-self", "center");
+        content.add(title); // Use content from BaseLayout
+
+        // Close store button
+        Button closeStoreButton = new Button("Close Store");
+        closeStoreButton.addClickListener(event -> showCloseStoreConfirmation());
+        VerticalLayout closeStoreLayout = new VerticalLayout();
+        closeStoreLayout.add(closeStoreButton);
+        content.add(closeStoreLayout);
+
+        // Reopen store button
+        Button reopenStoreButton = new Button("Reopen Store");
+        reopenStoreButton.addClickListener(event -> reopenStore());
+        VerticalLayout reopenStoreLayout = new VerticalLayout();
+        reopenStoreLayout.add(reopenStoreButton);
+        content.add(reopenStoreLayout);
+    }
+
+    private void showCloseStoreConfirmation() {
+        // Create a confirmation dialog
+        Dialog confirmationDialog = new Dialog();
+        confirmationDialog.setCloseOnEsc(false);
+        confirmationDialog.setCloseOnOutsideClick(false);
+
+        // Dialog content
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.add(new H2("Confirm Store Closure"),
+                new H2("Are you sure you want to close the store?"));
+
+        // Buttons inside the dialog
+        Button confirmButton = new Button("Confirm", event -> {
+            // Perform action to close the store (e.g., notify backend)
+            closeStore();
+            confirmationDialog.close();
+        });
+        Button cancelButton = new Button("Cancel", event -> confirmationDialog.close());
+        dialogLayout.add(confirmButton, cancelButton);
+
+        confirmationDialog.add(dialogLayout);
+        confirmationDialog.open();
+    }
+
+    private void closeStore() {
+        // Logic to close the store
+        Notification.show("Store is closed.");
+    }
+
+    private void reopenStore() {
+        // Logic to reopen the store
+        Notification.show("Store is reopened.");
+    }
+}
