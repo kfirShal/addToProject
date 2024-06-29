@@ -25,7 +25,7 @@ public class Example1View extends BaseLayout {
 
         // Create a grid with 5 items
         Grid<String> grid = new Grid<>();
-        List<String> items = Arrays.asList("Manage Inventory", "Manage Store Officials", "View Purchase History", "Purchase & Discount Policy", "Close Store");
+        List<String> items = Arrays.asList("Manage Inventory", "Manage Store Officials", "View Purchase History", "Purchase & Discount Policy", "Close & Reopen Store");
 
         grid.setItems(items);
         grid.addColumn(item -> item).setHeader("Operations");
@@ -45,7 +45,7 @@ public class Example1View extends BaseLayout {
             if ("Purchase & Discount Policy".equals(item)) {
                 getUI().ifPresent(ui -> ui.navigate(Example5View.class));
             }
-            if ("Close Store".equals(item)) {
+            if ("Close & Reopen Store".equals(item)) {
                 getUI().ifPresent(ui -> ui.navigate(Example6View.class));
             }
         });

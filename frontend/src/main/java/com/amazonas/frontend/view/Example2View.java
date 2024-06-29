@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
@@ -60,7 +61,7 @@ public class Example2View extends BaseLayout {
                 grid.getEditor().editItem(product);
             });
             return editButton;
-        }).setHeader("Edit");
+        });
 
         grid.addComponentColumn(product -> {
             Button removeButton = new Button("Remove", click -> {
@@ -68,7 +69,7 @@ public class Example2View extends BaseLayout {
                 grid.setItems(products);
             });
             return removeButton;
-        }).setHeader("Actions");
+        });
 
         // Configure the editor
         binder = new Binder<>(Product.class);
@@ -78,12 +79,12 @@ public class Example2View extends BaseLayout {
 
         content.add(grid); // Add grid to the content from BaseLayout
 
-        // Add buttons to save, cancel, and add a new product
-        Button saveButton = new Button("Save", click -> editor.save());
-        Button cancelButton = new Button("Cancel", click -> editor.cancel());
-        Button addButton = new Button("Add", click -> addNewProduct());
+        // Add buttons to save, cancel and add a new product
+        Button addButton = new Button("Add a new product", click -> addNewProduct());
+        Button saveButton = new Button("Save changes", click -> editor.save());
+        Button cancelButton = new Button("Cancel changes", click -> editor.cancel());
 
-        VerticalLayout buttonsLayout = new VerticalLayout(saveButton, cancelButton, addButton);
+        HorizontalLayout buttonsLayout = new HorizontalLayout(addButton, saveButton, cancelButton);
         content.add(buttonsLayout); // Add buttons to the content from BaseLayout
     }
 

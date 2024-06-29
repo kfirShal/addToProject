@@ -46,12 +46,7 @@ public abstract class BaseLayout extends AppLayout {
 
         SideNav nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-        nav1.addItem(new SideNavItem("example1", Example1View.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("example2", Example2View.class, VaadinIcon.FAMILY.create()));
-        nav1.addItem(new SideNavItem("example3", Example3View.class, VaadinIcon.PENCIL.create()));
-        nav1.addItem(new SideNavItem("example4", Example4View.class, VaadinIcon.NURSE.create()));
-        nav1.addItem(new SideNavItem("example5", Example4View.class, VaadinIcon.NURSE.create()));
-        nav1.addItem(new SideNavItem("example6", Example4View.class, VaadinIcon.NURSE.create()));
+        nav1.addItem(new SideNavItem("Management Dashboard", Example1View.class, VaadinIcon.NEWSPAPER.create()));
 
         VerticalLayout sideNav = new VerticalLayout();
         sideNav.add(nav1);

@@ -2,6 +2,7 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -27,14 +28,20 @@ public class Example6View extends BaseLayout {
         Button closeStoreButton = new Button("Close Store");
         closeStoreButton.addClickListener(event -> showCloseStoreConfirmation());
         VerticalLayout closeStoreLayout = new VerticalLayout();
-        closeStoreLayout.add(closeStoreButton);
+        closeStoreLayout.add(closeStoreButton, new Paragraph("When a store closes it becomes inactve.\n" +
+                "Users who are not store owners or system administrators cannot receive information\n" +
+                "about a closed (inactive) store. Owners and managers of a store that closes receive a notification of its closure,\n" +
+                "and their appointment is not affected.\n" +
+                "The products of an inactive store do not appear in the results of a product information requests\n" +
+                "in the market.\n "));
         content.add(closeStoreLayout);
 
         // Reopen store button
         Button reopenStoreButton = new Button("Reopen Store");
         reopenStoreButton.addClickListener(event -> reopenStore());
         VerticalLayout reopenStoreLayout = new VerticalLayout();
-        reopenStoreLayout.add(reopenStoreButton);
+        reopenStoreLayout.add(reopenStoreButton, new Paragraph("Reopening a store that was previously closed will lead to sending a\n" +
+                "notification to the owners and managers of the store."));
         content.add(reopenStoreLayout);
     }
 

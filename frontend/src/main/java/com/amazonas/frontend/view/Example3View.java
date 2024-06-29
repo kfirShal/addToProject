@@ -19,7 +19,7 @@ public class Example3View extends BaseLayout {
         super(appController);
         this.appController = appController;
 
-        // Set the window title
+        // Set the window's title
         String newTitle = "Manage Store Officials";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
