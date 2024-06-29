@@ -32,6 +32,14 @@ public class Product implements Cloneable {
         this.keyWords = new HashSet<>();
     }
 
+
+    /**
+     * Constructor for creating a product with only the productId. used for making api calls
+     */
+    public Product(String productId) {
+        this.productId = productId;
+    }
+
     public String productId() {
         return productId;
     }
