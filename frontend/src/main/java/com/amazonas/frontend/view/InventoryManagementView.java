@@ -2,35 +2,52 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.stores.ProductRequest;
+import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Route("inventory")
 public class InventoryManagementView extends BaseLayout {
-
     private final Grid<Product> grid;
     private final Binder<Product> binder;
     private final AppController appController;
-    String storeId = "get it from somewhere";
+    private final String storeId = "get it from somewhere";
 
     public InventoryManagementView(AppController appController) {
         super(appController);
         this.appController = appController;
 
+        // Initialize binder
+        binder = new Binder<>(Product.class);
+
         grid = new Grid<>(Product.class);
         List<Product> products = getProducts();
-        Map<String,Integer> idToQuantity = new HashMap<>();
+
+        // Set the window's title
+        String newTitle = "Manage Inventory";
+        H2 title = new H2(newTitle);
+        title.getStyle().set("align-self", "center");
+        content.add(title); // Use content from BaseLayout
+
+        // Check if products list is null or empty
+        if (products == null || products.isEmpty()) {
+            products = getSampleProducts();
+        }
+
+        Map<String, Integer> idToQuantity = new HashMap<>();
         products.forEach(p -> {
             ProductRequest payload = new ProductRequest(storeId, new Product(p.productId()));
             try {
@@ -39,6 +56,7 @@ public class InventoryManagementView extends BaseLayout {
                 openErrorDialog(e.getMessage());
             }
         });
+
         grid.setItems(products);
 
         // Configure the columns
@@ -48,22 +66,9 @@ public class InventoryManagementView extends BaseLayout {
         grid.addColumn(Product::rating).setHeader("Rating");
         grid.addColumn(Product::price).setHeader("Price");
         grid.addColumn(Product::description).setHeader("Description");
-        grid.addColumn(p-> idToQuantity.get(p.productId())).setHeader("Quantity");
-
+        grid.addColumn(p -> idToQuantity.get(p.productId())).setHeader("Quantity");
 
         // Add action buttons
-        grid.addComponentColumn(product -> {
-            Button addButton = new Button("Add Product", click -> {
-                try {
-                    appController.postByEndpoint(Endpoints.ADD_PRODUCT, storeId);
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
-                }
-                refreshGrid();
-            });
-            return addButton;
-        }).setHeader("Add Product");
-
         grid.addComponentColumn(product -> {
             Button editButton = new Button("Edit", click -> {
                 try {
@@ -74,8 +79,7 @@ public class InventoryManagementView extends BaseLayout {
                 refreshGrid();
             });
             return editButton;
-        }).setHeader("Edit");
-
+        });
 
         grid.addComponentColumn(product -> {
             Button removeButton = new Button("Remove", click -> {
@@ -87,51 +91,37 @@ public class InventoryManagementView extends BaseLayout {
                 refreshGrid();
             });
             return removeButton;
-        }).setHeader("Remove");
-
-//        grid.addComponentColumn(product -> {
-//            Button toggleButton = new Button(product.isEnabled() ? "Disable" : "Enable", click -> {
-//                if (product.isEnabled()) {
-//                    restTemplate.postForObject(Endpoints.DISABLE_PRODUCT.location(), product.productId(), Void.class);
-//                    product.setEnabled(false);
-//                } else {
-//                    restTemplate.postForObject(Endpoints.ENABLE_PRODUCT.location(), product.productId(), Void.class);
-//                    product.setEnabled(true);
-//                }
-//                refreshGrid();
-//            });
-//            return toggleButton;
-//        }).setHeader("Disable/Enable");
+        });
 
         // Configure the editor
-        binder = new Binder<>(Product.class);
         Editor<Product> editor = grid.getEditor();
         editor.setBinder(binder);
         editor.setBuffered(true);
 
-        // Add editor fields
-        TextField nameField = new TextField();
-        binder.forField(nameField).bind(Product::productName, Product::setProductName);
-        grid.getColumnByKey("productName").setEditorComponent(nameField);
-
-        TextField categoryField = new TextField();
-        binder.forField(categoryField).bind(Product::category, Product::setCategory);
-        grid.getColumnByKey("category").setEditorComponent(categoryField);
-
-//        TextField ratingField = new TextField();
-//        binder.forField(ratingField).bind(Product::rating, Product::setRating);
-//        grid.getColumnByKey("rating").setEditorComponent(ratingField);
+//        // Add editor fields
+//        TextField nameField = new TextField();
+//        binder.bind(nameField, Product::getProductName, Product::setProductName);
+//        grid.getColumnByKey("productName").setEditorComponent(nameField);
 //
-//        TextField priceField = new TextField();
-//        binder.forField(priceField).bind(Product::price, Product::setPrice);
-//        grid.getColumnByKey("price").setEditorComponent(priceField);
-
-        TextField descriptionField = new TextField();
-        binder.forField(descriptionField).bind(Product::description, Product::setDescription);
-        grid.getColumnByKey("description").setEditorComponent(descriptionField);
+//        TextField categoryField = new TextField();
+//        binder.bind(categoryField, Product::getCategory, Product::setCategory);
+//        grid.getColumnByKey("category").setEditorComponent(categoryField);
+//
+//        TextField descriptionField = new TextField();
+//        binder.bind(descriptionField, Product::getDescription, Product::setDescription);
+//        grid.getColumnByKey("description").setEditorComponent(descriptionField);
 
         // Add save and cancel buttons for the editor
-        Button saveButton = new Button("Save", click -> {
+        Button addButton = new Button("Add Product", click -> {
+            try {
+                appController.postByEndpoint(Endpoints.ADD_PRODUCT, storeId);
+                refreshGrid();
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
+        });
+
+        Button saveButton = new Button("Save Edit", click -> {
             try {
                 editor.save();
                 appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId);
@@ -140,10 +130,12 @@ public class InventoryManagementView extends BaseLayout {
                 openErrorDialog(e.getMessage());
             }
         });
-        Button cancelButton = new Button("Cancel", click -> editor.cancel());
+        Button cancelButton = new Button("Cancel Edit", click -> editor.cancel());
 
-        content.add(grid, saveButton, cancelButton);
-        addToDrawer(content);
+        content.add(grid);
+
+        HorizontalLayout buttonsLayout = new HorizontalLayout(addButton, saveButton, cancelButton);
+        content.add(buttonsLayout);
     }
 
     private List<Product> getProducts() {
@@ -156,7 +148,18 @@ public class InventoryManagementView extends BaseLayout {
         return products;
     }
 
+    private List<Product> getSampleProducts() {
+        List<Product> sampleProducts = new ArrayList<>();
+        sampleProducts.add(new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS));
+        sampleProducts.add(new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS));
+        return sampleProducts;
+    }
+
     private void refreshGrid() {
-        grid.setItems(getProducts());
+        List<Product> products = getProducts();
+        if (products == null || products.isEmpty()) {
+            products = getSampleProducts();
+        }
+        grid.setItems(products);
     }
 }
