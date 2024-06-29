@@ -1,10 +1,10 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Notification;
 import com.amazonas.common.requests.notifications.NotificationRequest;
+import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
-import com.amazonas.frontend.model.Notification;
-import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -20,7 +20,6 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Route("notifications")
@@ -57,13 +56,19 @@ public class NotificationsView extends BaseLayout {
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
-        for (Notification notification : unreadNotifications) {
+
+        if (unreadNotifications != null) {
+            for (Notification notification : unreadNotifications) {
                 try {
-                    appController.postByEndpoint(Endpoints.SET_READ_VALUE, new NotificationRequest(AppController.getCurrentUserId()));
+                    notification.setRead(true);
+                    NotificationRequest r = new NotificationRequest(notification.notificationId(), true);
+                    appController.postByEndpoint(Endpoints.SET_READ_VALUE, r);
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
                 }
+            }
         }
+
 //        // Example notifications
 //        notifications.addAll(Arrays.asList(
 //                new Notification("Alice", "Welcome", "Welcome to our platform!"),
@@ -81,7 +86,7 @@ public class NotificationsView extends BaseLayout {
             Span senderLabel = new Span("Sender: ");
             senderLabel.getStyle().set("font-weight", "bold");
             senderDiv.add(senderLabel);
-            senderDiv.add(new Span(notification.sender()));
+            senderDiv.add(new Span(notification.senderId()));
 
             Div titleDiv = new Div();
             Span titleLabel = new Span("Title: ");
@@ -116,7 +121,7 @@ public class NotificationsView extends BaseLayout {
         Span senderLabel = new Span("Sender: ");
         senderLabel.getStyle().set("font-weight", "bold");
         senderDiv.add(senderLabel);
-        senderDiv.add(new Span(notification.sender()));
+        senderDiv.add(new Span(notification.senderId()));
 
         Div titleDiv = new Div();
         Span titleLabel = new Span("Title: ");
@@ -128,7 +133,7 @@ public class NotificationsView extends BaseLayout {
         Span contentLabel = new Span("Content: ");
         contentLabel.getStyle().set("font-weight", "bold");
         contentDiv.add(contentLabel);
-        contentDiv.add(new Span(notification.content()));
+        contentDiv.add(new Span(notification.message()));
 
         Button deleteButton = new Button("Delete", e -> {
             Dialog confirmDialog = new Dialog();
