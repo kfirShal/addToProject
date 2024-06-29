@@ -141,6 +141,16 @@ public class StoresService {
         }
     }
 
+    public String getProductQuantity(String json) {
+        Request request = Request.from(json);
+        try {
+            ProductRequest toGet = ProductRequest.from(request.payload());
+            return Response.getOk(proxy.getProductQuantity(toGet.storeId(), toGet.product().productId(), request.userId(), request.token()));
+        } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
+            return Response.getError(e);
+        }
+    }
+
     public String getStoreProducts(String json) {
         Request request = Request.from(json);
         try {

@@ -72,6 +72,10 @@ public class StoresController {
         getStore(storeId).setProductQuantity(productId, quantity);
     }
 
+    public int getProductQuantity(String storeId, String productId) throws StoreException {
+        return getStore(storeId).getProductQuantity(productId);
+    }
+
     public Set<Product> getStoreProducts(String storeId) throws StoreException {
         return getStore(storeId).getStoreProducts();
     }

@@ -279,6 +279,16 @@ public class Store {
         }
     }
 
+    public int getProductQuantity(String productId) throws StoreException {
+        try {
+            lock.acquireRead();
+            checkIfOpen();
+            return inventory.getQuantity(productId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
     public void setProductQuantity(String productId, int quantity) throws StoreException {
         try {
             lock.acquireWrite();

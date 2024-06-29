@@ -9,6 +9,7 @@ public enum StoreActions {
     ENABLE_PRODUCT,
     DISABLE_PRODUCT,
     SET_PRODUCT_QUANTITY,
+    GET_PRODUCT_QUANTITY,
 
     // store administration,
     CLOSE_STORE,
@@ -16,7 +17,7 @@ public enum StoreActions {
     UPDATE_STORE_INFORMATION,
     VIEW_STORE_TRANSACTIONS,
 
-    // permissions management
+    // permissions management,
     ADD_OWNER,
     REMOVE_OWNER,
     ADD_MANAGER,
