@@ -39,7 +39,7 @@ public class NotificationsView extends BaseLayout {
         // Initialize notifications list
         notifications = new ArrayList<>();
 
-        // TODO :Get notifications from the backend (we receive error)
+        // Get notifications from the backend
         NotificationRequest request = new NotificationRequest(AppController.getCurrentUserId());
 
         try {
@@ -47,7 +47,24 @@ public class NotificationsView extends BaseLayout {
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
-        // TODO : go through the notifications and set them as read
+
+
+        if (notifications == null || notifications.isEmpty()) {
+            VerticalLayout noNotificationsLayout = new VerticalLayout();
+            noNotificationsLayout.setWidthFull();
+            noNotificationsLayout.setHeightFull();
+            noNotificationsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+            noNotificationsLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+            Span noNotificationsMessage = new Span("There are no new notifications");
+            noNotificationsMessage.getStyle().set("font-size", "24px");
+            noNotificationsMessage.getStyle().set("color", "var(--lumo-secondary-text-color)");
+
+            noNotificationsLayout.add(noNotificationsMessage);
+            content.add(noNotificationsLayout);
+            return;
+        }
+
 
         List<Notification> unreadNotifications = new ArrayList<>();
 
@@ -107,11 +124,13 @@ public class NotificationsView extends BaseLayout {
             return itemLayout;
         }));
 
+
         // Set items to VirtualList
         notificationList.setItems(notifications);
 
         // Add the VirtualList to the layout
         content.add(notificationList);
+
     }
 
     private void showNotificationDialog(Notification notification) {
@@ -141,9 +160,10 @@ public class NotificationsView extends BaseLayout {
 
             Button confirmButton = new Button("Confirm", event -> {
                 // TODO :Delete the notification from the backend (we receive error)
-                NotificationRequest request = new NotificationRequest(AppController.getCurrentUserId());
+                NotificationRequest r = new NotificationRequest(notification.receiverId());
+
                 try {
-                    appController.postByEndpoint(Endpoints.DELETE_NOTIFICATION,request);
+                    appController.postByEndpoint(Endpoints.DELETE_NOTIFICATION,r);
                 } catch (ApplicationException ex) {
                     openErrorDialog(ex.getMessage());
                 }
