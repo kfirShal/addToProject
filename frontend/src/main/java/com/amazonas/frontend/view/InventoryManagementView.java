@@ -13,6 +13,8 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.combobox.ComboBox;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,10 +31,7 @@ public class InventoryManagementView extends BaseLayout {
     public InventoryManagementView(AppController appController) {
         super(appController);
         this.appController = appController;
-
-        // Initialize binder
         binder = new Binder<>(Product.class);
-
         grid = new Grid<>(Product.class);
         List<Product> products = getProducts();
 
@@ -63,10 +62,20 @@ public class InventoryManagementView extends BaseLayout {
         grid.addColumn(Product::productId).setHeader("ID");
         grid.addColumn(Product::productName).setHeader("Name");
         grid.addColumn(Product::category).setHeader("Category");
-        grid.addColumn(Product::rating).setHeader("Rating");
+        // Configure the rating column with ComboBox
+        Grid.Column<Product> ratingColumn = grid.addColumn(Product::rating).setHeader("Rating");
+        ComboBox<Rating> ratingComboBox = new ComboBox<>();
+        ratingComboBox.setItems(Rating.values());
+        ratingComboBox.setItemLabelGenerator(Rating::name);
+        ratingComboBox.setAllowCustomValue(false);
+
+        binder.forField(ratingComboBox)
+                .bind(Product::rating, Product::setRating);
+        ratingColumn.setEditorComponent(ratingComboBox);
         grid.addColumn(Product::price).setHeader("Price");
         grid.addColumn(Product::description).setHeader("Description");
         grid.addColumn(p -> idToQuantity.get(p.productId())).setHeader("Quantity");
+
 
         // Add action buttons
         grid.addComponentColumn(product -> {
@@ -98,21 +107,8 @@ public class InventoryManagementView extends BaseLayout {
         editor.setBinder(binder);
         editor.setBuffered(true);
 
-//        // Add editor fields
-//        TextField nameField = new TextField();
-//        binder.bind(nameField, Product::getProductName, Product::setProductName);
-//        grid.getColumnByKey("productName").setEditorComponent(nameField);
-//
-//        TextField categoryField = new TextField();
-//        binder.bind(categoryField, Product::getCategory, Product::setCategory);
-//        grid.getColumnByKey("category").setEditorComponent(categoryField);
-//
-//        TextField descriptionField = new TextField();
-//        binder.bind(descriptionField, Product::getDescription, Product::setDescription);
-//        grid.getColumnByKey("description").setEditorComponent(descriptionField);
-
         // Add save and cancel buttons for the editor
-        Button addButton = new Button("Add Product", click -> {
+        Button addButton = new Button("Add New product", click -> {
             try {
                 appController.postByEndpoint(Endpoints.ADD_PRODUCT, storeId);
                 refreshGrid();
@@ -133,7 +129,6 @@ public class InventoryManagementView extends BaseLayout {
         Button cancelButton = new Button("Cancel Edit", click -> editor.cancel());
 
         content.add(grid);
-
         HorizontalLayout buttonsLayout = new HorizontalLayout(addButton, saveButton, cancelButton);
         content.add(buttonsLayout);
     }
