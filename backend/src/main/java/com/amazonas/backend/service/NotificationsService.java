@@ -1,6 +1,8 @@
 package com.amazonas.backend.service;
 
-import com.amazonas.backend.business.notifications.NotificationController;
+import com.amazonas.backend.business.permissions.proxies.NotificationProxy;
+import com.amazonas.backend.exceptions.AuthenticationFailedException;
+import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.common.dtos.Notification;
 import com.amazonas.common.requests.Request;
@@ -13,18 +15,18 @@ import java.util.List;
 @Component("notificationsService")
 public class NotificationsService {
 
-    private final NotificationController notificationController;
+    private final NotificationProxy proxy;
 
-    public NotificationsService(NotificationController notificationController) {
-        this.notificationController = notificationController;
+    public NotificationsService(NotificationProxy proxy) {
+        this.proxy = proxy;
     }
     public String sendNotification(String json){
         Request request = Request.from(json);
         try {
             NotificationRequest toSend = NotificationRequest.from(request.payload());
-            notificationController.sendNotification(toSend.title(), toSend.message(), toSend.senderId(), toSend.receiverId());
+            proxy.sendNotification(toSend.title(), toSend.message(), toSend.senderId(), toSend.receiverId(), request.userId(), request.token());
             return Response.getOk();
-        } catch (NotificationException e) {
+        } catch (NotificationException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
@@ -33,9 +35,9 @@ public class NotificationsService {
         Request request = Request.from(json);
         try {
             NotificationRequest toSet = NotificationRequest.from(request.payload());
-            notificationController.setReadValue(toSet.notificationId(), toSet.read());
+            proxy.setReadValue(toSet.notificationId(), toSet.read(), request.userId(), request.token());
             return Response.getOk();
-        } catch (NotificationException e) {
+        } catch (NotificationException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
@@ -44,9 +46,9 @@ public class NotificationsService {
         Request request = Request.from(json);
         try {
             NotificationRequest toGet = NotificationRequest.from(request.payload());
-            List<Notification> notifications = notificationController.getUnreadNotifications(toGet.receiverId());
+            List<Notification> notifications = proxy.getUnreadNotifications(toGet.receiverId(), request.userId(), request.token());
             return Response.getOk(notifications);
-        } catch (NotificationException e) {
+        } catch (NotificationException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
@@ -55,9 +57,9 @@ public class NotificationsService {
         Request request = Request.from(json);
         try {
             NotificationRequest toGet = NotificationRequest.from(request.payload());
-            List<Notification> notifications = notificationController.getNotifications(toGet.receiverId(), toGet.limit());
+            List<Notification> notifications = proxy.getNotifications(toGet.receiverId(), toGet.limit(), toGet.offset(), request.userId(), request.token());
             return Response.getOk(notifications);
-        } catch (NotificationException e) {
+        } catch (NotificationException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
@@ -66,9 +68,9 @@ public class NotificationsService {
         Request request = Request.from(json);
         try {
             NotificationRequest toDelete = NotificationRequest.from(request.payload());
-            notificationController.deleteNotification(toDelete.notificationId());
+            proxy.deleteNotification(toDelete.notificationId(), request.userId(), request.token());
             return Response.getOk();
-        } catch (NotificationException e) {
+        } catch (NotificationException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }

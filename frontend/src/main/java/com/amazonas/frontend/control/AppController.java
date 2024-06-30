@@ -38,6 +38,10 @@ public class AppController {
         return "Welcome to my app!";
     }
 
+    public String getNotificationsMessage() {
+        return "Notifications";
+    }
+
     public String getExampleMessage(int num) {
         return "Example " + num;
     }
@@ -147,6 +151,7 @@ public class AppController {
     }
 
     public boolean login(String userId, String password) {
+        userId = userId.toLowerCase();
         if (isUserLoggedIn()) {
             return false;
         }

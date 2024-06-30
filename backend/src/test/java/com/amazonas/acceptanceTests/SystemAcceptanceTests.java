@@ -8,9 +8,10 @@ import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.repository.StoreRepository;
+import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.backend.repository.UserCredentialsRepository;
 import com.amazonas.backend.business.market.MarketInitializer;
-import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
+import com.amazonas.common.requests.shipping.ShipmentRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,14 +30,16 @@ public class SystemAcceptanceTests {
     private UserCredentialsRepository repository;
     private CreditCard creditCard;
     private StoreRepository storeRepository;
+    private TransactionRepository transactionRepository;
 
     @BeforeEach
     public void setUp() {
         storeRepository = mock(StoreRepository.class);
         repository = mock(UserCredentialsRepository.class);
+        transactionRepository = mock(TransactionRepository.class);
         authController = new AuthenticationController(repository); // Pass password encoder to controller
         paymentController = new PaymentServiceController();
-        shippingController = new ShippingServiceController(storeRepository);
+        shippingController = new ShippingServiceController(storeRepository,transactionRepository);
         marketInitializer = new MarketInitializer(shippingController, paymentController);
         creditCard = new CreditCard();
     }
@@ -217,12 +220,12 @@ public class SystemAcceptanceTests {
     public void testShippingOrder_Success() {
         // Arrange
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
-        ShipmentRequest request = new ShipmentRequest(transaction, "shippingService1");
+        ShipmentRequest request = new ShipmentRequest(transaction.transactionId(), "shippingService1", transaction.storeId());
         ShippingService shippingService = mock(ShippingService.class);
         shippingController.addShippingService("shippingService1", shippingService);
 
         // Act
-        boolean shippingResult =  shippingController.sendShipment(request);
+        boolean shippingResult =  shippingController.sendShipment(request.transactionId(),request.serviceId());
 
         // Assert
         assertTrue(shippingResult);
@@ -232,9 +235,9 @@ public class SystemAcceptanceTests {
     public void testShippingOrder_InvalidAddress_Failure() {
         // Arrange
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
-        ShipmentRequest request = new ShipmentRequest(transaction, "shippingService1");
+        ShipmentRequest request = new ShipmentRequest(transaction.transactionId(), "shippingService1", transaction.storeId());
         ShippingService shippingService = mock(ShippingService.class);
-        ShippingServiceController shippingController = new ShippingServiceController(storeRepository);
+        ShippingServiceController shippingController = new ShippingServiceController(storeRepository,transactionRepository);
 
         when(shippingService.ship(transaction)).thenThrow(new RuntimeException("Invalid address"));
 
@@ -242,7 +245,7 @@ public class SystemAcceptanceTests {
         shippingController.addShippingService("shippingService1", shippingService);
         boolean result = false;
         try {
-            result = shippingController.sendShipment(request);
+            result = shippingController.sendShipment(request.transactionId(),request.serviceId());
         } catch (RuntimeException e) {
             // Expected exception
         }
@@ -255,10 +258,10 @@ public class SystemAcceptanceTests {
     public void testShippingOrder_CorrectAddressAfterFailure_Success() {
         // Arrange
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
-        ShipmentRequest request = new ShipmentRequest(transaction, "shippingService1");
+        ShipmentRequest request = new ShipmentRequest(transaction.transactionId(), "shippingService1", transaction.storeId());
         ShippingService shippingService = mock(ShippingService.class);
 
-        ShippingServiceController shippingController = new ShippingServiceController(storeRepository);
+        ShippingServiceController shippingController = new ShippingServiceController(storeRepository,transactionRepository);
 
         when(shippingService.ship(transaction)).thenThrow(new RuntimeException("Invalid address"));
 
@@ -266,7 +269,7 @@ public class SystemAcceptanceTests {
         shippingController.addShippingService("shippingService1", shippingService);
         boolean initialResult = false;
         try {
-            initialResult = shippingController.sendShipment(request);
+            initialResult = shippingController.sendShipment(request.transactionId(),request.serviceId());
         } catch (RuntimeException e) {
             // Expected exception
         }
@@ -278,7 +281,7 @@ public class SystemAcceptanceTests {
         when(shippingService.ship(transaction)).thenReturn(true);
 
         // Act again with the corrected address
-        boolean finalResult = shippingController.sendShipment(request);
+        boolean finalResult = shippingController.sendShipment(request.transactionId(),request.serviceId());
 
         // Assert final success
         assertTrue(finalResult);

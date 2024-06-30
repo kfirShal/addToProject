@@ -10,7 +10,6 @@ import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
-import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.transactions.Transaction;
@@ -18,15 +17,13 @@ import com.amazonas.backend.business.transactions.TransactionState;
 import com.amazonas.backend.business.userProfiles.*;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.repository.*;
-import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
+import com.amazonas.backend.repository.mongoCollections.TransactionMongoCollection;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,7 +68,9 @@ public class PurchaseTests {
     private User user;
     private ShippingServiceController shippingServiceController;
     private ShippingService shippingService;
+    private Transaction transaction;
     // ================================================= |
+
 
     @BeforeEach
     void setUp() {
@@ -81,7 +80,20 @@ public class PurchaseTests {
         appointmentSystem = mock(AppointmentSystem.class);
         pendingReservationMonitor = mock(PendingReservationMonitor.class);
         permissionsController = mock(PermissionsController.class);
-        transactionRepository = mock(TransactionRepository.class);
+        transactionRepository = spy(new TransactionRepository(mock(TransactionMongoCollection.class)){
+            @Override
+            public void addNewTransaction(Transaction t) {
+                transaction = t;
+            }
+
+            @Override
+            public Transaction getTransactionById(String transactionId) {
+                if(transaction.transactionId().equals(transactionId)){
+                    return transaction;
+                }
+                return null;
+            }
+        });
         shoppingCartRepository = mock(ShoppingCartRepository.class);
         storeRepository = mock(StoreRepository.class);
         // Real instances
@@ -126,7 +138,7 @@ public class PurchaseTests {
 
         // ========= ShippingServiceController setup ========= |
         shippingService = mock(ShippingService.class);
-        shippingServiceController = new ShippingServiceController(storeRepository);
+        shippingServiceController = new ShippingServiceController(storeRepository,transactionRepository);
         shippingServiceController.addShippingService(SHIPPING_SERVICE_ID, shippingService);
 
         // ============= Entities setup ============= |
@@ -172,7 +184,7 @@ public class PurchaseTests {
         verify(paymentService,times(1)).charge(any(),any());
         // check that the product remained in the basket
         assertEquals(5, basket.getProducts().get(PRODUCT_ID));
-        // check that the transaction was not created
+        // check that the transactionId was not created
         verify(transactionRepository,times(0)).addNewTransaction(any());
         // check that the notification was not sent
         assertDoesNotThrow(()-> verify(notificationController, times(0)).sendNotification(any(),any(),any(),any()));
@@ -235,26 +247,20 @@ public class PurchaseTests {
         assertDoesNotThrow(()->usersController.payForPurchase(USER_ID));
         // check that the payment was attempted
         verify(paymentService,times(1)).charge(any(),any());
-        // check that a transaction was created
+        // check that a transactionId was created
         verify(transactionRepository,times(1)).addNewTransaction(any());
         // check that the shopping cart was reset
         verify(shoppingCartRepository,times(1)).saveCart(any());
-        // get a transaction
-        Reservation reservation = reservationRepository.getReservations(USER_ID).getFirst();
-        Method reservationToTransaction =  assertDoesNotThrow (()->UsersController.class.getDeclaredMethod("reservationToTransaction",String.class, Reservation.class, LocalDateTime.class));
-        reservationToTransaction.setAccessible(true);
-        Transaction transaction = (Transaction) assertDoesNotThrow(()->reservationToTransaction.invoke(usersController, USER_ID, reservation, LocalDateTime.now()));
 
         // ================== Test execution ================== |
-        ShipmentRequest request = new ShipmentRequest(transaction, SHIPPING_SERVICE_ID);
-        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(request)));
+        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.transactionId(),SHIPPING_SERVICE_ID)));
 
         // ================== Test verification ================== |
         // check that the shipping was attempted
         verify(shippingService,times(1)).ship(any());
-        // check that the transaction was not updated
+        // check that the transactionId was not updated
         verify(transactionRepository,times(0)).updateTransaction(any());
-        // check that the transaction is not marked as shipped
+        // check that the transactionId is not marked as shipped
         assertEquals(transaction.state(), TransactionState.PENDING_SHIPMENT);
         // check that the product quantity was not updated
         assertEquals(5, assertDoesNotThrow(()->store.availableCount(PRODUCT_ID)));

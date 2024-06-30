@@ -26,6 +26,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.amazonas.backend.business.authentication.AuthenticationController.generatePassword;
+
 @Component("usersController")
 public class UsersController {
     private static final Logger log = LoggerFactory.getLogger(UsersController.class);
@@ -83,6 +85,7 @@ public class UsersController {
             String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
             register(adminEmail, adminId, adminPassword);
+            permissionsController.registerAdmin(adminId);
         } catch (UserException e) {
             log.error("Failed to generate admin user");
             throw new RuntimeException("Failed to generate admin user");
@@ -95,6 +98,9 @@ public class UsersController {
 
 
     public void register(String email, String userId, String password) throws UserException {
+
+        userId = userId.toLowerCase();
+        email = email.toLowerCase();
 
         if(userRepository.userIdExists(userId)){
             log.debug("User with id: {} already exists in the system", userId);
@@ -139,6 +145,7 @@ public class UsersController {
     }
 
     public void loginToRegistered(String guestInitialId,String userId) throws UserException {
+        userId = userId.toLowerCase();
 
         if(! userRepository.userIdExists(userId)){
             log.debug("User with id: {} does not exist in the system", userId);
@@ -170,6 +177,8 @@ public class UsersController {
     }
 
     public void logout(String userId) throws UserException {
+        userId = userId.toLowerCase();
+
         if(!onlineRegisteredUsers.containsKey(userId)){
             log.debug("User with id: {} is not online", userId);
             throw new UserException("User with id: " + userId + " is not online");
@@ -209,6 +218,8 @@ public class UsersController {
     }
 
     public User getUser(String userId) throws UserException {
+        userId = userId.toLowerCase();
+
         if(userRepository.userIdExists(userId)){
             return userRepository.getUser(userId);
         }
@@ -226,6 +237,7 @@ public class UsersController {
     }
 
     public List<Transaction> getUserTransactionHistory(String userId) throws UserException {
+        userId = userId.toLowerCase();
         if(!userRepository.userIdExists(userId)){
             log.debug("User with id: {} does not exist", userId);
             throw new UserException("Invalid userId");
@@ -237,24 +249,28 @@ public class UsersController {
     // =============================================================================== |
 
     public void addProductToCart(String userId, String storeId, String productId, int quantity) throws UserException, ShoppingCartException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.addProduct(storeId, productId,quantity);
         log.debug("Product with id: {} added to the cart of user with id: {}", productId, userId);
     }
 
     public void removeProductFromCart(String userId,String storeName,String productId) throws UserException, ShoppingCartException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.removeProduct(storeName,productId);
         log.debug("Product with id: {} removed from the cart of user with id: {}", productId, userId);
     }
 
     public void changeProductQuantity(String userId, String storeName, String productId, int quantity) throws UserException, ShoppingCartException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         cart.changeProductQuantity(storeName, productId,quantity);
         log.debug("Product with id: {} quantity changed in the cart of user with id: {}", productId, userId);
     }
 
     public ShoppingCart viewCart(String userId) throws UserException {
+        userId = userId.toLowerCase();
         return getCartWithValidation(userId);
     }
     // =============================================================================== |
@@ -262,13 +278,16 @@ public class UsersController {
     // =============================================================================== |
 
     public void startPurchase(String userId) throws PurchaseFailedException, UserException {
+        userId = userId.toLowerCase();
         ShoppingCart cart = getCartWithValidation(userId);
         Map<String, Reservation> reservations = cart.reserveCart();
-        reservations.values().forEach(r -> reservationRepository.saveReservation(userId,r));
+        final String finalUserId = userId;
+        reservations.values().forEach(r -> reservationRepository.saveReservation(finalUserId,r));
         log.debug("Cart of user with id: {} reserved successfully", userId);
     }
 
     public void payForPurchase(String userId) throws PurchaseFailedException, UserException {
+        userId = userId.toLowerCase();
         try{
             lock.acquireWrite();
 
@@ -282,9 +301,10 @@ public class UsersController {
             ShoppingCart cart = getCartWithValidation(userId);
             User user = userRepository.getUser(userId);
             if(! paymentService.charge(user.getPaymentMethod(), cart.getTotalPrice())){
+                final String finalUserId = userId;
                 reservations.forEach(r -> {
                     r.cancelReservation();
-                    reservationRepository.removeReservation(userId,r);
+                    reservationRepository.removeReservation(finalUserId,r);
                 });
                 log.debug("Payment failed");
                 throw new PurchaseFailedException("Payment failed");
@@ -304,12 +324,12 @@ public class UsersController {
                 Store store = storeRepository.getStore(reservation.storeId());
                 store.getOwners().forEach(ownerId -> {
                     try {
-                        notificationController.sendNotification("New transaction in your store: "+store.getStoreName(),
+                        notificationController.sendNotification("New transactionId in your store: "+store.getStoreName(),
                                 "Transaction id: "+t.transactionId(),
                                 "Amazonas",
                                 ownerId);
                     } catch (NotificationException e) {
-                        log.error("Failed to send transaction notification to owner with id: {} in store {}", ownerId, store.getStoreName());
+                        log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.getStoreName());
                     }
                 });
 
@@ -326,6 +346,7 @@ public class UsersController {
     }
 
     public boolean cancelPurchase(String userId) throws UserException {
+        userId = userId.toLowerCase();
         if(!userRepository.userIdExists(userId)){
             log.debug("Cancel Purchase - invalid userId");
             throw new UserException("Invalid userId");
@@ -340,9 +361,10 @@ public class UsersController {
                 return false;
             }
 
+            final String finalUserId = userId;
             reservations.forEach(r -> {
                 r.cancelReservation();
-                reservationRepository.removeReservation(userId,r);
+                reservationRepository.removeReservation(finalUserId,r);
             });
 
             log.debug("The purchase canceled for user with id: {}", userId);
@@ -392,19 +414,6 @@ public class UsersController {
         return matcher.matches();
     }
 
-    private String generatePassword(){
-        Random rand = new Random();
-        List<Character> chars = new ArrayList<>(32);
-        String specialChars = "!@#$%^&*()\\-=\\[\\]{};':\"<>?|";
-        for(int i = 0; i < 8; i++){
-            chars.add(specialChars.charAt(rand.nextInt(specialChars.length())));
-            chars.add((char)rand.nextInt('a','z'));
-            chars.add((char)rand.nextInt('A','Z'));
-            chars.add((char)rand.nextInt('0','9'));
-        }
-        Collections.shuffle(chars);
-        return chars.stream().map(String::valueOf).reduce("",String::concat);
-    }
     // =============================================================================== |
     // ================================ GETTERS ====================================== |
     // =============================================================================== |

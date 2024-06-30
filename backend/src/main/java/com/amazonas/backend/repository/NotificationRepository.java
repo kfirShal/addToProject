@@ -13,54 +13,50 @@ import java.util.Map;
 @Repository
 public class NotificationRepository extends AbstractCachingRepository<Notification> {
 
-    private Map<String,Notification> notifications; //TODO: remove this when we have a real database
+    private final Map<String,Notification> notifications;//TODO: remove this when we have a real database
+    private final Map<String, List<Notification>> receiverIdToNotifications;
 
     public NotificationRepository(MongoCollection<Notification> repo) {
         super(repo);
         notifications = new HashMap<>();
+        receiverIdToNotifications = new HashMap<>();
     }
 
     //TODO: replace these methods with the real database calls
 
     public void insert(Notification notification) {
         notifications.put(notification.notificationId(),notification);
+        receiverIdToNotifications.computeIfAbsent(notification.receiverId(), k -> new LinkedList<>()).add(notification);
     }
 
     public Notification findById(String notificationId) {
         return notifications.get(notificationId);
     }
 
-    public void update(Notification notification) {
-        notifications.put(notification.notificationId(),notification);
-    }
-
     public List<Notification> findUnreadByReceiverId(String receiverId) {
-        List<Notification> unreadNotifications = new LinkedList<>();
-        for(Notification notification : notifications.values()){
-            if(notification.receiverId().equals(receiverId) && !notification.read()){
-                unreadNotifications.add(notification);
-            }
-        }
-        return unreadNotifications;
+        return receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
+                .filter(n -> !n.read())
+                .toList();
     }
 
     public List<Notification> findByReceiverId(String receiverId, Integer limit) {
+        return findByReceiverId(receiverId, limit, 0);
+    }
 
-        List<Notification> notifications = new LinkedList<>(findUnreadByReceiverId(receiverId));
-        for(Notification notification : this.notifications.values()){
-            if(notification.receiverId().equals(receiverId)){
-                notifications.add(notification);
-            }
-        }
-        return notifications.stream().limit(limit).toList();
+    public List<Notification> findByReceiverId(String receiverId, Integer limit, Integer offset) {
+        List<Notification> list = receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+        return list;
     }
 
     public void delete(String notificationId) {
-        notifications.remove(notificationId);
+        Notification n = notifications.remove(notificationId);
+        receiverIdToNotifications.get(n.receiverId()).remove(n);
     }
 
     public boolean existsByReceiverId(String receiverId) {
-        return notifications.values().stream()
-                .anyMatch(notification -> notification.receiverId().equals(receiverId));
+        return receiverIdToNotifications.containsKey(receiverId);
     }
 }

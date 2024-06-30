@@ -14,6 +14,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
@@ -23,6 +24,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.amazonas.frontend.control.AppController.*;
 
@@ -65,12 +69,28 @@ public abstract class BaseLayout extends AppLayout {
         if (! isUserLoggedIn()) {
             Button loginButton = new Button("Login", event -> openLoginDialog());
             Button registerButton = new Button("Register", event -> openRegisterDialog());
-            loginButton.getStyle().setMarginLeft("75%");
+//            loginButton.getStyle().setMarginLeft("75%");
+            loginButton.getStyle().setMarginLeft("auto"); // Pushes buttons to the right
             registerButton.getStyle().set("margin-left", "10px");
+            registerButton.getStyle().set("margin-right", "10px");
             addToNavbar(loginButton, registerButton);
         } else {
-            H4 username = new H4("Hello, " + getCurrentUserId());
-            username.getStyle().set("margin-left", "65%");
+            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
+            username.getStyle().set("margin-left", "10px");
+//            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
+//            username.getStyle().set("margin-right", "10px");
+
+            Button notificationsButton = new Button(new Icon(VaadinIcon.ENVELOPE));
+            notificationsButton.addClickListener(event -> {
+                UI.getCurrent().navigate("notifications");
+            });
+            notificationsButton.getStyle().set("margin-right", "10px");
+
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton);
+            userActions.setAlignItems(FlexComponent.Alignment.CENTER);
+            userActions.setSpacing(true); // Adds spacing between components
+//            addToNavbar(username, notificationsButton);
+
             Button logoutButton = new Button("Logout", event -> {
                 if(appController.logout()){
                     clearSession();
@@ -80,8 +100,14 @@ public abstract class BaseLayout extends AppLayout {
                     showNotification("Logout failed");
                 }
             });
-            logoutButton.getStyle().set("margin-left", "50px");
-            addToNavbar(username, logoutButton);
+//            logoutButton.getStyle().set("margin-left", "50px");
+//            addToNavbar(username, logoutButton);
+//            addToNavbar(logoutButton);
+            userActions.getStyle().set("margin-left", "auto"); // Pushes userActions to the right
+            logoutButton.getStyle().set("margin-right", "10px");
+            addToNavbar(userActions, logoutButton);
+
+
         }
 
         // set up guest user if needed
