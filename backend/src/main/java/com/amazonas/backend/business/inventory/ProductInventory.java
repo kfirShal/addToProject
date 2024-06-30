@@ -5,8 +5,7 @@ import com.amazonas.common.dtos.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -103,5 +102,18 @@ public class ProductInventory {
                 .filter(product -> !disabledProductsId.contains(product.productId())
                                     && idToQuantity.get(product.productId()) > 0)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * @return a map with two sets of products, one for enabled products and one for disabled products
+     * the key is a boolean, false for disabled products and true for enabled products
+     */
+    public Map<Boolean,Set<Product>> getProducts(){
+        HashMap<Boolean, Set<Product>> map = new HashMap<>(){{
+            put(true, new HashSet<>());
+            put(false, new HashSet<>());
+        }};
+        idToProduct.forEach((key, value) -> map.get(disabledProductsId.contains(key)).add(value));
+        return map;
     }
 }

@@ -1,5 +1,12 @@
 package com.amazonas.frontend.control;
 
+import com.amazonas.common.dtos.Product;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Set;
+
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
 
@@ -65,8 +72,8 @@ public enum Endpoints {
     GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
-    GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class),
-    GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class);
+    GET_STORE_PRODUCTS("stores/getstoreproducts", Types.GET_STORE_PRODUCTS_TYPE),
+    GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class);
 
     private final String location;
     private final Class<?> returnType;
@@ -83,5 +90,9 @@ public enum Endpoints {
     @SuppressWarnings("unchecked")
     public <T> Class<T> returnType() {
         return (Class<T>) returnType;
+    }
+
+    private static class Types {
+        private static final Class<? extends Type> GET_STORE_PRODUCTS_TYPE = new TypeToken<Map<Boolean,Set<Product>>>() {}.getType().getClass();
     }
 }

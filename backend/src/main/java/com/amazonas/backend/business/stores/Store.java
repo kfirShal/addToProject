@@ -299,11 +299,11 @@ public class Store {
         }
     }
 
-    public Set<Product> getStoreProducts() throws StoreException {
+    public Map<Boolean,Set<Product>> getStoreProducts() throws StoreException {
         try {
             lock.acquireRead();
             checkIfOpen();
-            return inventory.getAllAvailableProducts();
+            return inventory.getProducts();
         } finally {
             lock.releaseRead();
         }
