@@ -25,7 +25,7 @@ public class Example1View extends BaseLayout {
 
         // Create a grid with 5 items
         Grid<String> grid = new Grid<>();
-        List<String> items = Arrays.asList("Manage Inventory", "Manage Store Officials", "View Purchase History", "Purchase & Discount Policy", "Close & Reopen Store");
+        List<String> items = Arrays.asList("Manage Inventory", "Manage Store Officials", "Purchase & Discount Policy", "View Purchase History", "Close & Reopen Store");
 
         grid.setItems(items);
         grid.addColumn(item -> item).setHeader("Operations");
@@ -34,15 +34,15 @@ public class Example1View extends BaseLayout {
             String item = event.getItem();
             // Navigate to a new view based on the item clicked
             if ("Manage Inventory".equals(item)) {
-                getUI().ifPresent(ui -> ui.navigate(Example2View.class));
+                getUI().ifPresent(ui -> ui.navigate(InventoryManagementView.class));
             }
             if ("Manage Store Officials".equals(item)) {
                 getUI().ifPresent(ui -> ui.navigate(Example3View.class));
             }
-            if ("View Purchase History".equals(item)) {
+            if ("Purchase & Discount Policy".equals(item)) {
                 getUI().ifPresent(ui -> ui.navigate(Example4View.class));
             }
-            if ("Purchase & Discount Policy".equals(item)) {
+            if ("View Purchase History".equals(item)) {
                 getUI().ifPresent(ui -> ui.navigate(Example5View.class));
             }
             if ("Close & Reopen Store".equals(item)) {

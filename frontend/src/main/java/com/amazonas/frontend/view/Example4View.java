@@ -1,94 +1,84 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Route("example4")
+@Route("Example4View")
 public class Example4View extends BaseLayout {
 
-    private final Grid<Transaction> grid;
     private final AppController appController;
-    private final List<Transaction> transactions;
+    private final List<String> purchasePolicies;
+    private final List<String> discountPolicies;
 
     public Example4View(AppController appController) {
         super(appController);
         this.appController = appController;
 
-        // Sample transaction data
-        transactions = new ArrayList<>();
-        transactions.add(new Transaction("1", "User1", "2024-06-29", new ArrayList<>())); // Replace with actual data
-        // Add more sample transactions as needed
+        // Sample policy data
+        purchasePolicies = new ArrayList<>();
+        purchasePolicies.add("Policy 1");
+        purchasePolicies.add("Policy 2");
+        purchasePolicies.add("Policy 3");
+
+        discountPolicies = new ArrayList<>();
+        discountPolicies.add("Discount 1");
+        discountPolicies.add("Discount 2");
+        discountPolicies.add("Discount 3");
 
         // Set the window title
-        String newTitle = "Purchase History";
+        String newTitle = "Purchase & Discount Policy";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-        // Create and configure the grid
-        grid = new Grid<>(Transaction.class);
-        grid.setItems(transactions);
+        // Create and configure the grid for Purchase policy
+        H3 purchasePolicyTitle = new H3("Purchase Policy");
+        purchasePolicyTitle.getStyle().set("margin-top", "30px");
+        Grid<String> purchasePolicyGrid = new Grid<>();
+        purchasePolicyGrid.setItems(purchasePolicies);
+        purchasePolicyGrid.addColumn(policy -> policy).setHeader("Policy");
+        purchasePolicyGrid.addComponentColumn(policy -> {
+            Button removeButton = new Button("Remove", event -> {
+                purchasePolicies.remove(policy);
+                purchasePolicyGrid.setItems(purchasePolicies);
+            });
+            return removeButton;
+        });
 
-        // Clear default columns
-        grid.removeAllColumns();
+        Button editPurchasePolicyButton = new Button("Add Policy", event -> {
+            // Add logic to edit purchase policy
+        });
 
-        // Configure the columns manually
-        grid.addColumn(Transaction::getId).setHeader("ID");
-        grid.addColumn(Transaction::getUserId).setHeader("User ID");
-        grid.addColumn(Transaction::getDate).setHeader("Date");
-        grid.addColumn(Transaction::getProductsList).setHeader("Products");
+        // Create and configure the grid for Discount policy
+        H3 discountPolicyTitle = new H3("Discount Policy");
+        discountPolicyTitle.getStyle().set("margin-top", "30px");
+        Grid<String> discountPolicyGrid = new Grid<>();
+        discountPolicyGrid.setItems(discountPolicies);
+        discountPolicyGrid.addColumn(policy -> policy).setHeader("Discount");
+        discountPolicyGrid.addComponentColumn(policy -> {
+            Button removeButton = new Button("Remove", event -> {
+                discountPolicies.remove(policy);
+                discountPolicyGrid.setItems(discountPolicies);
+            });
+            return removeButton;
+        });
 
-        content.add(grid); // Add grid to the content from BaseLayout
-    }
+        Button editDiscountPolicyButton = new Button("Add Policy", event -> {
+            // Add logic to edit discount policy
+        });
 
-    public static class Transaction {
-        private String id;
-        private String userId;
-        private String date;
-        private List<String> productsList;
-
-        public Transaction(String id, String userId, String date, List<String> productsList) {
-            this.id = id;
-            this.userId = userId;
-            this.date = date;
-            this.productsList = productsList;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-
-        public List<String> getProductsList() {
-            return productsList;
-        }
-
-        public void setProductsList(List<String> productsList) {
-            this.productsList = productsList;
-        }
+        // Add grids and buttons to the content
+        VerticalLayout policyLayout = new VerticalLayout();
+        policyLayout.add(purchasePolicyTitle, purchasePolicyGrid, editPurchasePolicyButton,
+                discountPolicyTitle, discountPolicyGrid, editDiscountPolicyButton);
+        content.add(policyLayout);
     }
 }

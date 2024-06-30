@@ -81,8 +81,8 @@ public class Example2View extends BaseLayout {
 
         // Add buttons to save, cancel and add a new product
         Button addButton = new Button("Add a new product", click -> addNewProduct());
-        Button saveButton = new Button("Save changes", click -> editor.save());
-        Button cancelButton = new Button("Cancel changes", click -> editor.cancel());
+        Button saveButton = new Button("Save edit", click -> editor.save());
+        Button cancelButton = new Button("Cancel edit", click -> editor.cancel());
 
         HorizontalLayout buttonsLayout = new HorizontalLayout(addButton, saveButton, cancelButton);
         content.add(buttonsLayout); // Add buttons to the content from BaseLayout
@@ -94,6 +94,18 @@ public class Example2View extends BaseLayout {
         grid.setItems(products);
         grid.getEditor().editItem(newProduct);
     }
+
+    //TODO:
+    // add enable/disable button
+    // add connections to:
+    // GET_STORE_PRODUCTS
+    // ADD_PRODUCT
+    // UPDATE_PRODUCT
+    // REMOVE_PRODUCT
+    // DISABLE_PRODUCT
+    // ENABLE_PRODUCT
+    // SET_PRODUCT_QUANTITY
+    // GET_PRODUCT_QUANTITY - AND TO ADD IT!!!!
 
     public static class Product {
         private String id;
