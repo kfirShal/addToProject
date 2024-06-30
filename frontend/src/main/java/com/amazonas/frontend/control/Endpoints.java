@@ -1,5 +1,9 @@
 package com.amazonas.frontend.control;
 
+import com.amazonas.common.dtos.Notification;
+
+import java.util.List;
+
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
 
@@ -40,8 +44,8 @@ public enum Endpoints {
     // Notifications Endpoints
     SEND_NOTIFICATION("notifications/sendnotification", Void.class),
     SET_READ_VALUE("notifications/setreadvalue", Void.class),
-    GET_UNREAD_NOTIFICATIONS("notifications/getunreadnotifications", Void.class),
-    GET_NOTIFICATIONS("notifications/getnotifications", Void.class),
+    GET_UNREAD_NOTIFICATIONS("notifications/getunreadnotifications", Notification.class),
+    GET_NOTIFICATIONS("notifications/getnotifications", Notification.class),
     DELETE_NOTIFICATION("notifications/deletenotification", Void.class),
 
     // Stores Endpoints

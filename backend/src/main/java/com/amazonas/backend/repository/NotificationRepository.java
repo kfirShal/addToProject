@@ -44,10 +44,11 @@ public class NotificationRepository extends AbstractCachingRepository<Notificati
     }
 
     public List<Notification> findByReceiverId(String receiverId, Integer limit, Integer offset) {
-        return receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
+        List<Notification> list = receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
                 .skip(offset)
                 .limit(limit)
                 .toList();
+        return list;
     }
 
     public void delete(String notificationId) {
