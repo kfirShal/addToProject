@@ -28,13 +28,6 @@ public class Example3View extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-        // Grid for store founder (assuming only one founder, displaying the user's name)
-        H3 founderTitle = new H3("Store Founder");
-        founderTitle.getStyle().set("margin-top", "30px");
-        Grid<String> founderGrid = new Grid<>();
-        founderGrid.setItems("Your Name"); // Replace with actual user's name
-        founderGrid.addColumn(name -> name).setHeader("Name");
-        content.add(founderTitle, founderGrid);
 
         // Grid for store owners
         H3 ownersTitle = new H3("Store Owners");

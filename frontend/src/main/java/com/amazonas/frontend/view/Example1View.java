@@ -18,7 +18,7 @@ public class Example1View extends BaseLayout {
         this.appController = appController;
 
         // Set the window title
-        String newTitle = "Management Dashboard";
+        String newTitle = "Store Management";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
         content.add(title);
