@@ -2,7 +2,7 @@ package com.amazonas.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.stores.factories.StoreFactory;

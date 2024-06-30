@@ -1,8 +1,8 @@
-package com.amazonas.backend.business.permissions.profiles;
+package com.amazonas.common.permissions.profiles;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.utils.ReadWriteLock;
 
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class RegisteredUserPermissionsProfile implements PermissionsProfile {
+public class UserPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
     private final PermissionsProfile defaultProfile;
@@ -20,7 +20,7 @@ public class RegisteredUserPermissionsProfile implements PermissionsProfile {
     private final ReadWriteLock lock;
 
 
-    public RegisteredUserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
+    public UserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
         this.userId = userId;
         storeIdToAllowedStoreActions = new HashMap<>();

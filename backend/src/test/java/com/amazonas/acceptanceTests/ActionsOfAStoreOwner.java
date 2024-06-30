@@ -5,7 +5,7 @@ import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;

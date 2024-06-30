@@ -1,6 +1,6 @@
 package com.amazonas.backend.repository;
 
-import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.mongoCollections.PermissionProfileMongoCollection;
 import com.amazonas.common.utils.ReadWriteLock;

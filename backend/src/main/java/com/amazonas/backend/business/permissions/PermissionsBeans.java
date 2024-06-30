@@ -1,10 +1,10 @@
 package com.amazonas.backend.business.permissions;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
-import com.amazonas.backend.business.permissions.profiles.AdminPermissionsProfile;
-import com.amazonas.backend.business.permissions.profiles.DefaultPermissionsProfile;
-import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
