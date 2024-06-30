@@ -13,8 +13,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.combobox.ComboBox;
-
+import com.vaadin.flow.shared.Registration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +26,9 @@ public class InventoryManagementView extends BaseLayout {
     private final Binder<Product> binder;
     private final AppController appController;
     private final String storeId = "get it from somewhere";
+    private Registration editorOpenListener;
+    private Registration editorCloseListener;
+    private HorizontalLayout buttonsLayout;
 
     public InventoryManagementView(AppController appController) {
         super(appController);
@@ -61,21 +63,11 @@ public class InventoryManagementView extends BaseLayout {
         // Configure the columns
         grid.addColumn(Product::productId).setHeader("ID");
         grid.addColumn(Product::productName).setHeader("Name");
-        grid.addColumn(Product::category).setHeader("Category");
-        // Configure the rating column with ComboBox
-        Grid.Column<Product> ratingColumn = grid.addColumn(Product::rating).setHeader("Rating");
-        ComboBox<Rating> ratingComboBox = new ComboBox<>();
-        ratingComboBox.setItems(Rating.values());
-        ratingComboBox.setItemLabelGenerator(Rating::name);
-        ratingComboBox.setAllowCustomValue(false);
-
-        binder.forField(ratingComboBox)
-                .bind(Product::rating, Product::setRating);
-        ratingColumn.setEditorComponent(ratingComboBox);
         grid.addColumn(Product::price).setHeader("Price");
+        grid.addColumn(Product::category).setHeader("Category");
         grid.addColumn(Product::description).setHeader("Description");
+        grid.addColumn(Product::rating).setHeader("Rating");
         grid.addColumn(p -> idToQuantity.get(p.productId())).setHeader("Quantity");
-
 
         // Add action buttons
         grid.addComponentColumn(product -> {
@@ -102,13 +94,26 @@ public class InventoryManagementView extends BaseLayout {
             return removeButton;
         });
 
+//        grid.addComponentColumn(product -> {
+//            Button enableDisableButton = new Button(product.isEnabled() ? "Disable" : "Enable", click -> {
+//                product.setEnabled(!product.isEnabled());
+//                try {
+//                    appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId); // Assuming this endpoint also updates the enabled state
+//                } catch (ApplicationException e) {
+//                    openErrorDialog(e.getMessage());
+//                }
+//                refreshGrid();
+//            });
+//            return enableDisableButton;
+//        });
+
         // Configure the editor
         Editor<Product> editor = grid.getEditor();
         editor.setBinder(binder);
         editor.setBuffered(true);
 
         // Add save and cancel buttons for the editor
-        Button addButton = new Button("Add New product", click -> {
+        Button addButton = new Button("Add", click -> {
             try {
                 appController.postByEndpoint(Endpoints.ADD_PRODUCT, storeId);
                 refreshGrid();
@@ -128,9 +133,17 @@ public class InventoryManagementView extends BaseLayout {
         });
         Button cancelButton = new Button("Cancel Edit", click -> editor.cancel());
 
-        content.add(grid);
-        HorizontalLayout buttonsLayout = new HorizontalLayout(addButton, saveButton, cancelButton);
-        content.add(buttonsLayout);
+        buttonsLayout = new HorizontalLayout(saveButton, cancelButton);
+        content.add(grid, buttonsLayout, addButton);
+
+        // Configure editor open and close listeners
+        editorOpenListener = editor.addOpenListener(event -> {
+            buttonsLayout.setVisible(true);
+        });
+
+        editorCloseListener = editor.addCloseListener(event -> {
+            buttonsLayout.setVisible(false);
+        });
     }
 
     private List<Product> getProducts() {
