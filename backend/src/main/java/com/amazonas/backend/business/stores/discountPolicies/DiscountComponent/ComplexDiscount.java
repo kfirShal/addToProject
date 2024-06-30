@@ -1,9 +1,12 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.Condition;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.ComplexDiscountDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.DiscountHierarchyLevel;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.dtos.Product;
 
 import java.util.List;
@@ -57,5 +60,13 @@ public class ComplexDiscount implements DiscountComponent {
             }
             return ret;
         }
+    }
+
+    @Override
+    public DiscountComponentDTO generateDTO() throws StoreException {
+        if(condition == null || discount == null) {
+            throw new StoreException("cannot generate discount component");
+        }
+        return new ComplexDiscountDTO(condition.generateDTO(), discount.generateDTO());
     }
 }

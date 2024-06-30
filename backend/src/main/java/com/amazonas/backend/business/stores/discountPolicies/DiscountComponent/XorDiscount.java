@@ -1,8 +1,13 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleDiscountDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleDiscountType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.exceptions.StoreException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class XorDiscount implements DiscountComponent {
@@ -71,5 +76,21 @@ public class XorDiscount implements DiscountComponent {
             }
         }
         return ret;
+    }
+
+    @Override
+    public DiscountComponentDTO generateDTO() throws StoreException {
+        List<DiscountComponentDTO> discounts = new ArrayList<>();
+        for (DiscountComponent child : children) {
+            discounts.add(child.generateDTO());
+        }
+        if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
+            return new MultipleDiscountDTO(discounts, MultipleDiscountType.MINIMUM_PRICE);
+        } else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
+            return new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
+        }
+        else {
+            throw new IllegalArgumentException("The xor condition must be one of the list");
+        }
     }
 }

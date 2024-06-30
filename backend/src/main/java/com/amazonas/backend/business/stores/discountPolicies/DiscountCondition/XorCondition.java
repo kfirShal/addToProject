@@ -1,7 +1,12 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountCondition;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountConditionDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleConditionDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleConditionType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.exceptions.StoreException;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class XorCondition implements Condition{
@@ -30,5 +35,17 @@ public class XorCondition implements Condition{
             }
         }
         return true;
+    }
+
+    @Override
+    public DiscountConditionDTO generateDTO() throws StoreException {
+        if (conditions == null || conditions.length == 0) {
+            throw new StoreException("cannot generate discount component");
+        }
+        List<DiscountConditionDTO> discountConditions= new LinkedList<>();
+        for (Condition condition : conditions) {
+            discountConditions.add(condition.generateDTO());
+        }
+        return new MultipleConditionDTO(MultipleConditionType.XOR, discountConditions);
     }
 }

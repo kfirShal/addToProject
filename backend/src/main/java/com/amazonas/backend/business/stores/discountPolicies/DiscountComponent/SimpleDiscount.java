@@ -1,8 +1,15 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.HierarchyLevel;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.SimpleDiscountDTO;
+import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.CategoryLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.DiscountHierarchyLevel;
+import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
+import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.dtos.Product;
 
 import java.util.List;
@@ -60,5 +67,21 @@ public class SimpleDiscount implements DiscountComponent{
             index++;
         }
         return ret;
+    }
+
+    @Override
+    public DiscountComponentDTO generateDTO() throws StoreException {
+        switch (discountHierarchyLevel) {
+            case CategoryLevel categoryLevel -> {
+                return new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, categoryLevel.getCategory(), percent);
+            }
+            case ProductLevel productLevel -> {
+                return new SimpleDiscountDTO(HierarchyLevel.ProductLevel, productLevel.getProductId(), percent);
+            }
+            case StoreLevel storeLevel -> {
+                return new SimpleDiscountDTO(HierarchyLevel.StoreLevel, "", percent);
+            }
+            default -> throw new StoreException("cannot generate discount component");
+        }
     }
 }

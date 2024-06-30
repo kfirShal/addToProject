@@ -17,6 +17,22 @@ public class DiscountManager {
         discountComponent = null;
     }
 
+    public DiscountComponentDTO getDiscountPolicy() throws StoreException {
+        if (discountComponent == null) {
+            throw new StoreException("cannot generate discount component");
+        }
+        return discountComponent.generateDTO();
+    }
+
+    public boolean deleteAllDiscounts() {
+        discountComponent = null;
+        return true;
+    }
+
+    public ProductAfterDiscount[] applyDiscountPolicy(List<ProductWithQuantitiy> products) throws StoreException {
+        return discountComponent.calculateDiscount(products);
+    }
+
     public void changeDiscountPolicy(DiscountComponentDTO discountComponentDTO) throws StoreException {
         discountComponent = translateDiscountComponentDTO(discountComponentDTO);
     }
@@ -145,15 +161,5 @@ public class DiscountManager {
             default -> throw new StoreException("Invalid discount condition");
         }
     }
-
-    public DiscountComponentDTO getDiscountPolicy() {
-        return null;
-    }
-
-    public boolean deleteAllDiscounts() {
-        discountComponent = null;
-        return true;
-    }
-
 
 }

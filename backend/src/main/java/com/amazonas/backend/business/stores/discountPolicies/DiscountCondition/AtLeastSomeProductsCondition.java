@@ -1,6 +1,10 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountCondition;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountConditionDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.UnaryConditionDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.UnaryConditionType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.exceptions.StoreException;
 
 import java.util.List;
 
@@ -30,5 +34,10 @@ public class AtLeastSomeProductsCondition implements Condition{
             }
         }
         return count >= limit;
+    }
+
+    @Override
+    public DiscountConditionDTO generateDTO() throws StoreException {
+        return new UnaryConditionDTO(UnaryConditionType.AT_LEAST_NUMBER_OF_SOME_PRODUCT, limit, productId);
     }
 }
