@@ -56,7 +56,7 @@ public final class NotificationRequest {
     /**
      * Constructor for setting the read value of a notification
      */
-    public NotificationRequest(Boolean read, String notificationId) {
+    public NotificationRequest(String notificationId, Boolean read) {
         this(notificationId, "", "", "", "", read, 0,0);
     }
 
