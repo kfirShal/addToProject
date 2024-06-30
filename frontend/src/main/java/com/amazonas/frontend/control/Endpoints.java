@@ -4,8 +4,8 @@ import com.amazonas.common.dtos.Product;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
@@ -93,6 +93,6 @@ public enum Endpoints {
     }
 
     private static class Types {
-        private static final Class<? extends Type> GET_STORE_PRODUCTS_TYPE = new TypeToken<Map<Boolean,Set<Product>>>() {}.getType().getClass();
+        private static final Class<? extends Type> GET_STORE_PRODUCTS_TYPE = new TypeToken<Map<Boolean, List<Product>>>() {}.getType().getClass();
     }
 }
