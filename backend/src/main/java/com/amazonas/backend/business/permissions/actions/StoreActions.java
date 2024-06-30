@@ -1,7 +1,6 @@
 package com.amazonas.backend.business.permissions.actions;
 
 public enum StoreActions {
-    VIEW_STORE,
 
     // product management
     ADD_PRODUCT,
@@ -9,14 +8,16 @@ public enum StoreActions {
     UPDATE_PRODUCT,
     ENABLE_PRODUCT,
     DISABLE_PRODUCT,
+    SET_PRODUCT_QUANTITY,
 
     // store administration,
     CLOSE_STORE,
     OPEN_STORE,
     UPDATE_STORE_INFORMATION,
     VIEW_STORE_TRANSACTIONS,
+    SEND_SHIPMENT,
 
-    // permissions management
+    // permissions management,
     ADD_OWNER,
     REMOVE_OWNER,
     ADD_MANAGER,

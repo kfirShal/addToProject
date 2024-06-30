@@ -28,7 +28,7 @@ class NotificationControllerTest {
         senderId = "senderId";
         receiverId = "receiverId";
         repository = mock(NotificationRepository.class);
-        notification = new Notification(notificationId, "title", "message", null, receiverId, receiverId);
+        notification = new Notification(notificationId, "title", "message", null ,receiverId, receiverId);
         notificationController = new NotificationController(repository);
         notificationId = "notificationId";
     }

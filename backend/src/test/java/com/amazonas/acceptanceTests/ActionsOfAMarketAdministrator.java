@@ -1,4 +1,4 @@
-package com.amazonas.backend.acceptanceTests;
+package com.amazonas.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.inventory.ProductInventory;
@@ -99,7 +99,7 @@ public class ActionsOfAMarketAdministrator {
 
         // Assert
         assertNotNull(purchaseHistory);
-        assertEquals(1, purchaseHistory.size(), "Purchase history should contain one transaction");
+        assertEquals(1, purchaseHistory.size(), "Purchase history should contain one transactionId");
     }
 
     @Test

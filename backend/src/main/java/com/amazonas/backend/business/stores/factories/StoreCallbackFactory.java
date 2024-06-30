@@ -10,7 +10,6 @@ import java.util.function.Function;
 @Component("storeCallbackFactory")
 public class StoreCallbackFactory {
 
-
     private final StoreRepository storeRepository;
 
     public StoreCallbackFactory(StoreRepository storeRepository) {
@@ -21,19 +20,12 @@ public class StoreCallbackFactory {
         return products -> storeRepository.getStore(storeId).calculatePrice(products);
     }
 
-    public Function<String,Integer> availableCount(String storeId){
-        return productId -> storeRepository.getStore(storeId).availableCount(productId);
-    }
-
     public Function<Map<String,Integer>, Reservation> makeReservation(String storeId, String userId){
         return products -> storeRepository.getStore(storeId).reserveProducts(products,userId);
     }
 
     public Function<Reservation,Boolean> cancelReservation(String storeId){
-        return reservation ->{
-            storeRepository.getStore(storeId).cancelReservation(reservation);
-            return null;
-        };
+        return reservation ->storeRepository.getStore(storeId).cancelReservation(reservation);
     }
 
 }
