@@ -3,6 +3,8 @@ package com.amazonas.frontend.view;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -10,11 +12,11 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 @Route("example6")
-public class Example6View extends BaseLayout {
-
+public class CloseAndReopenStore extends BaseLayout implements HasUrlParameter<String> {
     private final AppController appController;
+    private String storeId;
 
-    public Example6View(AppController appController) {
+    public CloseAndReopenStore(AppController appController) {
         super(appController);
         this.appController = appController;
 
@@ -77,5 +79,10 @@ public class Example6View extends BaseLayout {
     private void reopenStore() {
         // Logic to reopen the store
         Notification.show("Store is reopened.");
+    }
+
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s) {
+        storeId = s;
     }
 }

@@ -24,9 +24,12 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
 
 import static com.amazonas.frontend.control.AppController.*;
 
@@ -48,8 +51,8 @@ public abstract class BaseLayout extends AppLayout {
 
         SideNav nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-        nav1.addItem(new SideNavItem("Store Management", Example1View.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class,new RouteParameters(new HashMap<>(){{put("storeId","someId" );}}), VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class,new RouteParameters(new HashMap<>(){{put("storeId","someId" );}}), VaadinIcon.NEWSPAPER.create()));
 
         VerticalLayout sideNav = new VerticalLayout();
         sideNav.add(nav1);

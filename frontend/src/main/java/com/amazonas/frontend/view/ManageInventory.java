@@ -16,27 +16,31 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.*;
 import java.util.function.Function;
 
-@Route("manageInventory")
-public class ManageInventory extends BaseLayout {
+@Route("manageinventory")
+public class ManageInventory extends BaseLayout implements HasUrlParameter<String> {
     private final Grid<Product> grid;
     private final POJOBinder<Product> binder;
     private final AppController appController;
-    private final String storeId = "get it from somewhere";
+    private String storeId;
     private final Dialog editDialog;
     private final Dialog addDialog;
     private Product currentProduct;
+    private final Map<Boolean, List<Product>> products;
 
     public ManageInventory(AppController appController) {
         super(appController);
         this.appController = appController;
         binder = new POJOBinder<>(Product.class);
         grid = new Grid<>(Product.class);
-        List<Product> products = getProducts();
+        Map<Boolean, List<Product>> fetchedProducts = getProducts();
+        products = fetchedProducts == null ? new HashMap<>() : fetchedProducts;
 
         // Set the window's title
         String newTitle = "Manage Inventory";
@@ -44,13 +48,17 @@ public class ManageInventory extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
+        List<Product> allP = new LinkedList<>();
         // Check if products list is null or empty
-        if (products == null || products.isEmpty()) {
-            products = getSampleProducts();
+        if (allP.isEmpty()) {
+            addSampleProducts();
         }
 
+        allP.addAll(products.get(true));
+        allP.addAll(products.get(false));
+
         Map<String, Integer> idToQuantity = new HashMap<>();
-        products.forEach(p -> {
+        allP.forEach(p -> {
             ProductRequest payload = new ProductRequest(storeId, new Product(p.productId()));
             try {
                 appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, payload);
@@ -59,7 +67,7 @@ public class ManageInventory extends BaseLayout {
             }
         });
 
-        grid.setItems(products);
+        grid.setItems(allP);
 
         // Configure the columns
         grid.addColumn(Product::productId).setHeader("ID");
@@ -74,6 +82,20 @@ public class ManageInventory extends BaseLayout {
         grid.addComponentColumn(product -> {
             Button editButton = new Button("Edit", click -> openEditDialog(product));
             return editButton;
+        });
+
+        grid.addComponentColumn(product -> {
+            Button toggleButton = new Button(products.get(true).contains(product) ? "Disable" : "Enable", click -> {
+                try {
+                    Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
+                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    appController.postByEndpoint(endpoint, request);
+                    refreshGrid();
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
+                }
+            });
+            return toggleButton;
         });
 
         grid.addComponentColumn(product -> {
@@ -198,28 +220,39 @@ public class ManageInventory extends BaseLayout {
         }
     }
 
-    private List<Product> getProducts() {
-        List<Product> products = null;
+    private Map<Boolean, List<Product>> getProducts() {
+        Map<Boolean, List<Product>> map = null;
         try {
-            products = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS, storeId);
+            List<Map<Boolean, List<Product>>> fetched = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS, storeId);
+            map = fetched.getFirst();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
+        return map;
+    }
+
+    private Map<Boolean, List<Product>> addSampleProducts() {
+        products.computeIfAbsent(true, _ -> new LinkedList<>());
+        products.computeIfAbsent(false, _ -> new LinkedList<>());
+
+        products.get(true).add(new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS));
+        products.get(false).add(new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS));
         return products;
     }
 
-    private List<Product> getSampleProducts() {
-        List<Product> sampleProducts = new ArrayList<>();
-        sampleProducts.add(new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS));
-        sampleProducts.add(new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS));
-        return sampleProducts;
+    private void refreshGrid() {
+        Map<Boolean, List<Product>> products = getProducts();
+        if (products == null || products.isEmpty()) {
+            products = addSampleProducts();
+        }
+        List<Product> allP = new LinkedList<>();
+        allP.addAll(products.get(true));
+        allP.addAll(products.get(false));
+        grid.setItems(allP);
     }
 
-    private void refreshGrid() {
-        List<Product> products = getProducts();
-        if (products == null || products.isEmpty()) {
-            products = getSampleProducts();
-        }
-        grid.setItems(products);
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s) {
+        storeId = s;
     }
 }

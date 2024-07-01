@@ -5,6 +5,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
@@ -12,13 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route("Example4View")
-public class Example4View extends BaseLayout {
-
+public class PurchaseAndDiscount extends BaseLayout implements HasUrlParameter<String> {
     private final AppController appController;
     private final List<String> purchasePolicies;
     private final List<String> discountPolicies;
+    private String storeId;
 
-    public Example4View(AppController appController) {
+    public PurchaseAndDiscount(AppController appController) {
         super(appController);
         this.appController = appController;
 
@@ -80,5 +82,10 @@ public class Example4View extends BaseLayout {
         policyLayout.add(purchasePolicyTitle, purchasePolicyGrid, editPurchasePolicyButton,
                 discountPolicyTitle, discountPolicyGrid, editDiscountPolicyButton);
         content.add(policyLayout);
+    }
+
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s) {
+        storeId = s;
     }
 }

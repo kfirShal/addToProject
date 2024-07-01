@@ -6,19 +6,19 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Route("example3")
-public class Example3View extends BaseLayout {
-
+public class ManageStoreOfficials extends BaseLayout implements HasUrlParameter<String> {
     private final AppController appController;
+    private String storeId;
 
-    public Example3View(AppController appController) {
+    public ManageStoreOfficials(AppController appController) {
         super(appController);
         this.appController = appController;
 
@@ -78,6 +78,11 @@ public class Example3View extends BaseLayout {
 
         HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton, removeManagerButton, editPermissionsButton);
         content.add(managersButtonsLayout);
+    }
+
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s) {
+        storeId = s;
     }
 
     //TODO:

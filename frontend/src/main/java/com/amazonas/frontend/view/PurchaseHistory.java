@@ -3,19 +3,21 @@ package com.amazonas.frontend.view;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Route("example5")
-public class Example5View extends BaseLayout {
-
+public class PurchaseHistory extends BaseLayout implements HasUrlParameter<String>{
     private final Grid<Transaction> grid;
     private final AppController appController;
     private final List<Transaction> transactions;
+    private String storeId;
 
-    public Example5View(AppController appController) {
+    public PurchaseHistory(AppController appController) {
         super(appController);
         this.appController = appController;
 
@@ -44,6 +46,11 @@ public class Example5View extends BaseLayout {
         grid.addColumn(Transaction::getProductsList).setHeader("Products");
 
         content.add(grid); // Add grid to the content from BaseLayout
+    }
+
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s) {
+        storeId = s;
     }
 
     //TODO:

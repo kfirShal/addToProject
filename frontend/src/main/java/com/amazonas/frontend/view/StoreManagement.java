@@ -3,17 +3,20 @@ package com.amazonas.frontend.view;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Route("example1")
-public class Example1View extends BaseLayout {
+@Route("storemanagement")
+public class StoreManagement extends BaseLayout implements HasUrlParameter<String> {
 
     private final AppController appController;
+    private String storeId;
 
-    public Example1View(AppController appController) {
+    public StoreManagement(AppController appController) {
         super(appController);
         this.appController = appController;
 
@@ -37,19 +40,24 @@ public class Example1View extends BaseLayout {
                 getUI().ifPresent(ui -> ui.navigate(ManageInventory.class));
             }
             if ("Manage Store Officials".equals(item)) {
-                getUI().ifPresent(ui -> ui.navigate(Example3View.class));
+                getUI().ifPresent(ui -> ui.navigate(ManageStoreOfficials.class));
             }
             if ("Purchase & Discount Policy".equals(item)) {
-                getUI().ifPresent(ui -> ui.navigate(Example4View.class));
+                getUI().ifPresent(ui -> ui.navigate(PurchaseAndDiscount.class));
             }
             if ("View Purchase History".equals(item)) {
-                getUI().ifPresent(ui -> ui.navigate(Example5View.class));
+                getUI().ifPresent(ui -> ui.navigate(PurchaseHistory.class));
             }
             if ("Close & Reopen Store".equals(item)) {
-                getUI().ifPresent(ui -> ui.navigate(Example6View.class));
+                getUI().ifPresent(ui -> ui.navigate(CloseAndReopenStore.class));
             }
         });
 
         content.add(grid);
+    }
+
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s) {
+        storeId = s;
     }
 }
