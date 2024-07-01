@@ -6,25 +6,23 @@ import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
+import com.amazonas.frontend.utils.Converter;
 import com.amazonas.frontend.utils.POJOBinder;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.Registration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
-@Route("example2")
-public class Example2View extends BaseLayout {
+@Route("manageInventory")
+public class ManageInventory extends BaseLayout {
     private final Grid<Product> grid;
     private final POJOBinder<Product> binder;
     private final AppController appController;
@@ -32,7 +30,7 @@ public class Example2View extends BaseLayout {
     private final Dialog editDialog;
     private Product currentProduct;
 
-    public Example2View(AppController appController) {
+    public ManageInventory(AppController appController) {
         super(appController);
         this.appController = appController;
         binder = new POJOBinder<>(Product.class);
@@ -112,8 +110,30 @@ public class Example2View extends BaseLayout {
         binder.bind(descriptionField, "description");
         formLayout.add(descriptionField);
 
-        TextField ratingField = new TextField("Rating");
-        binder.bind(ratingField, "rating").withIntegerConverter();
+        ComboBox<String> ratingField = new ComboBox<>("Rating");
+        // Set the items for the ComboBox in lower case
+        ratingField.setItems("1","2","3","4","5");
+        binder.bind(ratingField, "rating").withConverter(new Converter<Rating, String>() {
+            @Override
+            public Class<Rating> fromType() {
+                return Rating.class;
+            }
+
+            @Override
+            public Class<String> toType() {
+                return String.class;
+            }
+
+            @Override
+            public Function<Rating, String> to() {
+                return (rating -> String.valueOf(rating.ordinal()));
+            }
+
+            @Override
+            public Function<String, Rating> from() {
+                return ordinal -> Rating.values()[Integer.parseInt(ordinal)];
+            }
+        });
         formLayout.add(ratingField);
 
         Button saveButton = new Button("Save Changes", e -> saveChanges());
@@ -132,9 +152,9 @@ public class Example2View extends BaseLayout {
     }
 
     private void saveChanges() {
-        binder.writeObject(currentProduct);
+        binder.writeObject();
         try {
-            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId);
+            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, currentProduct);
             refreshGrid();
             editDialog.close();
         } catch (ApplicationException e) {
