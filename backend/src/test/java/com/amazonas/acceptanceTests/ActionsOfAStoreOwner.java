@@ -99,7 +99,7 @@ public class ActionsOfAStoreOwner {
         String storeManagerUserId = "storeManager1";
         String validToken = "validToken";
         ProductInventory inventory = new ProductInventory();
-        Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
         try {
@@ -121,7 +121,7 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String guestUserId = "guest";
         String validToken = "invalidToken";
-        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
         AuthenticationFailedException exception = assertThrows(AuthenticationFailedException.class,
@@ -136,7 +136,7 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String userId = "user1";
         String validToken = "validToken";
-        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
         NoPermissionException exception = assertThrows(NoPermissionException.class,

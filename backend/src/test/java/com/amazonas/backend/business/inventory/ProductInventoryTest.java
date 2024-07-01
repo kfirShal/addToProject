@@ -22,7 +22,7 @@ public class ProductInventoryTest {
 
     @Test
     public void testAddProduct() throws StoreException {
-        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
         assertTrue(inventory.nameExists("Product1"));
@@ -30,11 +30,11 @@ public class ProductInventoryTest {
 
     @Test
     public void testUpdateProduct() throws StoreException {
-        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
         String productId = product.productId();
-        Product updatedProduct = new Product(productId, "UpdatedProduct", 200.0, "UpdatedCategory", "UpdatedDescription", Rating.FOUR_STARS);
+        Product updatedProduct = new Product(productId, "UpdatedProduct", 200.0, "UpdatedCategory", "UpdatedDescription", Rating.FOUR_STARS, "store1");
 
         assertTrue(inventory.updateProduct(updatedProduct));
         assertEquals("UpdatedProduct", inventory.idToProduct.get(productId).productName());
@@ -42,7 +42,7 @@ public class ProductInventoryTest {
 
     @Test
     public void testRemoveProduct() throws StoreException {
-        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         String productId = inventory.addProduct(product);
         inventory.disableProduct(productId);
 
@@ -52,7 +52,7 @@ public class ProductInventoryTest {
 
     @Test
     public void testSetAndGetQuantity() throws StoreException {
-        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
         String productId = product.productId();
@@ -63,7 +63,7 @@ public class ProductInventoryTest {
 
     @Test
     public void testEnableAndDisableProduct() throws StoreException {
-        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
+        Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
         String productId = product.productId();
@@ -76,8 +76,8 @@ public class ProductInventoryTest {
 
     @Test
     public void testGetAllAvailableProducts() throws StoreException {
-        Product product1 = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS);
-        Product product2 = new Product(null, "Product2", 150.0, "Category2", "Description2", Rating.FOUR_STARS);
+        Product product1 = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
+        Product product2 = new Product(null, "Product2", 150.0, "Category2", "Description2", Rating.FOUR_STARS, "store1");
         inventory.addProduct(product1);
         inventory.addProduct(product2);
 
