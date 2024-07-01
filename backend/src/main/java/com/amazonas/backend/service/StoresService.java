@@ -1,6 +1,6 @@
 package com.amazonas.backend.service;
 
-import com.amazonas.backend.business.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.transactions.Transaction;

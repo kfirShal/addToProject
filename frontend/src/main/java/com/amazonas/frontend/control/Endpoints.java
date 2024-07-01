@@ -1,8 +1,8 @@
 package com.amazonas.frontend.control;
 
 import com.amazonas.common.dtos.Notification;
-
-import java.util.List;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
@@ -68,7 +68,11 @@ public enum Endpoints {
     GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
-    GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class);
+    GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class),
+
+    //Permissions Endpoints
+    GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),
+    GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class);
 
     private final String location;
     private final Class<?> returnType;
