@@ -2,9 +2,9 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 
@@ -40,7 +40,7 @@ public abstract class ControllerProxy {
 
     private void checkPermission(Function<Void,Boolean> test) throws NoPermissionException {
         if (! test.apply(null)) {
-            throw new NoPermissionException("User does not have action to perform this action");
+            throw new NoPermissionException("User does not have permission to perform this action");
         }
     }
 

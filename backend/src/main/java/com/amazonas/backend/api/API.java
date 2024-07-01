@@ -13,19 +13,21 @@ public class API {
     private final NotificationsService notificationsService;
     private final StoresService storesService;
     private final UserProfilesService userProfilesService;
+    private final PermissionsService permissionsService;
 
     public API(AuthenticationService authenticationService,
                ExternalServicesService externalServicesService,
                MarketService marketService,
                NotificationsService notificationsService,
                StoresService storesService,
-               UserProfilesService userProfilesService){
+               UserProfilesService userProfilesService, PermissionsService permissionsService){
         this.authenticationService = authenticationService;
         this.externalServicesService = externalServicesService;
         this.marketService = marketService;
         this.notificationsService = notificationsService;
         this.storesService = storesService;
         this.userProfilesService = userProfilesService;
+        this.permissionsService = permissionsService;
     }
 
     @GetMapping("userprofiles/enterasguest")
@@ -46,7 +48,16 @@ public class API {
             case "notifications" -> forwardNotifications(endpoint,body);
             case "stores" -> forwardStores(endpoint,body);
             case "userprofiles" -> forwardUserProfiles(endpoint,body);
+            case "permissions" -> forwardPermissions(endpoint,body);
             default -> "Invalid service";
+        };
+    }
+
+    private String forwardPermissions(String endpoint, String body) {
+        return switch (endpoint) {
+            case "getuserpermissions" -> permissionsService.getUserPermissions(body);
+            case "getguestpermissions" -> permissionsService.getGuestPermissions(body);
+            default -> "Invalid endpoint";
         };
     }
 

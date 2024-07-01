@@ -38,6 +38,10 @@ public class AppController {
         return "Welcome to my app!";
     }
 
+    public String getNotificationsMessage() {
+        return "Notifications";
+    }
+
     public String getExampleMessage(int num) {
         return "Example " + num;
     }

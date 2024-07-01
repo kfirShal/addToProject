@@ -1,14 +1,17 @@
 package com.amazonas.backend.business.permissions.profiles;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RegisteredUserPermissionsProfileTest {
+class UserPermissionsProfileTest {
 
     private static final String USER_ID = "user1";
     private static final String STORE_ID = "store1";
@@ -19,7 +22,7 @@ class RegisteredUserPermissionsProfileTest {
 
     @BeforeEach
     void setUp() {
-        profile = new RegisteredUserPermissionsProfile(USER_ID, new DefaultPermissionsProfile("default_registered_user"));
+        profile = new UserPermissionsProfile(USER_ID, new DefaultPermissionsProfile("default_registered_user"));
     }
 
     @Test

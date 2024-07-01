@@ -1,8 +1,8 @@
-package com.amazonas.backend.business.permissions.profiles;
+package com.amazonas.common.permissions.profiles;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,8 +11,8 @@ import java.util.Set;
 public class DefaultPermissionsProfile implements PermissionsProfile {
 
     private final Set<UserActions> allowedUserActions;
-    private final String userId;
     private final Set<MarketActions> allowedMarketActions;
+    private final String userId;
 
     public DefaultPermissionsProfile(String userId) {
         this.userId = userId;
