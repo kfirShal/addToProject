@@ -110,6 +110,10 @@ public class POJOBinder<T> {
         private void read() {
             try {
                 Object value =  field.get(object);
+                if(value == null){
+                    clear();
+                    return;
+                }
                 if(converter != null){
                     value = converter.to().apply(value);
                     component.setValue(converter.toType().cast(value));

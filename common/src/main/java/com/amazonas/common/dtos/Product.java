@@ -9,7 +9,7 @@ import java.util.Set;
 public class Product implements Cloneable {
     private String productId;
     private String productName;
-    private double price;
+    private Double price;
     private String category;
     private String description;
     private Rating rating;
@@ -18,7 +18,7 @@ public class Product implements Cloneable {
     public Product(
             String productId,
             String productName,
-            double price,
+            Double price,
             String category,
             String description,
             Rating rating
@@ -48,7 +48,7 @@ public class Product implements Cloneable {
         return productName;
     }
 
-    public double price() {
+    public Double price() {
         return price;
     }
 
