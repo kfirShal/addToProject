@@ -99,7 +99,7 @@ public class ActionsOfAMarketAdministrator {
 
         // Assert
         assertNotNull(purchaseHistory);
-        assertEquals(1, purchaseHistory.size(), "Purchase history should contain one transaction");
+        assertEquals(1, purchaseHistory.size(), "Purchase history should contain one transactionId");
     }
 
     @Test

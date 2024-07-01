@@ -1,9 +1,10 @@
 package com.amazonas.backend.business.shipping;
 
 import com.amazonas.backend.business.stores.Store;
+import com.amazonas.backend.business.transactions.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
-import com.amazonas.backend.service.requests.shipping.ShipmentRequest;
+import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,25 +24,28 @@ public class ShippingServiceController {
 
     private final ReadWriteLock lock;
     private final StoreRepository storeRepository;
+    private final TransactionRepository transactionRepository;
 
-    public ShippingServiceController(StoreRepository storeRepository) {
+    public ShippingServiceController(StoreRepository storeRepository, TransactionRepository transactionRepository) {
         activeShippingServices = new HashMap<>();
         disabledShippingServices = new HashMap<>();
         lock = new ReadWriteLock();
         this.storeRepository = storeRepository;
+        this.transactionRepository = transactionRepository;
     }
 
-    public boolean sendShipment(ShipmentRequest request) {
+    public boolean sendShipment(String transactionId, String serviceId) {
         try {
             lock.acquireRead();
-            if(!activeShippingServices.containsKey(request.serviceId())){
+            if(!activeShippingServices.containsKey(serviceId)){
                 return false;
             }
-            boolean shipped = activeShippingServices.get(request.serviceId()).ship(request.transaction());
+            Transaction transaction = transactionRepository.getTransactionById(transactionId);
+            boolean shipped = activeShippingServices.get(serviceId).ship(transaction);
             if(shipped){
-                Store store = storeRepository.getStore(request.transaction().storeId());
+                Store store = storeRepository.getStore(transaction.storeId());
                 try {
-                    store.setOrderShipped(request.transaction().transactionId());
+                    store.setOrderShipped(transactionId);
                 } catch (StoreException e) {
                     log.error("Failed to set order as shipped in store", e);
                     shipped = false;
@@ -70,7 +74,6 @@ public class ShippingServiceController {
             lock.releaseWrite();
         }
     }
-
 
     public void updateShippingService(String serviceId, ShippingService shippingService){
         try{
@@ -145,5 +148,4 @@ public class ShippingServiceController {
             lock.releaseRead();
         }
     }
-
 }

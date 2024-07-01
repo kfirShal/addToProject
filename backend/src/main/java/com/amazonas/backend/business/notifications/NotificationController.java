@@ -2,6 +2,7 @@ package com.amazonas.backend.business.notifications;
 
 import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.repository.NotificationRepository;
+import com.amazonas.backend.repository.UserRepository;
 import com.amazonas.common.dtos.Notification;
 import org.springframework.stereotype.Component;
 
@@ -13,9 +14,11 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationRepository repo;
+    private final UserRepository userRepository;
 
-    public NotificationController(NotificationRepository notificationRepository) {
+    public NotificationController(NotificationRepository notificationRepository, UserRepository userRepository) {
         this.repo = notificationRepository;
+        this.userRepository = userRepository;
     }
 
     public void sendNotification(String title,String message, String senderId, String receiverId) throws NotificationException {
@@ -36,7 +39,6 @@ public class NotificationController {
             throw new NotificationException("Notification does not exist.");
         }
         notification.setRead(read);
-        repo.update(notification);
     }
 
     public List<Notification> getUnreadNotifications(String receiverId) throws NotificationException {
@@ -45,11 +47,15 @@ public class NotificationController {
     }
 
     public List<Notification> getNotifications(String receiverId, Integer limit) throws NotificationException {
+        return getNotifications(receiverId, limit, 0);
+    }
+
+    public List<Notification> getNotifications(String receiverId, Integer limit, Integer offset) throws NotificationException {
         validateUserExists(receiverId);
         if(limit == null || limit < 1){
             limit = 10;
         }
-        return repo.findByReceiverId(receiverId, limit);
+        return repo.findByReceiverId(receiverId, limit, offset);
     }
 
     public void deleteNotification(String notificationId) throws NotificationException {
@@ -62,8 +68,8 @@ public class NotificationController {
     }
 
     private void validateUserExists(String receiverId) throws NotificationException {
-        if(! repo.existsByReceiverId(receiverId)){
-            throw new NotificationException("ReceiverId does not exist.");
+        if(!userRepository.userIdExists(receiverId)){
+            throw new NotificationException("User does not exist.");
         }
     }
 }

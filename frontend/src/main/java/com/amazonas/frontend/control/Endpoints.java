@@ -6,6 +6,8 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import com.amazonas.common.dtos.Notification;
+import java.util.List;
 
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
@@ -33,7 +35,6 @@ public enum Endpoints {
 
     // External Services Endpoints
     SEND_SHIPMENT("external/sendshipment", Void.class),
-    PROCESS_PAYMENT("external/processpayment", Void.class),
     ADD_SHIPPING_SERVICE("external/addshippingservice", Void.class),
     REMOVE_SHIPPING_SERVICE("external/removeshippingservice", Void.class),
     UPDATE_SHIPPING_SERVICE("external/updateshippingservice", Void.class),
@@ -48,8 +49,8 @@ public enum Endpoints {
     // Notifications Endpoints
     SEND_NOTIFICATION("notifications/sendnotification", Void.class),
     SET_READ_VALUE("notifications/setreadvalue", Void.class),
-    GET_UNREAD_NOTIFICATIONS("notifications/getunreadnotifications", Void.class),
-    GET_NOTIFICATIONS("notifications/getnotifications", Void.class),
+    GET_UNREAD_NOTIFICATIONS("notifications/getunreadnotifications", Notification.class),
+    GET_NOTIFICATIONS("notifications/getnotifications", Notification.class),
     DELETE_NOTIFICATION("notifications/deletenotification", Void.class),
 
     // Stores Endpoints
