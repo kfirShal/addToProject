@@ -28,6 +28,7 @@ public class ManageInventory extends BaseLayout {
     private final AppController appController;
     private final String storeId = "get it from somewhere";
     private final Dialog editDialog;
+    private final Dialog addDialog;
     private Product currentProduct;
 
     public ManageInventory(AppController appController) {
@@ -90,8 +91,27 @@ public class ManageInventory extends BaseLayout {
         content.add(grid);
 
         // Create and configure the edit dialog
-        editDialog = new Dialog();
-        editDialog.setWidth("400px");
+        editDialog = createProductDialog("Edit Product", this::saveChanges);
+        content.add(editDialog);
+
+        // Create and configure the add dialog
+        addDialog = createProductDialog("Add Product", this::addProduct);
+        content.add(addDialog);
+
+        Button addButton = new Button("Add", click -> openAddDialog());
+        HorizontalLayout addButtonLayout = new HorizontalLayout(addButton);
+        addButtonLayout.getStyle().set("justify-content", "center");
+        content.add(addButtonLayout);
+
+    }
+
+    private Dialog createProductDialog(String dialogTitle, Runnable saveAction) {
+        Dialog dialog = new Dialog();
+        dialog.setWidth("400px");
+
+        // Add title to the dialog
+        H2 title = new H2(dialogTitle);
+        dialog.add(title);
 
         FormLayout formLayout = new FormLayout();
         TextField productNameField = new TextField("Product Name");
@@ -111,8 +131,7 @@ public class ManageInventory extends BaseLayout {
         formLayout.add(descriptionField);
 
         ComboBox<String> ratingField = new ComboBox<>("Rating");
-        // Set the items for the ComboBox in lower case
-        ratingField.setItems("1","2","3","4","5");
+        ratingField.setItems("1", "2", "3", "4", "5");
         binder.bind(ratingField, "rating").withConverter(new Converter<Rating, String>() {
             @Override
             public Class<Rating> fromType() {
@@ -126,23 +145,23 @@ public class ManageInventory extends BaseLayout {
 
             @Override
             public Function<Rating, String> to() {
-                return (rating -> String.valueOf(rating.ordinal()));
+                return (rating -> String.valueOf(rating.ordinal() + 1));
             }
 
             @Override
             public Function<String, Rating> from() {
-                return ordinal -> Rating.values()[Integer.parseInt(ordinal)];
+                return ordinal -> Rating.values()[Integer.parseInt(ordinal) - 1];
             }
         });
         formLayout.add(ratingField);
 
-        Button saveButton = new Button("Save Changes", e -> saveChanges());
-        Button discardButton = new Button("Discard", e -> editDialog.close());
+        Button saveButton = new Button("Save Changes", e -> saveAction.run());
+        Button discardButton = new Button("Discard", e -> dialog.close());
         HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
 
-        editDialog.getHeader().add(formLayout);
-        editDialog.getFooter().add(buttonsLayout);
-        content.add(editDialog);
+        dialog.add(formLayout, buttonsLayout);
+
+        return dialog;
     }
 
     private void openEditDialog(Product product) {
@@ -152,11 +171,28 @@ public class ManageInventory extends BaseLayout {
     }
 
     private void saveChanges() {
-        binder.writeObject();
+        binder.writeObject(currentProduct);
         try {
             appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, currentProduct);
             refreshGrid();
             editDialog.close();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+        }
+    }
+
+    private void openAddDialog() {
+        currentProduct = new Product("-1");
+        binder.readObject(currentProduct);
+        addDialog.open();
+    }
+
+    private void addProduct() {
+        binder.writeObject(currentProduct);
+        try {
+            appController.postByEndpoint(Endpoints.ADD_PRODUCT, currentProduct);
+            refreshGrid();
+            addDialog.close();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
