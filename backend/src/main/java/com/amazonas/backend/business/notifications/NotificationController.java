@@ -47,6 +47,7 @@ public class NotificationController {
     }
 
     public List<Notification> getNotifications(String receiverId, Integer limit) throws NotificationException {
+        validateUserExists(receiverId);
         return getNotifications(receiverId, limit, 0);
     }
 

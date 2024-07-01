@@ -22,6 +22,7 @@ public class ShoppingCartRepository extends AbstractCachingRepository<ShoppingCa
     }
 
     public ShoppingCart getCart(String userId) {
+        userId = userId.toLowerCase();
         userLock.acquireRead();
         try {
             return cartCache.get(userId);
@@ -33,7 +34,7 @@ public class ShoppingCartRepository extends AbstractCachingRepository<ShoppingCa
     public void saveCart(ShoppingCart cart) {
         userLock.acquireWrite();
         try {
-            cartCache.put(cart.userId(), cart);
+            cartCache.put(cart.userId().toLowerCase(), cart);
         } finally {
             userLock.releaseWrite();
         }

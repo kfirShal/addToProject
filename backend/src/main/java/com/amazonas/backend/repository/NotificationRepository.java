@@ -44,19 +44,14 @@ public class NotificationRepository extends AbstractCachingRepository<Notificati
     }
 
     public List<Notification> findByReceiverId(String receiverId, Integer limit, Integer offset) {
-        List<Notification> list = receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
+        return receiverIdToNotifications.getOrDefault(receiverId, List.of()).stream()
                 .skip(offset)
                 .limit(limit)
                 .toList();
-        return list;
     }
 
     public void delete(String notificationId) {
         Notification n = notifications.remove(notificationId);
         receiverIdToNotifications.get(n.receiverId()).remove(n);
-    }
-
-    public boolean existsByReceiverId(String receiverId) {
-        return receiverIdToNotifications.containsKey(receiverId);
     }
 }

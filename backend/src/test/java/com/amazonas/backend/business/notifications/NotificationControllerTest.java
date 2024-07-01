@@ -32,6 +32,7 @@ class NotificationControllerTest {
         repository = mock(NotificationRepository.class);
         userRepository = mock(UserRepository.class);
         when(userRepository.userIdExists(senderId)).thenReturn(true);
+        when(userRepository.userIdExists(receiverId)).thenReturn(true);
         notification = new Notification(notificationId, "title", "message", null ,receiverId, receiverId);
         notificationController = new NotificationController(repository,userRepository);
         notificationId = "notificationId";
@@ -39,15 +40,12 @@ class NotificationControllerTest {
 
     @Test
     void sendNotificationGood() {
-        when(repository.existsByReceiverId(senderId)).thenReturn(true);
-        when(repository.existsByReceiverId(receiverId)).thenReturn(true);
         assertDoesNotThrow(()->notificationController.sendNotification("title", "message", receiverId, receiverId));
     }
 
     @Test
     void sendNotificationReceiverIdDoesNotExist() {
-        when(repository.existsByReceiverId(senderId)).thenReturn(true);
-        when(repository.existsByReceiverId(receiverId)).thenReturn(false);
+        when(userRepository.userIdExists(receiverId)).thenReturn(false);
         assertThrows(NotificationException.class, ()->notificationController.sendNotification("title", "message", receiverId, receiverId));
     }
 
@@ -65,7 +63,6 @@ class NotificationControllerTest {
 
     @Test
     void getUnreadNotificationsGood() {
-        when(repository.existsByReceiverId(receiverId)).thenReturn(true);
         List<Notification> notifications = List.of(notification);
         when(repository.findUnreadByReceiverId(receiverId)).thenReturn(notifications);
         List<Notification> received = assertDoesNotThrow(()->notificationController.getUnreadNotifications(receiverId));
@@ -74,22 +71,21 @@ class NotificationControllerTest {
 
     @Test
     void getUnreadNotificationsReceiverIdDoesNotExist() {
-        when(repository.existsByReceiverId(receiverId)).thenReturn(false);
+        when(userRepository.userIdExists(receiverId)).thenReturn(false);
         assertThrows(NotificationException.class, ()->notificationController.getUnreadNotifications(receiverId));
     }
 
     @Test
     void getNotificationsGood() {
-        when(repository.existsByReceiverId(receiverId)).thenReturn(true);
         List<Notification> notifications = List.of(notification);
-        when(repository.findByReceiverId(receiverId, 10)).thenReturn(notifications);
+        when(repository.findByReceiverId(receiverId, 10,0)).thenReturn(notifications);
         List<Notification> received = assertDoesNotThrow(()->notificationController.getNotifications(receiverId, 10));
         assert(notifications.equals(received));
     }
 
     @Test
     void getNotificationsReceiverIdDoesNotExist() {
-        when(repository.existsByReceiverId(receiverId)).thenReturn(false);
+        when(userRepository.userIdExists(receiverId)).thenReturn(false);
         assertThrows(NotificationException.class, ()->notificationController.getNotifications(receiverId, 10));
     }
 

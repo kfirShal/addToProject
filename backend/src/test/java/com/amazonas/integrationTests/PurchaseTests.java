@@ -35,7 +35,7 @@ public class PurchaseTests {
 
     // ================== Constants ================== |
     private static final String STORE_ID = "storeId";
-    private static final String USER_ID = "userId";
+    private static final String USER_ID = "userId".toLowerCase();
     private static final String PRODUCT_ID = "productId";
     private static final String SHIPPING_SERVICE_ID = "serviceId";
     // ================================================= |
