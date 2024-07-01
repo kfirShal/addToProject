@@ -34,7 +34,7 @@ public class Example1View extends BaseLayout {
             String item = event.getItem();
             // Navigate to a new view based on the item clicked
             if ("Manage Inventory".equals(item)) {
-                getUI().ifPresent(ui -> ui.navigate(InventoryManagementView.class));
+                getUI().ifPresent(ui -> ui.navigate(Example2View.class));
             }
             if ("Manage Store Officials".equals(item)) {
                 getUI().ifPresent(ui -> ui.navigate(Example3View.class));
