@@ -112,7 +112,9 @@ public class POJOBinder<T> {
                     value = converter.to().apply(value);
                 }
                 component.setValue(value);
-            } catch (IllegalAccessException ignored) {}
+            } catch (IllegalAccessException ignored) {
+                throw new RuntimeException(ignored);
+            }
         }
 
         private void write() {

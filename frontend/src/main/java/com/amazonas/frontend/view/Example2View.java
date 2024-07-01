@@ -8,10 +8,13 @@ import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.amazonas.frontend.utils.POJOBinder;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 
@@ -26,9 +29,8 @@ public class Example2View extends BaseLayout {
     private final POJOBinder<Product> binder;
     private final AppController appController;
     private final String storeId = "get it from somewhere";
-    private Registration editorOpenListener;
-    private Registration editorCloseListener;
-    private HorizontalLayout buttonsLayout;
+    private final Dialog editDialog;
+    private Product currentProduct;
 
     public Example2View(AppController appController) {
         super(appController);
@@ -71,14 +73,7 @@ public class Example2View extends BaseLayout {
 
         // Add action buttons
         grid.addComponentColumn(product -> {
-            Button editButton = new Button("Edit", click -> {
-                try {
-                    appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId);
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
-                }
-                refreshGrid();
-            });
+            Button editButton = new Button("Edit", click -> openEditDialog(product));
             return editButton;
         });
 
@@ -94,55 +89,57 @@ public class Example2View extends BaseLayout {
             return removeButton;
         });
 
-//        grid.addComponentColumn(product -> {
-//            Button enableDisableButton = new Button(product.isEnabled() ? "Disable" : "Enable", click -> {
-//                product.setEnabled(!product.isEnabled());
-//                try {
-//                    appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId); // Assuming this endpoint also updates the enabled state
-//                } catch (ApplicationException e) {
-//                    openErrorDialog(e.getMessage());
-//                }
-//                refreshGrid();
-//            });
-//            return enableDisableButton;
-//        });
+        content.add(grid);
 
-        // Configure the editor
-        Editor<Product> editor = grid.getEditor();
-        editor.setBuffered(true);
+        // Create and configure the edit dialog
+        editDialog = new Dialog();
+        editDialog.setWidth("400px");
 
-        // Add save and cancel buttons for the editor
-        Button addButton = new Button("Add", click -> {
-            try {
-                appController.postByEndpoint(Endpoints.ADD_PRODUCT, storeId);
-                refreshGrid();
-            } catch (ApplicationException e) {
-                openErrorDialog(e.getMessage());
-            }
-        });
+        FormLayout formLayout = new FormLayout();
+        TextField productNameField = new TextField("Product Name");
+        binder.bind(productNameField, "productName");
+        formLayout.add(productNameField);
 
-        Button saveButton = new Button("Save Edit", click -> {
-            try {
-                editor.save();
-                appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId);
-                refreshGrid();
-            } catch (ApplicationException e) {
-                openErrorDialog(e.getMessage());
-            }
-        });
-        Button cancelButton = new Button("Cancel Edit", click -> editor.cancel());
+        TextField priceField = new TextField("Price");
+        binder.bind(priceField, "price").withDoubleConverter();
+        formLayout.add(priceField);
 
-        buttonsLayout = new HorizontalLayout(saveButton, cancelButton);
-        content.add(grid, buttonsLayout, addButton);
+        TextField categoryField = new TextField("Category");
+        binder.bind(categoryField, "category");
+        formLayout.add(categoryField);
 
-        // Configure editor open and close listeners
-        editorOpenListener = editor.addOpenListener(event -> {
-            buttonsLayout.setVisible(true);
-        });
+        TextField descriptionField = new TextField("Description");
+        binder.bind(descriptionField, "description");
+        formLayout.add(descriptionField);
 
-        editorCloseListener = editor.addCloseListener(event -> {
-            buttonsLayout.setVisible(false);
-        });
+        TextField ratingField = new TextField("Rating");
+        binder.bind(ratingField, "rating").withIntegerConverter();
+        formLayout.add(ratingField);
+
+        Button saveButton = new Button("Save Changes", e -> saveChanges());
+        Button discardButton = new Button("Discard", e -> editDialog.close());
+        HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
+
+        editDialog.getHeader().add(formLayout);
+        editDialog.getFooter().add(buttonsLayout);
+        content.add(editDialog);
+    }
+
+    private void openEditDialog(Product product) {
+        currentProduct = product;
+        binder.readObject(product);
+        editDialog.open();
+    }
+
+    private void saveChanges() {
+        binder.writeObject(currentProduct);
+        try {
+            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, storeId);
+            refreshGrid();
+            editDialog.close();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+        }
     }
 
     private List<Product> getProducts() {

@@ -25,20 +25,21 @@ public class SystemManagementView extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title);
 
-        // Create buttons for starting and shutting down the system
-        Button startButton = new Button("Start System", click -> {
-            // Add logic to start the system
-        });
         Button shutdownButton = new Button("Shutdown System", click -> {
             // Add logic to shutdown the system
         });
 
+        // Create buttons for starting and shutting down the system
+        Button startButton = new Button("Start System", click -> {
+            // Add logic to start the system
+        });
+
         // Styling for the buttons and their layout
-        startButton.getStyle().set("background-color", "red");
-        startButton.getStyle().set("color", "white"); // Set text color to white
         shutdownButton.getStyle().set("background-color", "red");
         shutdownButton.getStyle().set("color", "white"); // Set text color to white
-        HorizontalLayout buttonsLayout = new HorizontalLayout(startButton, shutdownButton);
+        startButton.getStyle().set("background-color", "green");
+        startButton.getStyle().set("color", "white"); // Set text color to white
+        HorizontalLayout buttonsLayout = new HorizontalLayout(shutdownButton, startButton);
         buttonsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Center align the buttons
         content.add(buttonsLayout);
 
