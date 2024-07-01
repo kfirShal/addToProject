@@ -52,7 +52,7 @@ public class ActionsOfAStoreManager {
         String storeId = "store1";
         String userId = "user1";
         String token = "validToken";
-        Product productToAdd = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product productToAdd = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, storeId);
         SearchRequest request = new SearchRequest(productToAdd.productName(), new ArrayList<>(), 0, 200, productToAdd.category(), productToAdd.rating());
 
         // Act
@@ -65,7 +65,7 @@ public class ActionsOfAStoreManager {
         String storeId = "store1";
         String userId = "user1";
         String token = "invalidToken";
-        Product productToAdd = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product productToAdd = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, storeId);
 
         // Act and Assert
         NoPermissionException exception = assertThrows(NoPermissionException.class,
