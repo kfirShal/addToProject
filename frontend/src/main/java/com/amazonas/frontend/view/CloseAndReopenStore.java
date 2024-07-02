@@ -12,9 +12,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 @Route("example6")
-public class CloseAndReopenStore extends BaseLayout implements HasUrlParameter<String> {
+public class CloseAndReopenStore extends BaseLayout {
     private final AppController appController;
-    private String storeId;
 
     public CloseAndReopenStore(AppController appController) {
         super(appController);
@@ -79,10 +78,5 @@ public class CloseAndReopenStore extends BaseLayout implements HasUrlParameter<S
     private void reopenStore() {
         // Logic to reopen the store
         Notification.show("Store is reopened.");
-    }
-
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s) {
-        storeId = s;
     }
 }

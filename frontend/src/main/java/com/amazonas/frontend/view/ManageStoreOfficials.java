@@ -14,9 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route("example3")
-public class ManageStoreOfficials extends BaseLayout implements HasUrlParameter<String> {
+public class ManageStoreOfficials extends BaseLayout {
     private final AppController appController;
-    private String storeId;
 
     public ManageStoreOfficials(AppController appController) {
         super(appController);
@@ -78,11 +77,6 @@ public class ManageStoreOfficials extends BaseLayout implements HasUrlParameter<
 
         HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton, removeManagerButton, editPermissionsButton);
         content.add(managersButtonsLayout);
-    }
-
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s) {
-        storeId = s;
     }
 
     //TODO:

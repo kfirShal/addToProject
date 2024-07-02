@@ -11,10 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 
 @Route("storemanagement")
-public class StoreManagement extends BaseLayout implements HasUrlParameter<String> {
+public class StoreManagement extends BaseLayout {
 
     private final AppController appController;
-    private String storeId;
 
     public StoreManagement(AppController appController) {
         super(appController);
@@ -54,10 +53,5 @@ public class StoreManagement extends BaseLayout implements HasUrlParameter<Strin
         });
 
         content.add(grid);
-    }
-
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s) {
-        storeId = s;
     }
 }

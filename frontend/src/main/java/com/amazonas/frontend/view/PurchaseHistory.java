@@ -11,11 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route("example5")
-public class PurchaseHistory extends BaseLayout implements HasUrlParameter<String>{
+public class PurchaseHistory extends BaseLayout {
     private final Grid<Transaction> grid;
     private final AppController appController;
     private final List<Transaction> transactions;
-    private String storeId;
 
     public PurchaseHistory(AppController appController) {
         super(appController);
@@ -46,11 +45,6 @@ public class PurchaseHistory extends BaseLayout implements HasUrlParameter<Strin
         grid.addColumn(Transaction::getProductsList).setHeader("Products");
 
         content.add(grid); // Add grid to the content from BaseLayout
-    }
-
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s) {
-        storeId = s;
     }
 
     //TODO:

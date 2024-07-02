@@ -23,22 +23,24 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
-
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
 @Component
-public abstract class BaseLayout extends AppLayout {
+public abstract class BaseLayout extends AppLayout implements BeforeEnterListener {
 
     protected final VerticalLayout content;
     private final AppController appController;
+    private QueryParameters params;
 
     public BaseLayout(AppController appController) {
         this.appController = appController;
@@ -251,8 +253,16 @@ public abstract class BaseLayout extends AppLayout {
         dialog.open();
     }
 
-    protected void setContentComponent(VerticalLayout component) {
-        content.removeAll();
-        content.add(component);
+    /**
+     * get a parameter from the query parameters
+     * @throws java.util.NoSuchElementException if the parameter is not present
+     */
+    protected String getParam(String key) {
+        return params.getSingleParameter(key).orElseThrow();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        params = event.getLocation().getQueryParameters();
     }
 }

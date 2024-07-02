@@ -14,11 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route("Example4View")
-public class PurchaseAndDiscount extends BaseLayout implements HasUrlParameter<String> {
+public class PurchaseAndDiscount extends BaseLayout {
     private final AppController appController;
     private final List<String> purchasePolicies;
     private final List<String> discountPolicies;
-    private String storeId;
 
     public PurchaseAndDiscount(AppController appController) {
         super(appController);
@@ -82,10 +81,5 @@ public class PurchaseAndDiscount extends BaseLayout implements HasUrlParameter<S
         policyLayout.add(purchasePolicyTitle, purchasePolicyGrid, editPurchasePolicyButton,
                 discountPolicyTitle, discountPolicyGrid, editDiscountPolicyButton);
         content.add(policyLayout);
-    }
-
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s) {
-        storeId = s;
     }
 }

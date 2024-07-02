@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.function.Function;
 
 @Route("manageinventory")
-public class ManageInventory extends BaseLayout implements HasUrlParameter<String> {
+public class ManageInventory extends BaseLayout {
     private final Grid<Product> grid;
     private final POJOBinder<Product> binder;
     private final AppController appController;
@@ -249,10 +249,5 @@ public class ManageInventory extends BaseLayout implements HasUrlParameter<Strin
         allP.addAll(products.get(true));
         allP.addAll(products.get(false));
         grid.setItems(allP);
-    }
-
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s) {
-        storeId = s;
     }
 }
