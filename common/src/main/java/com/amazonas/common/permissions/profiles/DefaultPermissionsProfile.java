@@ -32,22 +32,22 @@ public class DefaultPermissionsProfile implements PermissionsProfile {
 
     @Override
     public boolean addUserActionPermission(UserActions action) {
-        return false;
+        return allowedUserActions.add(action);
     }
 
     @Override
     public boolean removeUserActionPermission(UserActions action) {
-        return false;
+        return allowedUserActions.remove(action);
     }
 
     @Override
     public boolean addMarketActionPermission(MarketActions action) {
-        return false;
+        return allowedMarketActions.add(action);
     }
 
     @Override
     public boolean removeMarketActionPermission(MarketActions action) {
-        return false;
+        return allowedMarketActions.remove(action);
     }
 
     @Override

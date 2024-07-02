@@ -6,7 +6,7 @@ import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -89,7 +89,7 @@ public class ProductInventoryTest {
 
         inventory.disableProduct(productId2);
 
-        Set<Product> availableProducts = inventory.getAllAvailableProducts();
+        List<Product> availableProducts = inventory.getAllAvailableProducts();
         assertEquals(1, availableProducts.size());
         assertTrue(availableProducts.contains(product1));
         assertFalse(availableProducts.contains(product2));

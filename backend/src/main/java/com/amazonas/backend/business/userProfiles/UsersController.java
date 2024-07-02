@@ -57,7 +57,8 @@ public class UsersController {
                            ShoppingCartFactory shoppingCartFactory,
                            AuthenticationController authenticationController,
                            ShoppingCartRepository shoppingCartRepository,
-                           PermissionsController permissionsController, NotificationController notificationController, StoreRepository storeRepository) {
+                           PermissionsController permissionsController,
+                           NotificationController notificationController, StoreRepository storeRepository) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;

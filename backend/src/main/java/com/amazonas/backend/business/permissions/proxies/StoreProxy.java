@@ -83,7 +83,7 @@ public class StoreProxy extends ControllerProxy {
         real.setProductQuantity(storeId, productId, quantity);
     }
 
-    public Set<Product> getStoreProducts(String storeId, String userId, String token) throws StoreException, NoPermissionException, AuthenticationFailedException {
+    public List<Product> getStoreProducts(String storeId, String userId, String token) throws StoreException, NoPermissionException, AuthenticationFailedException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.VIEW_STORES);
         return real.getStoreProducts(storeId);

@@ -13,11 +13,8 @@ class ProductTest {
 
     @BeforeEach
     void setUp() {
-
-        pTest = new Product("1", "Shirt", 50, "Shirts", "black" ,FOUR_STARS, "store1");
+        pTest = new Product("1", "Shirt", 50.0, "Shirts", "black" ,FOUR_STARS, "store1");
     }
-
-
 
     @Test
     void addKeyWords() {
@@ -31,6 +28,4 @@ class ProductTest {
         pTest.removeKeyWords("shi");
         assertFalse(pTest.keyWords().contains("shi"));
     }
-
-
 }

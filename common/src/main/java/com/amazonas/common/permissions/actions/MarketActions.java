@@ -2,6 +2,8 @@ package com.amazonas.common.permissions.actions;
 
 public enum MarketActions {
 
+    ALL,
+
     // general actions
     SEARCH_PRODUCTS,
     VIEW_PRODUCTS,

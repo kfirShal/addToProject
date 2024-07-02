@@ -236,6 +236,7 @@ public class Store {
         try{
             lock.acquireWrite();
             checkIfOpen();
+            toAdd.setStoreId(storeId);
             return inventory.addProduct(toAdd);
         } finally {
             lock.releaseWrite();
@@ -293,7 +294,7 @@ public class Store {
         }
     }
 
-    public Set<Product> getStoreProducts() throws StoreException {
+    public List<Product> getStoreProducts() throws StoreException {
         try {
             lock.acquireRead();
             checkIfOpen();

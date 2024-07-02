@@ -2,48 +2,34 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.users.CartRequest;
-import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.Route;
 
 import java.util.List;
-import java.util.Map;
-
-import static com.amazonas.common.utils.Rating.FOUR_STARS;
 
 @Route("product-details")
-public class ProductDetailsView extends BaseLayout {
+public class ProductDetailsView extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
 
     public ProductDetailsView(AppController appController) {
         super(appController);
         this.appController = appController;
-        // Get product id from the URL
-        String productId = getParam("productId");
-        Product product = null;
-        try {
-            List<Product> fetched = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
-            product = fetched.getFirst();
-        } catch (ApplicationException e) {
-            openErrorDialog(e.getMessage());
-            return;
-        }
-
-        HorizontalLayout productLayout = createProductLayout(product);
-
-        content.add(productLayout);
-
 
     }
 
@@ -100,10 +86,19 @@ public class ProductDetailsView extends BaseLayout {
 //
 //
 //    }
+    
+    private void createProductLayout() {
+        // Get product id from the URL
+        String productId = getParam("productId");
+        Product product = null;
+        try {
+            List<Product> fetched = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
+            product = fetched.getFirst();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
 
-
-
-    private HorizontalLayout createProductLayout(Product product) {
         // Product name
         H2 productName = new H2(product.productName());
 
@@ -156,10 +151,10 @@ public class ProductDetailsView extends BaseLayout {
 
         // Add to Cart button
         Button addToCartButton = new Button("Add product to cart", new Icon(VaadinIcon.CART));
+        Product finalProduct = product;
         addToCartButton.addClickListener(event -> {
             int quantity = quantityField.getValue();
-
-            CartRequest cartRequest = new CartRequest(product.storeId(),product.productId(), quantity);
+            CartRequest cartRequest = new CartRequest(finalProduct.storeId(), finalProduct.productId(), quantity);
             try {
                 appController.postByEndpoint(Endpoints.ADD_PRODUCT_TO_CART, cartRequest);
             } catch (ApplicationException e) {
@@ -195,7 +190,12 @@ public class ProductDetailsView extends BaseLayout {
         mainLayout.setWidthFull();
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START); // Align items to start
 
+        content.add(mainLayout);
+    }
 
-       return mainLayout;
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createProductLayout();
     }
 }

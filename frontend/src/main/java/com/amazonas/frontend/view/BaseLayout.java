@@ -24,8 +24,7 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -36,16 +35,20 @@ import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
 @Component
-public abstract class BaseLayout extends AppLayout implements BeforeEnterListener {
+public abstract class BaseLayout extends AppLayout {
 
     protected final VerticalLayout content;
     private final AppController appController;
-    private QueryParameters params;
+    protected QueryParameters params;
 
     public BaseLayout(AppController appController) {
         this.appController = appController;
         content = new VerticalLayout();
         setContent(content);
+
+        UI current = UI.getCurrent();
+        Location activeViewLocation = current.getActiveViewLocation();
+        params = activeViewLocation.getQueryParameters();
 
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
@@ -287,10 +290,5 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
      */
     protected String getParam(String key) {
         return params.getSingleParameter(key).orElseThrow();
-    }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        params = event.getLocation().getQueryParameters();
     }
 }

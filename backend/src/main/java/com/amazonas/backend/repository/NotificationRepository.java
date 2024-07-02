@@ -3,14 +3,14 @@ package com.amazonas.backend.repository;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.abstracts.MongoCollection;
 import com.amazonas.common.dtos.Notification;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-@Repository
+@Component("notificationRepository")
 public class NotificationRepository extends AbstractCachingRepository<Notification> {
 
     private final Map<String,Notification> notifications;//TODO: remove this when we have a real database

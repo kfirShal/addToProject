@@ -2,41 +2,38 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
-import com.amazonas.common.requests.Request;
-import com.amazonas.common.requests.notifications.NotificationRequest;
-import com.amazonas.common.requests.stores.ProductRequest;
 import com.amazonas.common.utils.Pair;
-import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.amazonas.frontend.model.Store;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.virtuallist.VirtualList;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameters;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Route("store")
-public class StoreView extends BaseLayout {
+public class StoreView extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
 
     public StoreView(AppController appController) {
         super(appController);
         this.appController = appController;
+    }
 
-        // TODO :Get store id from the URL
+    private void createView() {
         String storeId = getParam("storeId");
         StoreDetails storeDetails = null;
         try {
@@ -50,7 +47,7 @@ public class StoreView extends BaseLayout {
         // Get list of products from the backend
         List<Product> products = new ArrayList<>();
         try {
-            products = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS,storeId);
+            products = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS, storeId);
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
@@ -157,4 +154,9 @@ public class StoreView extends BaseLayout {
         content.add(layout);
     }
 
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createView();
+    }
 }

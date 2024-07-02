@@ -2,9 +2,9 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.Transaction;
-import com.amazonas.common.dtos.TransactionState;
-import com.amazonas.common.requests.Request;
+import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -17,8 +17,6 @@ import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
-import com.amazonas.frontend.control.Endpoints;
-import com.amazonas.common.utils.Rating;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -168,4 +166,5 @@ public class PreviousOrdersView extends BaseLayout{
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return dateTime.format(formatter);
     }
-    }
+
+}

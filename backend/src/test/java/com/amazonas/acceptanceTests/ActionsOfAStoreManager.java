@@ -2,16 +2,13 @@ package com.amazonas.acceptanceTests;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.exceptions.NoPermissionException;
-import com.amazonas.backend.repository.PermissionsProfileRepository;
-import com.amazonas.backend.repository.StoreRepository;
-import com.amazonas.backend.repository.TransactionRepository;
-import com.amazonas.backend.repository.UserCredentialsRepository;
+import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,12 +32,13 @@ public class ActionsOfAStoreManager {
     private StoreRepository storeRepository;
     private TransactionRepository transactionRepository;
     private StoresController storesController;
+    private ProductRepository productRepository;
 
     @BeforeEach
     public void setUp() {
         PermissionsController permissionsController = new PermissionsController(defaultRegisteredUserPermissionsProfile, guestPermissionsProfile,adminPermissionsProfile, permissionsProfileRepository);
         AuthenticationController authenticationController = new AuthenticationController(userCredentialsRepository);
-        StoresController storesController = new StoresController(storeFactory, storeRepository, transactionRepository);
+        StoresController storesController = new StoresController(storeFactory, storeRepository, transactionRepository, productRepository);
         storeProxy = new StoreProxy(storesController, permissionsController, authenticationController);
     }
 

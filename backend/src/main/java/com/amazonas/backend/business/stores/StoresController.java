@@ -32,11 +32,12 @@ public class StoresController {
         this.productRepository = productRepository;
     }
 
-    public void addStore(String ownerID,String name, String description) throws StoreException {
+    public String addStore(String ownerID,String name, String description) throws StoreException {
         if(doesNameExists(name))
             throw new StoreException("Store name already exists");
         Store toAdd = storeFactory.get(ownerID,name,description);
         repository.saveStore(toAdd);
+        return toAdd.getStoreId();
     }
 
     public boolean openStore(String storeId){
@@ -76,7 +77,7 @@ public class StoresController {
         getStore(storeId).setProductQuantity(productId, quantity);
     }
 
-    public Set<Product> getStoreProducts(String storeId) throws StoreException {
+    public List<Product> getStoreProducts(String storeId) throws StoreException {
         return getStore(storeId).getStoreProducts();
     }
 
