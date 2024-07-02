@@ -1,0 +1,13 @@
+public class MaxWeightRule implements PurchaseRule {
+    private final double maxWeight;
+
+    public MaxWeightRule(double maxWeight) {
+        this.maxWeight = maxWeight;
+    }
+
+    @Override
+    public boolean isSatisfied(Cart cart, User user) {
+        return cart.getTotalWeight() <= maxWeight;
+    }
+}
+
