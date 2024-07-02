@@ -6,7 +6,7 @@ import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;

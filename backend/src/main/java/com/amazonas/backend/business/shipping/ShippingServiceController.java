@@ -1,7 +1,7 @@
 package com.amazonas.backend.business.shipping;
 
 import com.amazonas.backend.business.stores.Store;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;

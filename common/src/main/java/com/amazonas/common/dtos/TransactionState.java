@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.transactions;
+package com.amazonas.common.dtos;
 
 public enum TransactionState {
     PENDING_SHIPMENT,
