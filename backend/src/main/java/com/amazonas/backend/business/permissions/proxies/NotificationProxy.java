@@ -3,7 +3,7 @@ package com.amazonas.backend.business.permissions.proxies;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.actions.UserActions;
+import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.NotificationException;

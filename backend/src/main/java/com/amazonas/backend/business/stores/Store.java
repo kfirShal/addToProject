@@ -3,7 +3,7 @@ package com.amazonas.backend.business.stores;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;

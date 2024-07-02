@@ -143,7 +143,7 @@ public class PurchaseTests {
 
         // ============= Entities setup ============= |
         shoppingCart = new ShoppingCart(storeBasketFactory, USER_ID);
-        product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS);
+        product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS, "store1");
         user = new RegisteredUser(USER_ID, "email@email.com");
 
         // ============== Mocks configuration ============== |

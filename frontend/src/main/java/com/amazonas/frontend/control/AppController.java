@@ -294,7 +294,7 @@ public class AppController {
         getSession().invalidate();
     }
 
-    private static void setSessionsAttribute(String key, Object value) {
+    public static void setSessionsAttribute(String key, Object value) {
         getSession().setAttribute(key, value);
     }
 

@@ -1,8 +1,8 @@
-package com.amazonas.backend.business.permissions.profiles;
+package com.amazonas.common.permissions.profiles;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
 
 public interface PermissionsProfile {
 
