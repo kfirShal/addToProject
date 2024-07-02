@@ -137,4 +137,5 @@ public class Product implements Cloneable {
             throw new AssertionError();
         }
     }
+
 }
