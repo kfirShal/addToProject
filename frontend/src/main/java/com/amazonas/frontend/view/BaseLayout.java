@@ -97,7 +97,13 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
             });
             notificationsButton.getStyle().set("margin-right", "10px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton);
+            Button previousOrdersButton = new Button(new Icon(VaadinIcon.CLIPBOARD_PULSE));
+            previousOrdersButton.addClickListener(event -> {
+                UI.getCurrent().navigate("previous-orders");
+            });
+            previousOrdersButton.getStyle().set("margin-right", "20px");
+
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
 //            addToNavbar(username, notificationsButton);
