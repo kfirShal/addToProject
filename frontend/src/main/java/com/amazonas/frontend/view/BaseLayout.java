@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -23,22 +24,23 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
 @Component
-public abstract class BaseLayout extends AppLayout {
+public abstract class BaseLayout extends AppLayout implements BeforeEnterListener {
 
     protected final VerticalLayout content;
     private final AppController appController;
+    private QueryParameters params;
 
     public BaseLayout(AppController appController) {
         this.appController = appController;
@@ -50,7 +52,7 @@ public abstract class BaseLayout extends AppLayout {
         }
 
         SideNav nav1 = new SideNav();
-        nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
+        nav1.addItem(new SideNavItem("Welcome", "", VaadinIcon.HOME.create()));
         nav1.addItem(new SideNavItem("example1", Example1View.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("example2", Example2View.class, VaadinIcon.FAMILY.create()));
 
@@ -125,6 +127,23 @@ public abstract class BaseLayout extends AppLayout {
                 openErrorDialog("Failed to connect to server", AppController::clearSession);
             }
         }
+    }
+
+    /**
+     * get the path of the view with the given parameters
+     * @param mandatoryParams for pages with mandatory parameters that need to be included in the path
+     */
+    @SafeVarargs
+    protected static String getPath(String route, Pair<String, String> ... mandatoryParams){
+        StringBuilder builder = new StringBuilder(route);
+        if(mandatoryParams.length > 0){
+            builder.append("?");
+            for(Pair<String,String> param : mandatoryParams){
+                builder.append(param.first()).append("=").append(param.second()).append("&");
+            }
+            builder.deleteCharAt(builder.length()-1);
+        }
+        return builder.toString();
     }
 
     protected void openLoginDialog() {
@@ -254,5 +273,18 @@ public abstract class BaseLayout extends AppLayout {
         }
         content.add(dialog);
         dialog.open();
+    }
+
+    /**
+     * get a parameter from the query parameters
+     * @throws java.util.NoSuchElementException if the parameter is not present
+     */
+    protected String getParam(String key) {
+        return params.getSingleParameter(key).orElseThrow();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        params = event.getLocation().getQueryParameters();
     }
 }

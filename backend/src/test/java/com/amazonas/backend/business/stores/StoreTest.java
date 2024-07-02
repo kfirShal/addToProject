@@ -47,27 +47,27 @@ class StoreTest {
     public StoreTest() {
 
         // Create products directly with related names
-        laptop = new Product("P1001", "Dell XPS 13", 999.99, "Electronics", "Powerful and compact laptop.", Rating.ONE_STAR);
+        laptop = new Product("P1001", "Dell XPS 13", 999.99, "Electronics", "Powerful and compact laptop.", Rating.ONE_STAR, "store1");
         laptop.addKeyWords("Laptop");
         laptop.addKeyWords("Dell");
         laptop.addKeyWords("XPS");
 
-        book = new Product("P1002", "The Great Gatsby", 10.50, "Books", "Classic novel by F. Scott Fitzgerald.", Rating.TWO_STARS);
+        book = new Product("P1002", "The Great Gatsby", 10.50, "Books", "Classic novel by F. Scott Fitzgerald.", Rating.TWO_STARS, "store1");
         book.addKeyWords("Book");
         book.addKeyWords("Novel");
         book.addKeyWords("Classic");
 
-        shirt = new Product("P1003", "Men's Casual Shirt", 25.99, "Clothing", "Comfortable and stylish casual shirt.", Rating.THREE_STARS);
+        shirt = new Product("P1003", "Men's Casual Shirt", 25.99, "Clothing", "Comfortable and stylish casual shirt.", Rating.THREE_STARS, "store1");
         shirt.addKeyWords("Shirt");
         shirt.addKeyWords("Casual");
         shirt.addKeyWords("Men's Clothing");
 
-        blender = new Product("P1004", "Ninja Professional Blender", 120.00, "Home", "High-powered kitchen blender.", Rating.FOUR_STARS);
+        blender = new Product("P1004", "Ninja Professional Blender", 120.00, "Home", "High-powered kitchen blender.", Rating.FOUR_STARS, "store1");
         blender.addKeyWords("Blender");
         blender.addKeyWords("Kitchen Appliance");
         blender.addKeyWords("Ninja");
 
-        toy = new Product("P1005", "LEGO Star Wars Set", 49.99, "Toys", "Exciting LEGO set for Star Wars fans.", Rating.FIVE_STARS);
+        toy = new Product("P1005", "LEGO Star Wars Set", 49.99, "Toys", "Exciting LEGO set for Star Wars fans.", Rating.FIVE_STARS, "store1");
         toy.addKeyWords("LEGO");
         toy.addKeyWords("Star Wars");
         toy.addKeyWords("Toy");
