@@ -14,7 +14,7 @@ class ProductTest {
     @BeforeEach
     void setUp() {
 
-        pTest = new Product("1", "Shirt", 50, "Shirts", "black" ,FOUR_STARS);
+        pTest = new Product("1", "Shirt", 50, "Shirts", "black" ,FOUR_STARS, "store1");
     }
 
 
