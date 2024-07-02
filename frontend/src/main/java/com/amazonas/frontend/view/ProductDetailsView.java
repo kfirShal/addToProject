@@ -2,9 +2,11 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.users.CartRequest;
+import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
@@ -13,7 +15,10 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.amazonas.common.utils.Rating.FOUR_STARS;
 
@@ -24,10 +29,81 @@ public class ProductDetailsView extends BaseLayout {
     public ProductDetailsView(AppController appController) {
         super(appController);
         this.appController = appController;
+        // Get product id from the URL
+        String productId = getParam("productId");
+        Product product = null;
+        try {
+            List<Product> fetched = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
+            product = fetched.getFirst();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
 
-        // Example product details
-        Product product = new Product("1", "Old Computer", 49.99, "Electronics", "This is a sample product description.", FOUR_STARS,"5e57214b-d94e-4a2f-b9a4-26fee76fdb07");
+        HorizontalLayout productLayout = createProductLayout(product);
 
+        content.add(productLayout);
+
+
+    }
+
+//    @Override
+//    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+//        QueryParameters queryParameters = beforeEnterEvent.getLocation().getQueryParameters();
+//        Map<String, List<String>> parameters = queryParameters.getParameters();
+//
+//
+//        // Check if all parameters are present
+//        boolean hasAllParams = parameters.containsKey("productId") && parameters.containsKey("productName")
+//                && parameters.containsKey("productPrice") && parameters.containsKey("productCategory")
+//                && parameters.containsKey("productDescription") && parameters.containsKey("productRating")
+//                && parameters.containsKey("storeId");
+//
+//        Product product;
+//        HorizontalLayout productLayout = new HorizontalLayout();
+//        if (hasAllParams) {
+//            String productId = parameters.get("productId").getFirst();
+//            String productName = parameters.get("productName").getFirst();
+//            double productPrice = Double.parseDouble(parameters.get("productPrice").getFirst());
+//            String productCategory = parameters.get("productCategory").getFirst();
+//            String productDescription = parameters.get("productDescription").getFirst();
+//            Rating productRating = Rating.valueOf(parameters.get("productRating").getFirst().toUpperCase());
+//            String storeId = parameters.get("storeId").getFirst();
+//            product = new Product(productId, productName, productPrice, productCategory, productDescription, productRating, storeId);
+//            // Create content layout
+//            productLayout = createProductLayout(product,true);
+//
+//        } else {
+//            // Handle the case when only productId is passed
+//            // Get product id from the URL
+//            String productId = getParam("productId");
+//            try {
+//                List<Product> fetched = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
+//                product = fetched.getFirst();
+//            } catch (ApplicationException e) {
+//                openErrorDialog(e.getMessage());
+//                return;
+//            }
+//            // Create content layout
+//            productLayout = createProductLayout(product,false);
+//        }
+//        content.add(productLayout);
+//
+////        String productId = parameters.getOrDefault("productId", List.of("1")).getFirst();
+////        String productName = parameters.getOrDefault("productName", List.of("Old Computer")).getFirst();
+////        double productPrice = Double.parseDouble(parameters.getOrDefault("productPrice", List.of("49.99")).getFirst());
+////        String productCategory = parameters.getOrDefault("productCategory", List.of("Electronics")).getFirst();
+////        String productDescription = parameters.getOrDefault("productDescription", List.of("This is an old computer.")).getFirst();
+////        Rating productRating = Rating.valueOf(parameters.getOrDefault("productRating", List.of("ONE_STAR")).getFirst().toUpperCase());
+////        String storeId = parameters.getOrDefault("storeId", List.of("")).getFirst();
+//
+//
+//
+//    }
+
+
+
+    private HorizontalLayout createProductLayout(Product product) {
         // Product name
         H2 productName = new H2(product.productName());
 
@@ -91,8 +167,11 @@ public class ProductDetailsView extends BaseLayout {
             }
         });
 
-        // Layout for quantity selector and add to cart button
-        HorizontalLayout quantityLayout = new HorizontalLayout(decreaseButton, quantityField, increaseButton, addToCartButton);
+        // Back to store button
+        Button backButton = new Button("Back to Store");
+        backButton.addClickListener(event -> UI.getCurrent().navigate("store")); // Navigate back to store view
+        // Layout for quantity selector and add to cart button and back button
+        HorizontalLayout quantityLayout = new HorizontalLayout(decreaseButton, quantityField, increaseButton, addToCartButton, backButton);
         quantityLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
         // Product picture
@@ -116,9 +195,7 @@ public class ProductDetailsView extends BaseLayout {
         mainLayout.setWidthFull();
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START); // Align items to start
 
-        // Add to content
-        content.add(mainLayout);
 
-
+       return mainLayout;
     }
 }

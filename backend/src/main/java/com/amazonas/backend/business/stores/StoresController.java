@@ -1,6 +1,8 @@
 package com.amazonas.backend.business.stores;
 
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
@@ -21,11 +23,13 @@ public class StoresController {
     private final StoreFactory storeFactory;
     private final StoreRepository repository;
     private final TransactionRepository transactionRepository;
+    private final ProductRepository productRepository;
 
-    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository){
+    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository){
         this.storeFactory = storeFactory;
         this.repository = storeRepository;
         this.transactionRepository = transactionRepository;
+        this.productRepository = productRepository;
     }
 
     public void addStore(String ownerID,String name, String description) throws StoreException {
@@ -124,5 +128,16 @@ public class StoresController {
 
     public List<Transaction> getStoreTransactionHistory(String storeId) {
         return transactionRepository.getTransactionHistoryByStore(storeId);
+    }
+
+    public StoreDetails getStoreDetails(String storeId) {
+        return getStore(storeId).getDetails();
+    }
+
+    public Product getProduct(String productId) throws StoreException {
+        if(productRepository.getProduct(productId) == null){
+            throw new StoreException("Product not found");
+        }
+        return productRepository.getProduct(productId);
     }
 }

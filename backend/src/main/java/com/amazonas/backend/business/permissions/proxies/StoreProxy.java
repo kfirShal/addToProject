@@ -2,6 +2,7 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.StoresController;
@@ -146,5 +147,17 @@ public class StoreProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.VIEW_STORE_TRANSACTIONS);
         return real.getStoreTransactionHistory(storeId);
+    }
+
+    public StoreDetails getStoreDetails(String storeId, String userId, String token) throws NoPermissionException, AuthenticationFailedException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.VIEW_STORES);
+        return real.getStoreDetails(storeId);
+    }
+
+    public Product getProduct(String productId, String userId, String token) throws NoPermissionException, AuthenticationFailedException, StoreException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.VIEW_PRODUCTS);
+        return real.getProduct(productId);
     }
 }
