@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -127,6 +128,28 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
             }
         }
     }
+
+    /**
+     * get the path of the view with the given parameters
+     * @param mandatoryParams for pages with mandatory parameters that need to be included in the path
+     */
+    @SafeVarargs
+    public final String getPath(Pair<String, String>... mandatoryParams){
+        StringBuilder builder = new StringBuilder(getPath());
+        if(mandatoryParams.length > 0){
+            builder.append("?");
+            for(Pair<String,String> param : mandatoryParams){
+                builder.append(param.first()).append("=").append(param.second()).append("&");
+            }
+            builder.deleteCharAt(builder.length()-1);
+        }
+        return builder.toString();
+    }
+
+    /**
+     * get the path of the view without any parameters
+     */
+    protected abstract String getPath();
 
     protected void openLoginDialog() {
         Dialog dialog = new Dialog();
@@ -269,6 +292,4 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
     public void beforeEnter(BeforeEnterEvent event) {
         params = event.getLocation().getQueryParameters();
     }
-
-    public abstract String getPath();
 }
