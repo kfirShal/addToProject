@@ -154,4 +154,10 @@ public class StoreProxy extends ControllerProxy {
         checkPermission(userId, MarketActions.VIEW_STORES);
         return real.getStoreDetails(storeId);
     }
+
+    public Product getProduct(String productId, String userId, String token) throws NoPermissionException, AuthenticationFailedException, StoreException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.VIEW_PRODUCTS);
+        return real.getProduct(productId);
+    }
 }

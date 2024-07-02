@@ -51,7 +51,7 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
         }
 
         SideNav nav1 = new SideNav();
-        nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
+        nav1.addItem(new SideNavItem("Welcome", "", VaadinIcon.HOME.create()));
         nav1.addItem(new SideNavItem("example1", Example1View.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("example2", Example2View.class, VaadinIcon.FAMILY.create()));
 
@@ -269,4 +269,6 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
     public void beforeEnter(BeforeEnterEvent event) {
         params = event.getLocation().getQueryParameters();
     }
+
+    public abstract String getPath();
 }

@@ -92,6 +92,8 @@ public class API {
             case "removeproduct" -> storesService.removeProduct(body);
             case "disableproduct" -> storesService.disableProduct(body);
             case "enableproduct" -> storesService.enableProduct(body);
+            case "getstoreproducts" -> storesService.getStoreProducts(body);
+            case "getproduct" -> storesService.getProduct(body);
             case "addowner" -> storesService.addOwner(body);
             case "addmanager" -> storesService.addManager(body);
             case "removeowner" -> storesService.removeOwner(body);
@@ -101,7 +103,6 @@ public class API {
             case "getstorerolesinformation" -> storesService.getStoreRolesInformation(body);
             case "getstoretransactionhistory" -> storesService.getStoreTransactionHistory(body);
             case "setproductquantity" -> storesService.setProductQuantity(body);
-            case "getstoreproducts" -> storesService.getStoreProducts(body);
             case "getstoredetails" -> storesService.getStoreDetails(body);
             default -> "Invalid endpoint";
         };

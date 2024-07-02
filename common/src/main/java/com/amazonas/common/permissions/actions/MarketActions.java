@@ -4,6 +4,7 @@ public enum MarketActions {
 
     // general actions
     SEARCH_PRODUCTS,
+    VIEW_PRODUCTS,
     VIEW_STORES,
 
     // market management
