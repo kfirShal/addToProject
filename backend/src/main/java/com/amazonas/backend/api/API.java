@@ -102,6 +102,7 @@ public class API {
             case "getstoretransactionhistory" -> storesService.getStoreTransactionHistory(body);
             case "setproductquantity" -> storesService.setProductQuantity(body);
             case "getstoreproducts" -> storesService.getStoreProducts(body);
+            case "getstoredetails" -> storesService.getStoreDetails(body);
             default -> "Invalid endpoint";
         };
     }

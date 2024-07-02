@@ -1,6 +1,7 @@
 package com.amazonas.frontend.control;
 
 import com.amazonas.common.dtos.Notification;
+import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 
@@ -69,6 +70,7 @@ public enum Endpoints {
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
     GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class),
+    GET_STORE_DETAILS("stores/getstoredetails", StoreDetails.class),
 
     //Permissions Endpoints
     GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),

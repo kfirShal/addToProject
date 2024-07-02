@@ -1,6 +1,7 @@
 package com.amazonas.backend.business.stores;
 
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
@@ -124,5 +125,9 @@ public class StoresController {
 
     public List<Transaction> getStoreTransactionHistory(String storeId) {
         return transactionRepository.getTransactionHistoryByStore(storeId);
+    }
+
+    public StoreDetails getStoreDetails(String storeId) {
+        return getStore(storeId).getDetails();
     }
 }
