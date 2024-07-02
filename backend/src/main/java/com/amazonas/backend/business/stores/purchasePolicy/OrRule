@@ -1,0 +1,12 @@
+public class OrRule implements PurchaseRule {
+    private final List<PurchaseRule> rules;
+
+    public OrRule(List<PurchaseRule> rules) {
+        this.rules = rules;
+    }
+
+    @Override
+    public boolean isSatisfied(Cart cart, User user) {
+        return rules.stream().anyMatch(rule -> rule.isSatisfied(cart, user));
+    }
+}
