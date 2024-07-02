@@ -1,9 +1,11 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.requests.Request;
 import com.amazonas.common.requests.notifications.NotificationRequest;
 import com.amazonas.common.requests.stores.ProductRequest;
+import com.amazonas.common.utils.Pair;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -35,24 +37,37 @@ public class StoreView extends BaseLayout {
         this.appController = appController;
 
         // TODO :Get store id from the URL
+        String storeId = getParam("storeId");
+        StoreDetails storeDetails = null;
+        try {
+            List<StoreDetails> fetched = appController.postByEndpoint(Endpoints.GET_STORE_DETAILS, storeId);
+            storeDetails = fetched.getFirst();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
 
         // Get list of products from the backend
-//        List<Product> products = new ArrayList<>();
+        List<Product> products = new ArrayList<>();
+        try {
+            products = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS,storeId);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+        }
+
+        Store store = new Store(storeDetails.storeName(), storeDetails.storeDescription(), storeDetails.storeRating(), products);
 
 
-
-
-
-        // Example store details
-        List<Product> products = List.of(
-                new Product("1", "Product 1", 19.99, "Category 1", "Description for product 1.", Rating.FOUR_STARS, "store1"),
-                new Product("2", "Product 2", 29.99, "Category 2", "Description for product 2.", Rating.THREE_STARS, "store1"),
-                new Product("3", "Product 3", 39.99, "Category 3", "Description for product 3.", Rating.FIVE_STARS, "store1"),
-                new Product("4", "Product 4", 49.99, "Category 4", "Description for product 4.", Rating.TWO_STARS, "store1"),
-                new Product("5", "Product 5", 59.99, "Category 5", "Description for product 5.", Rating.ONE_STAR, "store1"),
-                new Product("6", "Product 6", 69.99, "Category 6", "Description for product 6.", Rating.FOUR_STARS, "store1")
-        );
-        Store store = new Store("Sample Store", "This is a sample store description.", Rating.FIVE_STARS, products);
+//        // Example store details
+//        List<Product> products = List.of(
+//                new Product("1", "Product 1", 19.99, "Category 1", "Description for product 1.", Rating.FOUR_STARS, "store1"),
+//                new Product("2", "Product 2", 29.99, "Category 2", "Description for product 2.", Rating.THREE_STARS, "store1"),
+//                new Product("3", "Product 3", 39.99, "Category 3", "Description for product 3.", Rating.FIVE_STARS, "store1"),
+//                new Product("4", "Product 4", 49.99, "Category 4", "Description for product 4.", Rating.TWO_STARS, "store1"),
+//                new Product("5", "Product 5", 59.99, "Category 5", "Description for product 5.", Rating.ONE_STAR, "store1"),
+//                new Product("6", "Product 6", 69.99, "Category 6", "Description for product 6.", Rating.FOUR_STARS, "store1")
+//        );
+//        Store store = new Store("Sample Store", "This is a sample store description.", Rating.FIVE_STARS, products);
 
         // Store name
         H2 storeName = new H2(store.storeName());
@@ -105,8 +120,9 @@ public class StoreView extends BaseLayout {
             }
 
             Button productButton = new Button(product.productName(), event -> {
-                String url = String.format("product-details?productId=%s&productName=%s&productPrice=%s&productCategory=%s&productDescription=%s&productRating=%s&storeId=%s",
-                        product.productId(), product.productName(), product.price(), product.category(), product.description(), product.rating().name(), product.storeId());
+                String url = getPath("product-details", Pair.of("productId", product.productId()));
+//                String url = String.format("product-details?productId=%s&productName=%s&productPrice=%s&productCategory=%s&productDescription=%s&productRating=%s&storeId=%s",
+//                        product.productId(), product.productName(), product.price(), product.category(), product.description(), product.rating().name(), product.storeId());
                 getUI().ifPresent(ui -> ui.navigate(url));
             });
 
@@ -140,4 +156,5 @@ public class StoreView extends BaseLayout {
         // Add to content
         content.add(layout);
     }
+
 }
