@@ -134,8 +134,8 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
      * @param mandatoryParams for pages with mandatory parameters that need to be included in the path
      */
     @SafeVarargs
-    public final String getPath(Pair<String, String>... mandatoryParams){
-        StringBuilder builder = new StringBuilder(getPath());
+    protected static String getPath(String route, Pair<String, String> ... mandatoryParams){
+        StringBuilder builder = new StringBuilder(route);
         if(mandatoryParams.length > 0){
             builder.append("?");
             for(Pair<String,String> param : mandatoryParams){
@@ -145,11 +145,6 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
         }
         return builder.toString();
     }
-
-    /**
-     * get the path of the view without any parameters
-     */
-    protected abstract String getPath();
 
     protected void openLoginDialog() {
         Dialog dialog = new Dialog();
