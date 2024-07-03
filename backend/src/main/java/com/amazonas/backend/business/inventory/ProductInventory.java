@@ -112,4 +112,8 @@ public class ProductInventory {
                                     && idToQuantity.get(product.productId()) > 0)
                 .toList();
     }
+
+    public Product getProduct(String ProductID) {
+        return productRepository.getProduct(ProductID);
+    }
 }

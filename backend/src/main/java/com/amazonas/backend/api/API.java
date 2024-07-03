@@ -104,6 +104,9 @@ public class API {
             case "getstoretransactionhistory" -> storesService.getStoreTransactionHistory(body);
             case "setproductquantity" -> storesService.setProductQuantity(body);
             case "getstoredetails" -> storesService.getStoreDetails(body);
+            case "adddiscountrule" -> storesService.addDiscountRule(body);
+            case "getdiscountrule" -> storesService.getDiscountRule(body);
+            case "removediscountrule" -> storesService.deleteAllDiscounts(body);
             default -> "Invalid endpoint";
         };
     }
