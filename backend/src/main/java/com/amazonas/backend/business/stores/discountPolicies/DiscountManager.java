@@ -17,11 +17,18 @@ public class DiscountManager {
         discountComponent = null;
     }
 
-    public DiscountComponentDTO getDiscountPolicy() throws StoreException {
+    public DiscountComponentDTO getDiscountPolicyDTO() throws StoreException {
         if (discountComponent == null) {
             throw new StoreException("cannot generate discount component");
         }
         return discountComponent.generateDTO();
+    }
+
+    public String getDiscountPolicyCFG() throws StoreException {
+        if (discountComponent == null) {
+            throw new StoreException("cannot generate discount component");
+        }
+        return discountComponent.generateCFG();
     }
 
     public boolean deleteAllDiscounts() {

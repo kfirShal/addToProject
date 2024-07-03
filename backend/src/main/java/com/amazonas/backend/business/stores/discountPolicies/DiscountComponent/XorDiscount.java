@@ -93,4 +93,22 @@ public class XorDiscount implements DiscountComponent {
             throw new IllegalArgumentException("The xor condition must be one of the list");
         }
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        StringBuilder ret = null;
+        if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
+            ret = new StringBuilder("( minimal-price");
+        }
+        else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
+            ret = new StringBuilder("( maximal-price");
+        }
+        else {
+            throw new IllegalArgumentException("Cannot generate the CFG");
+        }
+        for (DiscountComponent child : children) {
+            ret.append(" ").append(child.generateCFG());
+        }
+        return ret + ") ";
+    }
 }

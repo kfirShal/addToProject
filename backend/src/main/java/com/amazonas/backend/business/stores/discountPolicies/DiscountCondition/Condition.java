@@ -9,4 +9,5 @@ import java.util.List;
 public interface Condition {
     boolean decideCondition(List<ProductWithQuantitiy> products);
     DiscountConditionDTO generateDTO() throws StoreException;
+    String generateCFG() throws StoreException;
 }

@@ -35,4 +35,9 @@ public class AtLeastPriceCondition implements Condition{
     public DiscountConditionDTO generateDTO() throws StoreException {
         return new UnaryConditionDTO(UnaryConditionType.AT_LEAST_SOME_PRICE, (int)limit, "");
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        return "( price-over " + limit + " )";
+    }
 }

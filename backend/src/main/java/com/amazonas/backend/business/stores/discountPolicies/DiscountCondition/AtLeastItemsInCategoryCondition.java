@@ -41,5 +41,10 @@ public class AtLeastItemsInCategoryCondition implements Condition{
         return new UnaryConditionDTO(UnaryConditionType.AT_LEAST_NUMBER_OF_ITEMS_FROM_CATEGORY, limit, categoryName);
     }
 
+    @Override
+    public String generateCFG() throws StoreException {
+        return "( category-quantity-more-than " + categoryName + " " + limit + " )";
+    }
+
 
 }

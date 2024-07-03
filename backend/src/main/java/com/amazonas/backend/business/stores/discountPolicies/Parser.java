@@ -207,8 +207,8 @@ public class Parser {
                             return parseWordNumber("price-over", input.substring(index), offset + index);
                         } else if (input.startsWith("product-quantity-more-than", index)) {
                             return parseWordNumberNumber("product-quantity-more-than", input.substring(index), offset + index);
-                        } else if (input.startsWith("category-quantity-more-than ", index)) {
-                            return parseWordWordNumber("category-quantity-more-than ", input.substring(index), offset + index);
+                        } else if (input.startsWith("category-quantity-more-than", index)) {
+                            return parseWordWordNumber("category-quantity-more-than", input.substring(index), offset + index);
                         } else if (input.startsWith("&", index)) {
                             return parseMultipleConditions("&", input.substring(index), offset + index);
                         } else if (input.startsWith("|", index)) {

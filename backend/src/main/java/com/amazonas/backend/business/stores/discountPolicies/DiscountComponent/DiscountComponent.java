@@ -17,4 +17,5 @@ public interface DiscountComponent {
     boolean hasLeavesNode();
     ProductAfterDiscount[] calculateDiscount(List<ProductWithQuantitiy> products);
     DiscountComponentDTO generateDTO() throws StoreException;
+    String generateCFG() throws StoreException;
 }

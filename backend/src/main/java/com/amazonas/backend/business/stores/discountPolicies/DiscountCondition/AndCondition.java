@@ -49,4 +49,15 @@ public class AndCondition implements Condition{
         }
         return new MultipleConditionDTO(MultipleConditionType.AND, discountConditions);
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("( & ");
+        for (Condition condition : conditions) {
+            sb.append(" ").append(condition.generateCFG());
+        }
+        sb.append(" )");
+        return sb.toString();
+    }
 }

@@ -68,4 +68,15 @@ public class AdditionDiscount implements DiscountComponent{
         }
         return new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        StringBuilder ret = new StringBuilder("( add");
+        for (DiscountComponent child : children) {
+            ret.append(" ").append(child.generateCFG());
+        }
+        return ret + ") ";
+    }
+
+
 }
