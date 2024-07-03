@@ -1,11 +1,11 @@
 package com.amazonas.backend.repository.abstracts;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Repository
+@Component
 public abstract class AbstractCachingRepository<T> {
 
     private final Map<String, T> cache;

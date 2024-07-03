@@ -1,10 +1,10 @@
 package com.amazonas.backend.business.permissions;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
-import com.amazonas.backend.business.permissions.profiles.AdminPermissionsProfile;
-import com.amazonas.backend.business.permissions.profiles.DefaultPermissionsProfile;
-import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,6 +49,8 @@ public class PermissionsBeans {
         profile.addUserActionPermission(UserActions.PAY_FOR_PURCHASE);
         // market actions
         profile.addMarketActionPermission(MarketActions.SEARCH_PRODUCTS);
+        profile.addMarketActionPermission(MarketActions.VIEW_STORES);
+        profile.addMarketActionPermission(MarketActions.VIEW_PRODUCTS);
     }
 
     private void buildDefaultRegisteredUserProfile() {
@@ -65,5 +67,12 @@ public class PermissionsBeans {
         profile.addUserActionPermission(UserActions.VIEW_USER_TRANSACTIONS);
         // market actions
         profile.addMarketActionPermission(MarketActions.SEARCH_PRODUCTS);
+        profile.addMarketActionPermission(MarketActions.VIEW_STORES);
+        profile.addMarketActionPermission(MarketActions.VIEW_PRODUCTS);
+        // notifications
+        profile.addUserActionPermission(UserActions.READ_NOTIFICATIONS);
+        profile.addUserActionPermission(UserActions.SEND_NOTIFICATION);
+        profile.addUserActionPermission(UserActions.DELETE_NOTIFICATION);
+        profile.addUserActionPermission(UserActions.SET_NOTIFICATION_READ);
     }
 }

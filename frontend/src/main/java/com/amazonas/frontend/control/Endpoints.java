@@ -8,6 +8,13 @@ import java.util.List;
 import java.util.Map;
 import com.amazonas.common.dtos.Notification;
 import java.util.List;
+import com.amazonas.common.dtos.Notification;
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.dtos.Transaction;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
+
 
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
@@ -27,7 +34,7 @@ public enum Endpoints {
     START_PURCHASE("userprofiles/startpurchase", Void.class),
     PAY_FOR_PURCHASE("userprofiles/payforpurchase", Void.class),
     CANCEL_PURCHASE("userprofiles/cancelpurchase", Void.class),
-    GET_USER_TRANSACTION_HISTORY("userprofiles/getusertransactionhistory", Void.class),
+    GET_USER_TRANSACTION_HISTORY("userprofiles/getusertransactionhistory", Transaction.class),
 
     // Authentication Endpoints
     AUTHENTICATE_USER("auth/user", String.class),
@@ -74,7 +81,16 @@ public enum Endpoints {
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
     GET_STORE_PRODUCTS("stores/getstoreproducts", Types.GET_STORE_PRODUCTS_TYPE),
-    GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class);
+    GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class),
+    GET_STORE_DETAILS("stores/getstoredetails", StoreDetails.class),
+    GET_PRODUCT("stores/getproduct", Product.class),
+    ADD_DISCOUNT_RULE("stores/adddiscountrule", String.class),
+    GET_DISCOUNT_RULE("stores/getdiscountrule", String.class),
+    REMOVE_DISCOUNT_RULE("stores/removediscountrule", Boolean.class),
+
+    //Permissions Endpoints
+    GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),
+    GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class);
 
     private final String location;
     private final Class<?> returnType;

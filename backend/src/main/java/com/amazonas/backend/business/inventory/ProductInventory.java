@@ -1,24 +1,34 @@
 package com.amazonas.backend.business.inventory;
 
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public class ProductInventory {
 
     private static final Logger log = LoggerFactory.getLogger(ProductInventory.class);
 
-    protected ConcurrentMap<String, Product> idToProduct;
+    //TODO: FIX THIS ENTIRE CLASS WHEN WE HAVE A DATABASE
+
+    private final ProductRepository productRepository;
+
+    // TODO: REMOVE THIS WHEN WE HAVE A DATABASE
+    private final ConcurrentMap<String, Product> idToProduct;
     private final ConcurrentMap<String, Integer> idToQuantity;
     private final Set<String> disabledProductsId;
 
-    public  ProductInventory(){
+    public  ProductInventory(ProductRepository productRepository){
+        this.productRepository = productRepository;
         idToProduct = new ConcurrentHashMap<>();
         idToQuantity = new ConcurrentHashMap<>();
         disabledProductsId = ConcurrentHashMap.newKeySet();
@@ -37,6 +47,7 @@ public class ProductInventory {
         product.setProductId(UUID.randomUUID().toString());
         log.debug("Adding product {} with id {} to inventory", product.productName(), product.productId());
         idToProduct.put(product.productId(),product);
+        productRepository.saveProduct(product);
         return product.productId();
     }
 
@@ -97,11 +108,19 @@ public class ProductInventory {
         return disabledProductsId.contains(productId);
     }
 
-    public Set<Product> getAllAvailableProducts(){
+    public List<Product> getAllAvailableProducts(){
         return idToProduct.values().stream()
                 .filter(product -> !disabledProductsId.contains(product.productId())
                                     && idToQuantity.get(product.productId()) > 0)
-                .collect(Collectors.toSet());
+                .toList();
+    }
+
+    public Product getProduct(String ProductID) {
+        return productRepository.getProduct(ProductID);
+    }
+  
+    public Map<String,Product> idToProduct() {
+        return idToProduct;
     }
 
     /**

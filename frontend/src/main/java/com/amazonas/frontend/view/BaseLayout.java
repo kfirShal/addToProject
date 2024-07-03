@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -26,35 +27,50 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import java.util.HashMap;
+
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
 @Component
-public abstract class BaseLayout extends AppLayout implements BeforeEnterListener {
+public abstract class BaseLayout extends AppLayout {
 
     protected final VerticalLayout content;
     private final AppController appController;
-    private QueryParameters params;
+    protected QueryParameters params;
+    protected SideNav nav1;
+    protected SideNav nav2;
+    protected String user;
+
 
     public BaseLayout(AppController appController) {
         this.appController = appController;
         content = new VerticalLayout();
         setContent(content);
 
+        UI current = UI.getCurrent();
+        Location activeViewLocation = current.getActiveViewLocation();
+        params = activeViewLocation.getQueryParameters();
+
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
         }
 
-        SideNav nav1 = new SideNav();
+        nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
         nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("Products", ProductsView.class, VaadinIcon.CART.create()));
+        nav1.addItem(new SideNavItem("Categories", CategoriesView.class, VaadinIcon.TAGS.create()));
+
+        nav2 = new SideNav();
+        nav2.setLabel("------------------");
+        nav2.addItem(new SideNavItem("Profile", Profile.class, VaadinIcon.USER.create()));
+        nav2.addItem(new SideNavItem("Settings", Settings.class, VaadinIcon.COG.create()));
 
         VerticalLayout sideNav = new VerticalLayout();
         sideNav.add(nav1);
@@ -82,7 +98,7 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
             addToNavbar(loginButton, registerButton);
         } else {
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-            username.getStyle().set("margin-left", "10px");
+            username.getStyle().set("margin-left", "65%");
 //            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
 //            username.getStyle().set("margin-right", "10px");
 
@@ -92,10 +108,24 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
             });
             notificationsButton.getStyle().set("margin-right", "10px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton);
+            Button previousOrdersButton = new Button(new Icon(VaadinIcon.CLIPBOARD_PULSE));
+            previousOrdersButton.addClickListener(event -> {
+                UI.getCurrent().navigate("previous-orders");
+            });
+            previousOrdersButton.getStyle().set("margin-right", "20px");
+
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
 //            addToNavbar(username, notificationsButton);
+
+
+
+            // Profile button with an icon and text "Profile", click on it should open the page with user profile
+            Button profileButton = new Button("Profile", new Icon(VaadinIcon.USER), event -> {
+                UI.getCurrent().navigate("Profile");
+            });
+            profileButton.getStyle().set("margin-left", "10px");
 
             Button logoutButton = new Button("Logout", event -> {
                 if(appController.logout()){
@@ -114,14 +144,43 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
             addToNavbar(userActions, logoutButton);
 
 
+            logoutButton.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+            logoutButton.getStyle().set("margin-left", "10px");
+
+            addToNavbar(username, profileButton, logoutButton);
         }
 
         // set up guest user if needed
         if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
             if (! appController.enterAsGuest()) {
-                openErrorDialog("Failed to connect to server", AppController::clearSession);
+                appController.enterAsGuest();
+                //openErrorDialog("Failed to connect to server", AppController::clearSession);
             }
         }
+    }
+
+    public void returnToMainIfNotLogged(){
+//        if (!isUserLoggedIn()) {
+//            UI.getCurrent().navigate("");
+//            return;
+//        }
+    }
+
+    /**
+     * get the path of the view with the given parameters
+     * @param mandatoryParams for pages with mandatory parameters that need to be included in the path
+     */
+    @SafeVarargs
+    protected static String getPath(String route, Pair<String, String> ... mandatoryParams){
+        StringBuilder builder = new StringBuilder(route);
+        if(mandatoryParams.length > 0){
+            builder.append("?");
+            for(Pair<String,String> param : mandatoryParams){
+                builder.append(param.first()).append("=").append(param.second()).append("&");
+            }
+            builder.deleteCharAt(builder.length()-1);
+        }
+        return builder.toString();
     }
 
     protected void openLoginDialog() {
@@ -141,6 +200,7 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             if (appController.login(username, password)) {
+                this.user = username;
                 showNotification("Login successful");
                 UI.getCurrent().getPage().reload();
             } else {
@@ -160,6 +220,10 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
         content.add(dialog);
         dialog.open();
 
+    }
+
+    public String getName() {
+        return user;
     }
 
     protected void openRegisterDialog(){
@@ -259,10 +323,5 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
      */
     protected String getParam(String key) {
         return params.getSingleParameter(key).orElseThrow();
-    }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        params = event.getLocation().getQueryParameters();
     }
 }

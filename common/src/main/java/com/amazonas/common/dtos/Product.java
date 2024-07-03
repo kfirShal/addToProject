@@ -7,6 +7,9 @@ import java.util.Objects;
 import java.util.Set;
 
 public class Product implements Cloneable {
+
+
+    private String storeId;
     private String productId;
     private String productName;
     private Double price;
@@ -15,13 +18,29 @@ public class Product implements Cloneable {
     private Rating rating;
     private Set<String> keyWords;
 
+    public Product(String productId,
+                   String productName,
+                   Double price,
+                   String category,
+                   String description,
+                   Rating rating) {
+        this.productId = productId;
+        this.productName = productName;
+        this.price = price;
+        this.category = category;
+        this.description = description;
+        this.rating = rating;
+        keyWords = new HashSet<>();
+    }
+
     public Product(
             String productId,
             String productName,
             Double price,
             String category,
             String description,
-            Rating rating
+            Rating rating,
+            String storeId
     ) {
         this.productId = productId;
         this.productName = productName;
@@ -30,6 +49,7 @@ public class Product implements Cloneable {
         this.rating = rating;
         this.description = description;
         this.keyWords = new HashSet<>();
+        this.storeId = storeId;
     }
 
 
@@ -42,6 +62,10 @@ public class Product implements Cloneable {
 
     public String productId() {
         return productId;
+    }
+
+    public String storeId() {
+        return storeId;
     }
 
     public String productName() {
@@ -88,6 +112,10 @@ public class Product implements Cloneable {
         this.rating = rating;
     }
 
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+    }
+
     public Set<String> keyWords() {
         return keyWords;
     }
@@ -131,4 +159,5 @@ public class Product implements Cloneable {
             throw new AssertionError();
         }
     }
+
 }

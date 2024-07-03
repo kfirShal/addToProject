@@ -12,8 +12,8 @@ import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.backend.business.transactions.Transaction;
-import com.amazonas.backend.business.transactions.TransactionState;
+import com.amazonas.common.dtos.Transaction;
+import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.business.userProfiles.*;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.repository.*;
@@ -35,7 +35,7 @@ public class PurchaseTests {
 
     // ================== Constants ================== |
     private static final String STORE_ID = "storeId";
-    private static final String USER_ID = "userId";
+    private static final String USER_ID = "userId".toLowerCase();
     private static final String PRODUCT_ID = "productId";
     private static final String SHIPPING_SERVICE_ID = "serviceId";
     // ================================================= |
@@ -99,7 +99,7 @@ public class PurchaseTests {
         // Real instances
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         reservationFactory = new ReservationFactory(storeCallbackFactory, shoppingCartRepository);
-        inventory = new ProductInventory();
+        inventory = new ProductInventory(productRepository);
         store = new Store(
                 "storeId",
                 "storeName",
@@ -143,7 +143,7 @@ public class PurchaseTests {
 
         // ============= Entities setup ============= |
         shoppingCart = new ShoppingCart(storeBasketFactory, USER_ID);
-        product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS);
+        product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS, "store1");
         user = new RegisteredUser(USER_ID, "email@email.com");
 
         // ============== Mocks configuration ============== |

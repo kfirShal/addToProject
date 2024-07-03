@@ -1,10 +1,10 @@
 package com.amazonas.backend.business.permissions;
 
-import com.amazonas.backend.business.permissions.actions.MarketActions;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
-import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
-import com.amazonas.backend.business.permissions.profiles.RegisteredUserPermissionsProfile;
+import com.amazonas.common.permissions.actions.MarketActions;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import com.amazonas.backend.repository.PermissionsProfileRepository;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
@@ -101,7 +101,7 @@ public class PermissionsController {
 
     public void registerUser(String userId) {
         log.debug("Registering user {}", userId);
-        RegisteredUserPermissionsProfile newProfile = new RegisteredUserPermissionsProfile(userId, defaultProfile);
+        UserPermissionsProfile newProfile = new UserPermissionsProfile(userId, defaultProfile);
         registerUser(userId, newProfile, "User already registered");
     }
 
@@ -157,7 +157,7 @@ public class PermissionsController {
     }
 
     @NonNull
-    private PermissionsProfile getPermissionsProfile(String userId) {
+    public PermissionsProfile getPermissionsProfile(String userId) {
         log.trace("Fetching permissions profile for user {}", userId);
         lock.acquireRead();
         PermissionsProfile profile = repository.getPermissionsProfile(userId);
@@ -167,5 +167,9 @@ public class PermissionsController {
             throw new IllegalArgumentException("User not registered");
         }
         return profile;
+    }
+
+    public PermissionsProfile getGuestPermissionsProfile() {
+        return guestProfile;
     }
 }

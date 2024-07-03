@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.permissions;
 
-import com.amazonas.backend.business.permissions.actions.StoreActions;
-import com.amazonas.backend.business.permissions.actions.UserActions;
-import com.amazonas.backend.business.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.backend.repository.PermissionsProfileRepository;
 import org.junit.jupiter.api.Test;
 

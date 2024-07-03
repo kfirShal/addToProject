@@ -10,7 +10,7 @@ import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.business.userProfiles.ShoppingCartFactory;
 import com.amazonas.backend.business.userProfiles.StoreBasketFactory;
 import com.amazonas.backend.business.userProfiles.UsersController;

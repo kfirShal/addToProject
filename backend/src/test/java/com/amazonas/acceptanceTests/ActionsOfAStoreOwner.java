@@ -5,7 +5,7 @@ import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.notifications.NotificationController;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.stores.factories.StoreCallbackFactory;
@@ -58,6 +58,7 @@ public class ActionsOfAStoreOwner {
     private AuthenticationController authenticationController;
     private StoreProxy storeProxy;
     private NotificationController notificationController;
+    private ProductRepository productRepository;
 
     public ActionsOfAStoreOwner(StoreMongoCollection storeMongo){
         storeRepository = new StoreRepository(storeMongo);
@@ -98,8 +99,8 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String storeManagerUserId = "storeManager1";
         String validToken = "validToken";
-        ProductInventory inventory = new ProductInventory();
-        Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        ProductInventory inventory = new ProductInventory(productRepository);
+        Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
         try {
@@ -121,7 +122,7 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String guestUserId = "guest";
         String validToken = "invalidToken";
-        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
         AuthenticationFailedException exception = assertThrows(AuthenticationFailedException.class,
@@ -136,7 +137,7 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String userId = "user1";
         String validToken = "validToken";
-        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS);
+        Product newProduct = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
         NoPermissionException exception = assertThrows(NoPermissionException.class,
