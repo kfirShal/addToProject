@@ -11,6 +11,7 @@ public enum StoreActions {
     ENABLE_PRODUCT,
     DISABLE_PRODUCT,
     SET_PRODUCT_QUANTITY,
+    GET_PRODUCT_QUANTITY,
 
     // store administration,
     CLOSE_STORE,

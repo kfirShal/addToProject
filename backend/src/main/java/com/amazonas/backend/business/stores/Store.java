@@ -186,7 +186,7 @@ public class Store {
     //============================= PRODUCTS =============================== |
     //====================================================================== |
 
-    public double calculatePrice(Map<String,Integer> products) throws StoreException {
+    public double calculatePrice(Map<String,Integer> products) {
         try {
             lock.acquireRead();
             List<ProductWithQuantitiy> productsWithQuantitiy = new ArrayList<>();
@@ -199,6 +199,8 @@ public class Store {
                 ret += productAfterDiscount.priceAfterDiscount() * productAfterDiscount.quantity();
             }
             return ret;
+        } catch (StoreException e) {
+            return -1;
         } finally {
             lock.releaseRead();
         }
@@ -305,6 +307,16 @@ public class Store {
         }
     }
 
+    public int getProductQuantity(String productId) throws StoreException {
+        try {
+            lock.acquireRead();
+            checkIfOpen();
+            return inventory.getQuantity(productId);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
     public void setProductQuantity(String productId, int quantity) throws StoreException {
         try {
             lock.acquireWrite();
@@ -315,11 +327,11 @@ public class Store {
         }
     }
 
-    public List<Product> getStoreProducts() throws StoreException {
+    public Map<Boolean,Set<Product>> getStoreProducts() throws StoreException {
         try {
             lock.acquireRead();
             checkIfOpen();
-            return inventory.getAllAvailableProducts();
+            return inventory.getProducts();
         } finally {
             lock.releaseRead();
         }

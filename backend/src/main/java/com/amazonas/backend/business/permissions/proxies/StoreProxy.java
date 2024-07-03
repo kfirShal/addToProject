@@ -19,6 +19,7 @@ import com.amazonas.common.requests.stores.SearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component("storeProxy")
@@ -85,7 +86,13 @@ public class StoreProxy extends ControllerProxy {
         real.setProductQuantity(storeId, productId, quantity);
     }
 
-    public List<Product> getStoreProducts(String storeId, String userId, String token) throws StoreException, NoPermissionException, AuthenticationFailedException {
+    public int getProductQuantity(String storeId, String productId, String userId, String token) throws NoPermissionException, AuthenticationFailedException, StoreException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.GET_PRODUCT_QUANTITY);
+        return real.getProductQuantity(storeId, productId);
+    }
+
+    public Map<Boolean,Set<Product>> getStoreProducts(String storeId, String userId, String token) throws StoreException, NoPermissionException, AuthenticationFailedException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.VIEW_STORES);
         return real.getStoreProducts(storeId);

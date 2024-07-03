@@ -24,8 +24,10 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
@@ -44,6 +46,7 @@ public abstract class BaseLayout extends AppLayout {
     protected SideNav nav2;
     protected String user;
 
+
     public BaseLayout(AppController appController) {
         this.appController = appController;
         content = new VerticalLayout();
@@ -59,6 +62,8 @@ public abstract class BaseLayout extends AppLayout {
 
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
+        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("Products", ProductsView.class, VaadinIcon.CART.create()));
         nav1.addItem(new SideNavItem("Categories", CategoriesView.class, VaadinIcon.TAGS.create()));
 
@@ -67,9 +72,8 @@ public abstract class BaseLayout extends AppLayout {
         nav2.addItem(new SideNavItem("Profile", Profile.class, VaadinIcon.USER.create()));
         nav2.addItem(new SideNavItem("Settings", Settings.class, VaadinIcon.COG.create()));
 
-
         VerticalLayout sideNav = new VerticalLayout();
-        sideNav.add(nav1, nav2);
+        sideNav.add(nav1);
 
         DrawerToggle toggle = new DrawerToggle();
 
@@ -271,7 +275,7 @@ public abstract class BaseLayout extends AppLayout {
         submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
-        formLayout.add(headlineLayout,emailField,usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
+        formLayout.add(headlineLayout,emailField, usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
         formLayout.setWidth("80%");
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);

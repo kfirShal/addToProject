@@ -1,11 +1,20 @@
 package com.amazonas.frontend.control;
 
+import com.amazonas.common.dtos.Product;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import com.amazonas.common.dtos.Notification;
+import java.util.List;
 import com.amazonas.common.dtos.Notification;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
+
 
 @SuppressWarnings("SpellCheckingInspection")
 public enum Endpoints {
@@ -71,7 +80,8 @@ public enum Endpoints {
     GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
-    GET_STORE_PRODUCTS("stores/getstoreproducts", Product.class),
+    GET_STORE_PRODUCTS("stores/getstoreproducts", Types.GET_STORE_PRODUCTS_TYPE),
+    GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class),
     GET_STORE_DETAILS("stores/getstoredetails", StoreDetails.class),
     GET_PRODUCT("stores/getproduct", Product.class),
     ADD_DISCOUNT_RULE("stores/adddiscountrule", String.class),
@@ -97,5 +107,9 @@ public enum Endpoints {
     @SuppressWarnings("unchecked")
     public <T> Class<T> returnType() {
         return (Class<T>) returnType;
+    }
+
+    private static class Types {
+        private static final Class<? extends Type> GET_STORE_PRODUCTS_TYPE = new TypeToken<Map<Boolean, List<Product>>>() {}.getType().getClass();
     }
 }

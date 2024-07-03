@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component("storesController")
@@ -81,7 +82,11 @@ public class StoresController {
         getStore(storeId).setProductQuantity(productId, quantity);
     }
 
-    public List<Product> getStoreProducts(String storeId) throws StoreException {
+    public int getProductQuantity(String storeId, String productId) throws StoreException {
+        return getStore(storeId).getProductQuantity(productId);
+    }
+
+    public Map<Boolean,Set<Product>> getStoreProducts(String storeId) throws StoreException {
         return getStore(storeId).getStoreProducts();
     }
 

@@ -6,6 +6,7 @@ import com.amazonas.common.dtos.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,5 +121,18 @@ public class ProductInventory {
   
     public Map<String,Product> idToProduct() {
         return idToProduct;
+    }
+
+    /**
+     * @return a map with two sets of products, one for enabled products and one for disabled products
+     * the key is a boolean, false for disabled products and true for enabled products
+     */
+    public Map<Boolean,Set<Product>> getProducts(){
+        HashMap<Boolean, Set<Product>> map = new HashMap<>(){{
+            put(true, new HashSet<>());
+            put(false, new HashSet<>());
+        }};
+        idToProduct.forEach((key, value) -> map.get(disabledProductsId.contains(key)).add(value));
+        return map;
     }
 }

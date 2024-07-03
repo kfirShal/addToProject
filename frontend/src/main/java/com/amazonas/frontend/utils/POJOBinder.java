@@ -46,7 +46,9 @@ public class POJOBinder<T> {
         if(object == null){
             clear();
         }
-        fieldNameToFieldBinder.values().forEach(FieldBinder::read);
+        for (FieldBinder fieldBinder : fieldNameToFieldBinder.values()) {
+            fieldBinder.read();
+        }
     }
 
     /**
@@ -108,11 +110,19 @@ public class POJOBinder<T> {
         private void read() {
             try {
                 Object value =  field.get(object);
+                if(value == null){
+                    clear();
+                    return;
+                }
                 if(converter != null){
                     value = converter.to().apply(value);
+                    component.setValue(converter.toType().cast(value));
+                } else {
+                    component.setValue(value);
                 }
-                component.setValue(value);
-            } catch (IllegalAccessException ignored) {}
+            } catch (IllegalAccessException ignored) {
+                throw new RuntimeException(ignored);
+            }
         }
 
         private void write() {
@@ -120,8 +130,10 @@ public class POJOBinder<T> {
             try {
                 if(converter != null){
                     value = converter.from().apply(value);
+                    field.set(object, converter.fromType().cast(value));
+                } else {
+                    field.set(object, value);
                 }
-                field.set(object, value);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
@@ -133,6 +145,16 @@ public class POJOBinder<T> {
     }
 
     private static class IntegerToStringConverter implements Converter<Integer,String> {
+
+        @Override
+        public Class<Integer> fromType() {
+            return Integer.class;
+        }
+
+        @Override
+        public Class<String> toType() {
+            return String.class;
+        }
 
         @Override
         public Function<Integer, String> to() {
@@ -154,6 +176,16 @@ public class POJOBinder<T> {
     private static class DoubleToStringConverter implements Converter<Double,String> {
 
         @Override
+        public Class<Double> fromType() {
+            return Double.class;
+        }
+
+        @Override
+        public Class<String> toType() {
+            return String.class;
+        }
+
+        @Override
         public Function<Double, String> to() {
             return String::valueOf;
         }
@@ -171,6 +203,16 @@ public class POJOBinder<T> {
     }
 
     private static class BooleanToStringConverter implements Converter<Boolean,String> {
+        @Override
+        public Class<Boolean> fromType() {
+            return Boolean.class;
+        }
+
+        @Override
+        public Class<String> toType() {
+            return String.class;
+        }
+
         @Override
         public Function<Boolean, String> to() {
             return String::valueOf;
