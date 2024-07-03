@@ -7,7 +7,7 @@ import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.reservations.Reservation;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.exceptions.PurchaseFailedException;
 import com.amazonas.backend.exceptions.ShoppingCartException;
@@ -57,7 +57,8 @@ public class UsersController {
                            ShoppingCartFactory shoppingCartFactory,
                            AuthenticationController authenticationController,
                            ShoppingCartRepository shoppingCartRepository,
-                           PermissionsController permissionsController, NotificationController notificationController, StoreRepository storeRepository) {
+                           PermissionsController permissionsController,
+                           NotificationController notificationController, StoreRepository storeRepository) {
         this.userRepository = userRepository;
         this.paymentService = paymentService;
         this.shoppingCartFactory = shoppingCartFactory;

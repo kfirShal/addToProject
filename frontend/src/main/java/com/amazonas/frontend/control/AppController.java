@@ -41,6 +41,9 @@ public class AppController {
     public String getNotificationsMessage() {
         return "Notifications";
     }
+    public String getPreviousOrdersMessage() {
+        return "Previous Orders";
+    }
 
     public String getExampleMessage(int num) {
         return "Example " + num;
@@ -294,7 +297,7 @@ public class AppController {
         getSession().invalidate();
     }
 
-    private static void setSessionsAttribute(String key, Object value) {
+    public static void setSessionsAttribute(String key, Object value) {
         getSession().setAttribute(key, value);
     }
 
@@ -371,4 +374,6 @@ public class AppController {
             } catch (InterruptedException e) {}
         }
     }
+
+
 }

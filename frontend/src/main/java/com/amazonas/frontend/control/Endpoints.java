@@ -1,6 +1,9 @@
 package com.amazonas.frontend.control;
 
 import com.amazonas.common.dtos.Notification;
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 
@@ -22,7 +25,7 @@ public enum Endpoints {
     START_PURCHASE("userprofiles/startpurchase", Void.class),
     PAY_FOR_PURCHASE("userprofiles/payforpurchase", Void.class),
     CANCEL_PURCHASE("userprofiles/cancelpurchase", Void.class),
-    GET_USER_TRANSACTION_HISTORY("userprofiles/getusertransactionhistory", Void.class),
+    GET_USER_TRANSACTION_HISTORY("userprofiles/getusertransactionhistory", Transaction.class),
 
     // Authentication Endpoints
     AUTHENTICATE_USER("auth/user", String.class),
@@ -68,7 +71,9 @@ public enum Endpoints {
     GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Void.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
-    GET_STORE_PRODUCTS("stores/getstoreproducts", Void.class),
+    GET_STORE_PRODUCTS("stores/getstoreproducts", Product.class),
+    GET_STORE_DETAILS("stores/getstoredetails", StoreDetails.class),
+    GET_PRODUCT("stores/getproduct", Product.class),
 
     //Permissions Endpoints
     GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),

@@ -23,7 +23,9 @@ public class NotificationController {
 
     public void sendNotification(String title,String message, String senderId, String receiverId) throws NotificationException {
         validateUserExists(receiverId);
-        validateUserExists(senderId);
+        if(! senderId.equals("Amazonas")){
+            validateUserExists(senderId);
+        }
         Notification notification = new Notification(UUID.randomUUID().toString(),
                 title,
                 message,

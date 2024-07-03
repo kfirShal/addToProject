@@ -2,6 +2,8 @@ package com.amazonas.common.permissions.actions;
 
 public enum StoreActions {
 
+    ALL,
+
     // product management
     ADD_PRODUCT,
     REMOVE_PRODUCT,

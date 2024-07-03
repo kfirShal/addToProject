@@ -2,6 +2,8 @@ package com.amazonas.common.permissions.actions;
 
 public enum UserActions {
 
+    ALL,
+
     // Shopping Cart
     VIEW_SHOPPING_CART,
     ADD_TO_SHOPPING_CART,

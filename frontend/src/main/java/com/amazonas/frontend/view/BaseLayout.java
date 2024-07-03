@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -23,13 +24,12 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.amazonas.frontend.control.AppController.*;
 
@@ -39,18 +39,23 @@ public abstract class BaseLayout extends AppLayout {
 
     protected final VerticalLayout content;
     private final AppController appController;
+    protected QueryParameters params;
 
     public BaseLayout(AppController appController) {
         this.appController = appController;
         content = new VerticalLayout();
         setContent(content);
 
+        UI current = UI.getCurrent();
+        Location activeViewLocation = current.getActiveViewLocation();
+        params = activeViewLocation.getQueryParameters();
+
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
         }
 
         SideNav nav1 = new SideNav();
-        nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
+        nav1.addItem(new SideNavItem("Welcome", "", VaadinIcon.HOME.create()));
         nav1.addItem(new SideNavItem("example1", Example1View.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("example2", Example2View.class, VaadinIcon.FAMILY.create()));
 
@@ -95,7 +100,13 @@ public abstract class BaseLayout extends AppLayout {
             });
             notificationsButton.getStyle().set("margin-right", "10px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton);
+            Button previousOrdersButton = new Button(new Icon(VaadinIcon.CLIPBOARD_PULSE));
+            previousOrdersButton.addClickListener(event -> {
+                UI.getCurrent().navigate("previous-orders");
+            });
+            previousOrdersButton.getStyle().set("margin-right", "20px");
+
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
 //            addToNavbar(username, notificationsButton);
@@ -125,6 +136,23 @@ public abstract class BaseLayout extends AppLayout {
                 openErrorDialog("Failed to connect to server", AppController::clearSession);
             }
         }
+    }
+
+    /**
+     * get the path of the view with the given parameters
+     * @param mandatoryParams for pages with mandatory parameters that need to be included in the path
+     */
+    @SafeVarargs
+    protected static String getPath(String route, Pair<String, String> ... mandatoryParams){
+        StringBuilder builder = new StringBuilder(route);
+        if(mandatoryParams.length > 0){
+            builder.append("?");
+            for(Pair<String,String> param : mandatoryParams){
+                builder.append(param.first()).append("=").append(param.second()).append("&");
+            }
+            builder.deleteCharAt(builder.length()-1);
+        }
+        return builder.toString();
     }
 
     protected void openLoginDialog() {
@@ -254,5 +282,13 @@ public abstract class BaseLayout extends AppLayout {
         }
         content.add(dialog);
         dialog.open();
+    }
+
+    /**
+     * get a parameter from the query parameters
+     * @throws java.util.NoSuchElementException if the parameter is not present
+     */
+    protected String getParam(String key) {
+        return params.getSingleParameter(key).orElseThrow();
     }
 }

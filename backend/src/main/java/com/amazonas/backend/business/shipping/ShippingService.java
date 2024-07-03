@@ -1,6 +1,6 @@
 package com.amazonas.backend.business.shipping;
 
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import org.springframework.stereotype.Component;
 
 @Component
