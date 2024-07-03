@@ -1,0 +1,12 @@
+public class DateRestrictionRule implements PurchaseRule {
+    private final MonthDay restrictedDate;
+
+    public DateRestrictionRule(MonthDay restrictedDate) {
+        this.restrictedDate = restrictedDate;
+    }
+
+    @Override
+    public boolean isSatisfied(Cart cart, User user) {
+        return !MonthDay.now().equals(restrictedDate);
+    }
+}
