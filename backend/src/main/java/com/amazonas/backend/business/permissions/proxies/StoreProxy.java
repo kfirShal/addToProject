@@ -172,6 +172,7 @@ public class StoreProxy extends ControllerProxy {
 
     public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
         return real.getStore(storeId).getDiscountPolicyCFG();
     }
 
