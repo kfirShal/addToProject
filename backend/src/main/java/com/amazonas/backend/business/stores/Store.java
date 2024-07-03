@@ -419,6 +419,7 @@ public class Store {
 
     public void addOwner(String logged, String username) {
         appointmentSystem.addOwner(logged,username);
+        permissionsController.addPermission(username,storeId,StoreActions.ALL);
     }
 
     public List<StorePosition> getRolesInformation() {

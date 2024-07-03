@@ -48,7 +48,10 @@ public class AdditionDiscount implements DiscountComponent{
             double initialPrice = childrenResult[0][productIndex].originalPrice();
             for (ProductAfterDiscount[] productsAfterDiscounts : childrenResult) {
                 initialPrice -= (productsAfterDiscounts[productIndex].originalPrice() -
-                        productsAfterDiscounts[productIndex].priceAfterDiscount()); // combine the discounts
+                        productsAfterDiscounts[productIndex].priceAfterDiscount());
+                if (initialPrice < 0) {
+                    initialPrice = 0;// combine the discounts
+                }
             }
             ret[productIndex] = new ProductAfterDiscount(
                                         childrenResult[0][productIndex].productId(),

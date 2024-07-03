@@ -267,7 +267,7 @@ public class StoresService {
             DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
             String result = proxy.addDiscountRule(discountRequest.StoreID(), discountRequest.cfg(), request.userId(), request.token());
             return Response.getOk(result);
-        } catch (AuthenticationFailedException | DiscountPolicyException | StoreException e) {
+        } catch (AuthenticationFailedException | DiscountPolicyException | StoreException | NoPermissionException e) {
             return Response.getError(e);
         }
     }
@@ -280,6 +280,8 @@ public class StoresService {
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
+        } catch (NoPermissionException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -289,7 +291,7 @@ public class StoresService {
             DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
             boolean result = proxy.deleteAllDiscounts(discountRequest.StoreID(), request.userId(), request.token());
             return Response.getOk(result);
-        } catch (AuthenticationFailedException | StoreException e) {
+        } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
             return Response.getError(e);
         }
     }

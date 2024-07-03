@@ -27,4 +27,8 @@ public enum StoreActions {
     ADD_PERMISSION_TO_MANAGER,
     REMOVE_PERMISSION_FROM_MANAGER,
     VIEW_ROLES_INFORMATION,
+
+    // discounts
+
+    EDIT_DISCOUNT,
 }

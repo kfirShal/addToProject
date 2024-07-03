@@ -163,19 +163,21 @@ public class StoreProxy extends ControllerProxy {
         return real.getProduct(productId);
     }
 
-    public String addDiscountRule(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException {
+    public String addDiscountRule(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
         return real.getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
 
     }
 
-    public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException {
+    public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         return real.getStore(storeId).getDiscountPolicyCFG();
     }
 
-    public boolean deleteAllDiscounts(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException {
+    public boolean deleteAllDiscounts(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
         return real.getStore(storeId).deleteAllDiscounts();
     }
 
