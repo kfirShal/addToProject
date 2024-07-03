@@ -8,6 +8,7 @@ import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.stores.SearchRequestBuilder;
@@ -19,7 +20,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +43,7 @@ class StoreTest {
     private PendingReservationMonitor pendingReservationMonitor;
     private PermissionsController permissionsController;
     private TransactionRepository transactionRepository;
+    private ProductRepository productRepository;
 
     public StoreTest() {
 
@@ -85,6 +86,7 @@ class StoreTest {
         pendingReservationMonitor = mock(PendingReservationMonitor.class);
         permissionsController = mock(PermissionsController.class);
         transactionRepository = mock(TransactionRepository.class);
+        productRepository = mock(ProductRepository.class);
 
         store = new Store(storeId,
                 storeName,
@@ -115,7 +117,7 @@ class StoreTest {
 
     @Test
     void searchProductByName() {
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
@@ -146,7 +148,7 @@ class StoreTest {
 
     @Test
     void searchProductByNameAndRating() {
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
@@ -182,7 +184,7 @@ class StoreTest {
 
     @Test
     void searchProductByNameAndRatingBad(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
@@ -208,7 +210,7 @@ class StoreTest {
 
     @Test
     void searchProductByNameAndPriceGood(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
@@ -249,7 +251,7 @@ class StoreTest {
 
     @Test
     void searchProductByNameAndPriceBad(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
@@ -285,7 +287,7 @@ class StoreTest {
 
     @Test
     void searchProductByKeywords(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setKeyWords(List.of("Dell"));
@@ -316,7 +318,7 @@ class StoreTest {
 
     @Test
     void searchProductByCategory() {
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductCategory("Electronics");
@@ -347,7 +349,7 @@ class StoreTest {
 
     @Test
     void searchProductsMultipleConditions(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
@@ -403,7 +405,7 @@ class StoreTest {
 
     @Test
     void searchProductMultipleResults(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS").setKeyWords(List.of("Novel"));
@@ -429,7 +431,7 @@ class StoreTest {
 
     @Test
     void searchProductNoResults(){
-        when(productInventory.getAllAvailableProducts()).thenReturn(Set.of(laptop, book, shirt, blender, toy));
+        when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
         var searchRequest = SearchRequestBuilder.create();
 
         searchRequest.setProductName("Apple");
@@ -541,7 +543,7 @@ class StoreTest {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        ProductInventory inventory = spy(new ProductInventory());
+        ProductInventory inventory = spy(new ProductInventory(productRepository));
         inventoryField.set(store, inventory);
         String newId = inventory.addProduct(laptop);
         inventory.setQuantity(newId, 1);
@@ -594,7 +596,7 @@ class StoreTest {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        inventoryField.set(store, new ProductInventory());
+        inventoryField.set(store, new ProductInventory(productRepository));
 
         AtomicInteger counter = new AtomicInteger(0);
 
@@ -618,7 +620,7 @@ class StoreTest {
         // test concurrent access with a real product inventory
         Field inventoryField = store.getClass().getDeclaredField("inventory");
         inventoryField.setAccessible(true);
-        ProductInventory inventory = new ProductInventory();
+        ProductInventory inventory = new ProductInventory(productRepository);
         inventoryField.set(store, inventory);
         String newId = inventory.addProduct(laptop);
         inventory.setQuantity(newId, 1);

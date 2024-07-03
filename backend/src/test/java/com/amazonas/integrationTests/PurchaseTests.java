@@ -99,7 +99,7 @@ public class PurchaseTests {
         // Real instances
         storeCallbackFactory = new StoreCallbackFactory(storeRepository);
         reservationFactory = new ReservationFactory(storeCallbackFactory, shoppingCartRepository);
-        inventory = new ProductInventory();
+        inventory = new ProductInventory(productRepository);
         store = new Store(
                 "storeId",
                 "storeName",

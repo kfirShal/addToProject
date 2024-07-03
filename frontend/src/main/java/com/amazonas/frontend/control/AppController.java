@@ -375,5 +375,9 @@ public class AppController {
         }
     }
 
+    public String getOrderDetails(int orderId) {
+        return "Order details for order " + orderId; //TODO: implement
+    }
+
 
 }

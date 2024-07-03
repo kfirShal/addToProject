@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UsersControllerTest {
-    private static final String USER_ID = "userId";
+    private static final String USER_ID = "userId".toLowerCase();
     private static final String PASSWORD = "Password12#";
     private static final String EMAIL = "email@post.bgu.ac.il";
     private UsersController usersController;
