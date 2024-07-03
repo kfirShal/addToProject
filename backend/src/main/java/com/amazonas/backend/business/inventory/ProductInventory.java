@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,5 +112,9 @@ public class ProductInventory {
                 .filter(product -> !disabledProductsId.contains(product.productId())
                                     && idToQuantity.get(product.productId()) > 0)
                 .toList();
+    }
+
+    public Map<String,Product> idToProduct() {
+        return idToProduct;
     }
 }

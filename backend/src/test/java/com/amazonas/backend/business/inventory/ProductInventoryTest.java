@@ -1,6 +1,7 @@
 package com.amazonas.backend.business.inventory;
 
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 
 public class ProductInventoryTest {
@@ -17,7 +19,7 @@ public class ProductInventoryTest {
 
     @BeforeEach
     public void setUp() {
-        inventory = new ProductInventory();
+        inventory = new ProductInventory(mock(ProductRepository.class));
     }
 
     @Test
@@ -37,7 +39,7 @@ public class ProductInventoryTest {
         Product updatedProduct = new Product(productId, "UpdatedProduct", 200.0, "UpdatedCategory", "UpdatedDescription", Rating.FOUR_STARS, "store1");
 
         assertTrue(inventory.updateProduct(updatedProduct));
-        assertEquals("UpdatedProduct", inventory.idToProduct.get(productId).productName());
+        assertEquals("UpdatedProduct", inventory.idToProduct().get(productId).productName());
     }
 
     @Test
@@ -47,7 +49,7 @@ public class ProductInventoryTest {
         inventory.disableProduct(productId);
 
         assertTrue(inventory.removeProduct(productId));
-        assertFalse(inventory.idToProduct.containsKey(productId));
+        assertFalse(inventory.idToProduct().containsKey(productId));
     }
 
     @Test

@@ -58,6 +58,7 @@ public class ActionsOfAStoreOwner {
     private AuthenticationController authenticationController;
     private StoreProxy storeProxy;
     private NotificationController notificationController;
+    private ProductRepository productRepository;
 
     public ActionsOfAStoreOwner(StoreMongoCollection storeMongo){
         storeRepository = new StoreRepository(storeMongo);
@@ -98,7 +99,7 @@ public class ActionsOfAStoreOwner {
         // Arrange
         String storeManagerUserId = "storeManager1";
         String validToken = "validToken";
-        ProductInventory inventory = new ProductInventory();
+        ProductInventory inventory = new ProductInventory(productRepository);
         Product product = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, "store1");
 
         // Act
