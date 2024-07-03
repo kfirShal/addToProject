@@ -164,7 +164,6 @@ public class ManageInventory extends BaseLayout {
             }
 
             @Override
-            @Override
             public Function<Rating, String> to() {
                 return (rating -> String.valueOf(rating.ordinal() + 1));
             }
