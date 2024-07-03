@@ -36,12 +36,25 @@ public class DiscountManager {
         return true;
     }
 
+    /**
+     *
+     * @param products list of the products and their quantity from the cart
+     * @return an array with the product and his final price
+     * @throws StoreException
+     */
     public ProductAfterDiscount[] applyDiscountPolicy(List<ProductWithQuantitiy> products) throws StoreException {
         return discountComponent.calculateDiscount(products);
     }
 
-    public void changeDiscountPolicy(DiscountComponentDTO discountComponentDTO) throws StoreException {
+    /**
+     *
+     * @param discountComponentDTO
+     * @return a cfg of the new discount policy
+     * @throws StoreException
+     */
+    public String changeDiscountPolicy(DiscountComponentDTO discountComponentDTO) throws StoreException {
         discountComponent = translateDiscountComponentDTO(discountComponentDTO);
+        return discountComponent.generateCFG();
     }
 
     private DiscountComponent translateDiscountComponentDTO(DiscountComponentDTO discountComponentDTO) throws StoreException {
