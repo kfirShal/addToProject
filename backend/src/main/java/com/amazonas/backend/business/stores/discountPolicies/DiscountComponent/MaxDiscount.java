@@ -67,4 +67,13 @@ public class MaxDiscount implements DiscountComponent {
         }
         return new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        StringBuilder ret = new StringBuilder("( maximal-price");
+        for (DiscountComponent child : children) {
+            ret.append(" ").append(child.generateCFG());
+        }
+        return ret + ") ";
+    }
 }

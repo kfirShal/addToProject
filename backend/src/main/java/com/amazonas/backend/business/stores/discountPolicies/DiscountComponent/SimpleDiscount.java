@@ -84,4 +84,22 @@ public class SimpleDiscount implements DiscountComponent{
             default -> throw new StoreException("cannot generate discount component");
         }
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        switch (discountHierarchyLevel) {
+            case CategoryLevel categoryLevel -> {
+                return "( category-discount " + categoryLevel.getCategory() + " " + percent + " )";
+            }
+            case ProductLevel productLevel -> {
+                return "( product-discount " + productLevel.getProductId() + " " + percent + " )";
+            }
+            case StoreLevel storeLevel -> {
+                return "( global-discount " + percent + " )";
+            }
+            default -> throw new StoreException("cannot generate CFG");
+        }
+    }
+
+
 }

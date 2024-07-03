@@ -2,6 +2,10 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
+import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
+import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
@@ -35,6 +39,7 @@ public class Store {
     private final TransactionRepository repository;
     private final ProductInventory inventory;
     private final AppointmentSystem appointmentSystem;
+    private final DiscountManager discountManager;
     private final ReadWriteLock lock;
     private final String storeId;
     private final String storeName;
@@ -64,6 +69,7 @@ public class Store {
         this.storeRating = rating;
         this.permissionsController = permissionsController;
         this.repository = transactionRepository;
+        this.discountManager = new DiscountManager();
         lock = new ReadWriteLock();
         isOpen = true;
     }
@@ -410,6 +416,56 @@ public class Store {
                 .map(StorePosition::userId)
                 .toList();
     }
+
+    //====================================================================== |
+    //========================= STORE DISCOUNTS ============================ |
+    //====================================================================== |
+
+    public DiscountComponentDTO getDiscountPolicyDTO() throws StoreException {
+        try {
+            lock.acquireRead();
+            return discountManager.getDiscountPolicyDTO();
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public String getDiscountPolicyCFG() throws StoreException {
+        try {
+            lock.acquireRead();
+            return discountManager.getDiscountPolicyCFG();
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public boolean deleteAllDiscounts() {
+        try {
+            lock.acquireWrite();
+            return discountManager.deleteAllDiscounts();
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public ProductAfterDiscount[] applyDiscountPolicy(List<ProductWithQuantitiy> products) throws StoreException {
+        try {
+            lock.acquireRead();
+            return discountManager.applyDiscountPolicy(products);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public String changeDiscountPolicy(DiscountComponentDTO discountComponentDTO) throws StoreException {
+        try {
+            lock.acquireWrite();
+            return discountManager.changeDiscountPolicy(discountComponentDTO);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
 
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |

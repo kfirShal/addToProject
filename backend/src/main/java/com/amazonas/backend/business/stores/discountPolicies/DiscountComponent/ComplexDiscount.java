@@ -69,4 +69,9 @@ public class ComplexDiscount implements DiscountComponent {
         }
         return new ComplexDiscountDTO(condition.generateDTO(), discount.generateDTO());
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        return "( if-then " + condition.generateCFG() + " " + discount.generateCFG() + " )";
+    }
 }

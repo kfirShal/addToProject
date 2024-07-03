@@ -40,4 +40,9 @@ public class AtLeastSomeProductsCondition implements Condition{
     public DiscountConditionDTO generateDTO() throws StoreException {
         return new UnaryConditionDTO(UnaryConditionType.AT_LEAST_NUMBER_OF_SOME_PRODUCT, limit, productId);
     }
+
+    @Override
+    public String generateCFG() throws StoreException {
+        return "( category-quantity-more-than " + productId + " " + limit + " )";
+    }
 }
