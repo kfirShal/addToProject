@@ -1,10 +1,12 @@
 package com.amazonas.backend.business.stores;
 
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.backend.business.permissions.actions.StoreActions;
+import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
@@ -21,18 +23,21 @@ public class StoresController {
     private final StoreFactory storeFactory;
     private final StoreRepository repository;
     private final TransactionRepository transactionRepository;
+    private final ProductRepository productRepository;
 
-    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository){
+    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository){
         this.storeFactory = storeFactory;
         this.repository = storeRepository;
         this.transactionRepository = transactionRepository;
+        this.productRepository = productRepository;
     }
 
-    public void addStore(String ownerID,String name, String description) throws StoreException {
+    public String addStore(String ownerID,String name, String description) throws StoreException {
         if(doesNameExists(name))
             throw new StoreException("Store name already exists");
         Store toAdd = storeFactory.get(ownerID,name,description);
         repository.saveStore(toAdd);
+        return toAdd.getStoreId();
     }
 
     public boolean openStore(String storeId){
@@ -72,7 +77,7 @@ public class StoresController {
         getStore(storeId).setProductQuantity(productId, quantity);
     }
 
-    public Set<Product> getStoreProducts(String storeId) throws StoreException {
+    public List<Product> getStoreProducts(String storeId) throws StoreException {
         return getStore(storeId).getStoreProducts();
     }
 
@@ -124,5 +129,16 @@ public class StoresController {
 
     public List<Transaction> getStoreTransactionHistory(String storeId) {
         return transactionRepository.getTransactionHistoryByStore(storeId);
+    }
+
+    public StoreDetails getStoreDetails(String storeId) {
+        return getStore(storeId).getDetails();
+    }
+
+    public Product getProduct(String productId) throws StoreException {
+        if(productRepository.getProduct(productId) == null){
+            throw new StoreException("Product not found");
+        }
+        return productRepository.getProduct(productId);
     }
 }

@@ -1,7 +1,7 @@
 package com.amazonas.backend.repository;
 
-import com.amazonas.backend.business.transactions.Transaction;
-import com.amazonas.backend.business.transactions.TransactionState;
+import com.amazonas.common.dtos.Transaction;
+import com.amazonas.common.dtos.TransactionState;
 import com.amazonas.backend.repository.abstracts.AbstractCachingRepository;
 import com.amazonas.backend.repository.mongoCollections.TransactionMongoCollection;
 import com.amazonas.common.utils.ReadWriteLock;

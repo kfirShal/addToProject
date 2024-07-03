@@ -6,7 +6,7 @@ import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.payment.*;
 import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.business.shipping.ShippingServiceController;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.backend.repository.UserCredentialsRepository;

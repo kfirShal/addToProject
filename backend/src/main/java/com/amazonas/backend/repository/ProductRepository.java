@@ -23,7 +23,6 @@ public class ProductRepository extends AbstractCachingRepository<Product> {
 
     }
 
-
     public Product getProduct(String productId) {
         productLock.acquireRead();
         try {

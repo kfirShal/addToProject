@@ -2,6 +2,7 @@ package com.amazonas.backend.business.notifications;
 
 import com.amazonas.backend.exceptions.NotificationException;
 import com.amazonas.backend.repository.NotificationRepository;
+import com.amazonas.backend.repository.UserRepository;
 import com.amazonas.common.dtos.Notification;
 import org.springframework.stereotype.Component;
 
@@ -13,14 +14,18 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationRepository repo;
+    private final UserRepository userRepository;
 
-    public NotificationController(NotificationRepository notificationRepository) {
+    public NotificationController(NotificationRepository notificationRepository, UserRepository userRepository) {
         this.repo = notificationRepository;
+        this.userRepository = userRepository;
     }
 
     public void sendNotification(String title,String message, String senderId, String receiverId) throws NotificationException {
         validateUserExists(receiverId);
-        validateUserExists(senderId);
+        if(! senderId.equals("Amazonas")){
+            validateUserExists(senderId);
+        }
         Notification notification = new Notification(UUID.randomUUID().toString(),
                 title,
                 message,
@@ -44,6 +49,7 @@ public class NotificationController {
     }
 
     public List<Notification> getNotifications(String receiverId, Integer limit) throws NotificationException {
+        validateUserExists(receiverId);
         return getNotifications(receiverId, limit, 0);
     }
 
@@ -65,7 +71,7 @@ public class NotificationController {
     }
 
     private void validateUserExists(String receiverId) throws NotificationException {
-        if(! repo.existsByReceiverId(receiverId)){
+        if(!userRepository.userIdExists(receiverId)){
             throw new NotificationException("User does not exist.");
         }
     }

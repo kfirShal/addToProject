@@ -2,8 +2,8 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.permissions.actions.UserActions;
-import com.amazonas.backend.business.transactions.Transaction;
+import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
 import com.amazonas.backend.business.userProfiles.UsersController;
 import com.amazonas.backend.exceptions.*;

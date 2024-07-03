@@ -4,7 +4,7 @@ import com.amazonas.backend.repository.UserCredentialsRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 class AuthenticationControllerTest {
     private static final MacAlgorithm alg = Jwts.SIG.HS512;
 
-    private static final String passwordStorageFormat = "{bcrypt}";
     private AuthenticationController authenticationController;
     private String userId;
     private String password;
@@ -25,9 +24,9 @@ class AuthenticationControllerTest {
         UserCredentialsRepository ucr = mock(UserCredentialsRepository.class);
         userId = "testUser";
         password = "testPassword";
-        encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        hashedPassword = encoder.encode(passwordStorageFormat+password);
-        when(ucr.getHashedPassword(userId)).thenReturn(hashedPassword);
+        encoder = new BCryptPasswordEncoder();
+        hashedPassword = encoder.encode(password);
+        when(ucr.getHashedPassword(userId.toLowerCase())).thenReturn(hashedPassword);
 
         authenticationController = new AuthenticationController(ucr);
     }

@@ -38,6 +38,13 @@ public class AppController {
         return "Welcome to my app!";
     }
 
+    public String getNotificationsMessage() {
+        return "Notifications";
+    }
+    public String getPreviousOrdersMessage() {
+        return "Previous Orders";
+    }
+
     public String getExampleMessage(int num) {
         return "Example " + num;
     }
@@ -290,7 +297,7 @@ public class AppController {
         getSession().invalidate();
     }
 
-    private static void setSessionsAttribute(String key, Object value) {
+    public static void setSessionsAttribute(String key, Object value) {
         getSession().setAttribute(key, value);
     }
 
@@ -371,4 +378,6 @@ public class AppController {
     public String getOrderDetails(int orderId) {
         return "Order details for order " + orderId; //TODO: implement
     }
+
+
 }
