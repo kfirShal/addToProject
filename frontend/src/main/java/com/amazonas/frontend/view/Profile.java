@@ -43,7 +43,7 @@ public class Profile extends BaseLayout {
         nav1.addItem(new SideNavItem("Orders", Orders.class, VaadinIcon.CART.create()));
 
         this.nav2.removeAll();
-        nav1.addItem(new SideNavItem("Home", WelcomeView.class, VaadinIcon.HOME.create()));
+        nav2.addItem(new SideNavItem("Home", WelcomeView.class, VaadinIcon.HOME.create()));
         nav2.addItem(new SideNavItem("Settings", Settings.class, VaadinIcon.COG.create()));
         nav2.addItem(new SideNavItem("Help", Help.class, VaadinIcon.QUESTION.create()));
 

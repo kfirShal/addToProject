@@ -90,7 +90,7 @@ public class Cart extends Profile {
         String name = itemNames[random.nextInt(itemNames.length)];
         String id = UUID.randomUUID().toString();
 
-        Product product = new Product(id, name, price, "Grocery", "This is a random item", Rating.FIVE_STARS);
+        Product product = new Product(id, name, (double) price, "Grocery", "This is a random item", Rating.FIVE_STARS);
         Item newItem = new Item(product);
         items.add(newItem);
         grid.setItems(items);

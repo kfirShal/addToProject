@@ -94,7 +94,7 @@ public abstract class BaseLayout extends AppLayout {
             addToNavbar(loginButton, registerButton);
         } else {
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-            username.getStyle().set("margin-left", "10px");
+            username.getStyle().set("margin-left", "65%");
 //            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
 //            username.getStyle().set("margin-right", "10px");
 
@@ -115,8 +115,7 @@ public abstract class BaseLayout extends AppLayout {
             userActions.setSpacing(true); // Adds spacing between components
 //            addToNavbar(username, notificationsButton);
 
-            H4 username = new H4("Hello, " + getCurrentUserId());
-            username.getStyle().set("margin-left", "65%");
+
 
             // Profile button with an icon and text "Profile", click on it should open the page with user profile
             Button profileButton = new Button("Profile", new Icon(VaadinIcon.USER), event -> {
