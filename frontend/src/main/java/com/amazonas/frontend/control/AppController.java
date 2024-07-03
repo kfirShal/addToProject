@@ -367,4 +367,8 @@ public class AppController {
             } catch (InterruptedException e) {}
         }
     }
+
+    public String getOrderDetails(int orderId) {
+        return "Order details for order " + orderId; //TODO: implement
+    }
 }

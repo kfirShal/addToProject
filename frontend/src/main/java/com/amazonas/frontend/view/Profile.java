@@ -1,7 +1,6 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.amazonas.frontend.control.AppController.getCurrentUserId;
-import static com.amazonas.frontend.control.AppController.isUserLoggedIn;
 
 @Route("Profile")
 public class Profile extends BaseLayout {
@@ -45,6 +43,7 @@ public class Profile extends BaseLayout {
         nav1.addItem(new SideNavItem("Orders", Orders.class, VaadinIcon.CART.create()));
 
         this.nav2.removeAll();
+        nav1.addItem(new SideNavItem("Home", WelcomeView.class, VaadinIcon.HOME.create()));
         nav2.addItem(new SideNavItem("Settings", Settings.class, VaadinIcon.COG.create()));
         nav2.addItem(new SideNavItem("Help", Help.class, VaadinIcon.QUESTION.create()));
 
@@ -72,9 +71,7 @@ public class Profile extends BaseLayout {
             Grid<Order> orderGrid = new Grid<>(Order.class);
             orderGrid.setItems(recentOrders);
             orderGrid.setColumns("orderNumber", "date", "status");
-            orderGrid.addItemClickListener(event -> {
-                showOrderDetails(event.getItem());
-            });
+            orderGrid.addItemClickListener(event -> showOrderDetails(event.getItem()));
             profileSummaryLayout.add(orderGrid);
         } else {
             profileSummaryLayout.add(new Paragraph("You have no recent orders."));
@@ -119,7 +116,7 @@ public class Profile extends BaseLayout {
         dialog.add("\nDate: " + order.getDate());
         dialog.add("\nStatus: " + order.getStatus());
 
-        Button closeButton = new Button("Close", event -> {
+        Button closeButton = new Button("Close", _ -> {
             dialog.close();
         });
 

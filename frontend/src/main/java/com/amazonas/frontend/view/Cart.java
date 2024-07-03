@@ -1,26 +1,27 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
+import com.amazonas.common.dtos.Product;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
-import static com.amazonas.frontend.control.AppController.isUserLoggedIn;
 
 @Route("Cart")
 public class Cart extends Profile {
-    private List<RandomItem> items;
-    private Grid<RandomItem> grid;
+    protected List<Item> items;
+    protected Grid<Item> grid;
+
 
     public Cart(AppController appController) {
         super(appController);
@@ -29,49 +30,54 @@ public class Cart extends Profile {
         returnToMainIfNotLogged();
 
         items = new ArrayList<>();
-        grid = new Grid<>(RandomItem.class, false);
+        grid = new Grid<>(Item.class, false);
         configureGrid();
 
-        Button addButton = new Button("Generate Random Item", event -> generateRandomItem());
+        Button addButton = new Button("Generate Random Item", _ -> generateRandomItem());
         // add in the bottom right button for proceed to checkout
-        Button checkoutButton = new Button("Checkout", event -> {
-            UI.getCurrent().navigate("Checkout");
-        });
+        Button checkoutButton = new Button("Checkout", _ -> UI.getCurrent().navigate("Payment"));
         checkoutButton.setIcon(VaadinIcon.CHECK.create());
         checkoutButton.getStyle().set("margin-left", "auto");
         content.add(addButton, grid, checkoutButton);
     }
 
     private void configureGrid() {
-        grid.addColumn(RandomItem::getName).setHeader("Name");
-        grid.addColumn(RandomItem::getPrice).setHeader("Price");
-        grid.addColumn(RandomItem::getQuantity).setHeader("Quantity");
+        grid.addColumn(Item::getName).setHeader("Name");
+        grid.addColumn(Item::getPrice).setHeader("Price");
+        grid.addColumn(Item::getQuantity).setHeader("Quantity");
         grid.addColumn(item -> item.getPrice() * item.getQuantity()).setHeader("Total Price");
         grid.getColumns().get(1).setWidth("10px");
         grid.getColumns().get(2).setWidth("10px");
 
         grid.addColumn(new ComponentRenderer<>(item -> {
             HorizontalLayout layout = new HorizontalLayout();
-            Button addButton = new Button("+", click -> {
+            Button addButton = new Button("+", _ -> {
                 item.setQuantity(item.getQuantity() + 1);
 
                 grid.getDataProvider().refreshItem(item);
             });
-            Button removeButton = new Button("-", click -> {
+            Button removeButton = new Button("-", _ -> {
                 item.setQuantity(item.getQuantity() > 1 ? item.getQuantity() - 1 : 1);
                 grid.getDataProvider().refreshItem(item);
             });
-            Button deleteButton = new Button("Remove", click -> {
+            Button deleteButton = new Button("Remove", _ -> {
                 items.remove(item);
                 grid.setItems(items);
             });
+
             layout.add(addButton, removeButton, deleteButton);
             return layout;
         })).setHeader("Actions");
 
         grid.addItemClickListener(event -> {
-            RandomItem item = event.getItem();
-            UI.getCurrent().navigate("Item/" + item.getName());
+            // when click on item, open pop up with full deatils
+            Dialog dialog = new Dialog();
+            dialog.add(new Paragraph("Product ID: " + event.getItem().getProductId()));
+            dialog.add(new Paragraph("Category: " + event.getItem().getCategory()));
+            dialog.add(new Paragraph("Description: " + event.getItem().getDescription()));
+            dialog.add(new Paragraph("Rating: " + event.getItem().getRating()));
+            dialog.open();
+
         });
 
         grid.setItems(items);
@@ -84,45 +90,63 @@ public class Cart extends Profile {
         String name = itemNames[random.nextInt(itemNames.length)];
         String id = UUID.randomUUID().toString();
 
-        RandomItem newItem = new RandomItem(id, name, price, 1);
+        Product product = new Product(id, name, price, "Grocery", "This is a random item", Rating.FIVE_STARS);
+        Item newItem = new Item(product);
         items.add(newItem);
         grid.setItems(items);
     }
 
 
-    // This class is used to generate random items for the cart
-    protected static class RandomItem {
-        private String id;
-        private String name;
-        private int price;
+    protected static class Item {
+        private final String productId;
+        private final String productName;
+        private final double price;
+        private final String category;
+        private final String description;
+        private final Rating rating;
         private int quantity;
 
 
-        public RandomItem(String id, String name, int price, int quantity) {
-                this.id = id;
-                this.name = name;
-                this.price = price;
-                this.quantity = quantity;
-            }
-
-            public String getId() {
-                return id;
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public int getPrice() {
-                return price;
-            }
-
-            public int getQuantity() {
-                return quantity;
-            }
-
-            public void setQuantity(int quantity) {
-                this.quantity = quantity;
-            }
+        public Item(Product product) {
+            this.productId = product.productId();
+            this.productName = product.productName();
+            this.price = product.price();
+            this.category = product.category();
+            this.description = product.description();
+            this.rating = product.rating();
+            this.quantity = 1;
         }
+
+        public String getName() {
+            return productName;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
+
+        public String getProductId() {
+            return productId;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Rating getRating() {
+            return rating;
+        }
+    }
 }
