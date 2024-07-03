@@ -53,8 +53,8 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterListene
 
         SideNav nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class,new RouteParameters(new HashMap<>(){{put("storeId","someId" );}}), VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class,new RouteParameters(new HashMap<>(){{put("storeId","someId" );}}), VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
 
         VerticalLayout sideNav = new VerticalLayout();
         sideNav.add(nav1);

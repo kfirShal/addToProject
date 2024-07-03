@@ -1,13 +1,13 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import java.util.List;
 @Route("example3")
 public class ManageStoreOfficials extends BaseLayout {
     private final AppController appController;
+    private String storeId;
 
     public ManageStoreOfficials(AppController appController) {
         super(appController);
@@ -27,7 +28,6 @@ public class ManageStoreOfficials extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-
         // Grid for store owners
         H3 ownersTitle = new H3("Store Owners");
         ownersTitle.getStyle().set("margin-top", "30px");
@@ -38,20 +38,24 @@ public class ManageStoreOfficials extends BaseLayout {
         ownersGrid.addColumn(name -> name).setHeader("Notifications & Respond");
         content.add(ownersTitle, ownersGrid);
 
+        ownersGrid.addComponentColumn(product -> {
+            Button removeButton = new Button("Remove", click -> {
+                try {
+                    appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, storeId);
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
+                }
+            });
+            return removeButton;
+        });
+
         // Add buttons for adding and removing store owners
-        Button addOwnerButton = new Button("Add Owner", event -> {
+        Button addOwnerButton = new Button("Add", event -> {
             // Logic to add a new owner
         });
-        Button removeOwnerButton = new Button("Remove Owner", event -> {
-            // Logic to remove an owner
-        });
-        Button removeMyselfButton = new Button("Remove Myself", event -> {
-            // Logic to remove the current user as an owner
-        });
 
-        HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton, removeOwnerButton, removeMyselfButton);
+        HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton);
         content.add(ownersButtonsLayout);
-
 
         // Grid for store managers
         H3 managersTitle = new H3("Store Managers");
@@ -63,19 +67,26 @@ public class ManageStoreOfficials extends BaseLayout {
         managersGrid.addColumn(name -> name).setHeader("Permissions");
         content.add(managersTitle, managersGrid);
 
-        // Add button for adding store managers
-        Button addManagerButton = new Button("Add Manager", event -> {
-            // Logic to add a new manager
+        ownersGrid.addComponentColumn(product -> {
+            Button removeButton = new Button("Remove", click -> {
+                try {
+                    appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, storeId);
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
+                }
+            });
+            return removeButton;
         });
-        // Add buttons for removing manager, editing permissions, and permissions field
-        Button removeManagerButton = new Button("Remove Manager", event -> {
-            // Logic to remove a manager
+
+        // Add button for adding store managers
+        Button addManagerButton = new Button("Add", event -> {
+            // Logic to add a new manager
         });
         Button editPermissionsButton = new Button("Edit Permissions", event -> {
             // Logic to edit manager permissions
         });
 
-        HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton, removeManagerButton, editPermissionsButton);
+        HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton, editPermissionsButton);
         content.add(managersButtonsLayout);
     }
 

@@ -16,8 +16,6 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.*;
@@ -166,6 +164,7 @@ public class ManageInventory extends BaseLayout {
             }
 
             @Override
+            @Override
             public Function<Rating, String> to() {
                 return (rating -> String.valueOf(rating.ordinal() + 1));
             }
@@ -180,9 +179,7 @@ public class ManageInventory extends BaseLayout {
         Button saveButton = new Button("Save Changes", e -> saveAction.run());
         Button discardButton = new Button("Discard", e -> dialog.close());
         HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
-
         dialog.add(formLayout, buttonsLayout);
-
         return dialog;
     }
 
