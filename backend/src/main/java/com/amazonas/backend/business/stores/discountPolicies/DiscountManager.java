@@ -19,14 +19,14 @@ public class DiscountManager {
 
     public DiscountComponentDTO getDiscountPolicyDTO() throws StoreException {
         if (discountComponent == null) {
-            throw new StoreException("cannot generate discount component");
+            return null;
         }
         return discountComponent.generateDTO();
     }
 
     public String getDiscountPolicyCFG() throws StoreException {
         if (discountComponent == null) {
-            throw new StoreException("cannot generate discount component");
+            return null;
         }
         return discountComponent.generateCFG();
     }
@@ -43,6 +43,17 @@ public class DiscountManager {
      * @throws StoreException
      */
     public ProductAfterDiscount[] applyDiscountPolicy(List<ProductWithQuantitiy> products) throws StoreException {
+        if (discountComponent == null) {
+            ProductAfterDiscount[] productsAfterDiscounts = new ProductAfterDiscount[products.size()];
+            int index = 0;
+            for (ProductWithQuantitiy product : products) {
+                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().productId(),
+                                                                           product.quantity(),
+                                                                           product.product().price(),
+                                                                           product.product().price());
+            }
+            return productsAfterDiscounts;
+        }
         return discountComponent.calculateDiscount(products);
     }
 

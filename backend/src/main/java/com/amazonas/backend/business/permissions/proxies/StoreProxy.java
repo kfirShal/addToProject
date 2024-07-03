@@ -2,6 +2,8 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
+import com.amazonas.backend.business.stores.discountPolicies.Translator;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
@@ -160,4 +162,25 @@ public class StoreProxy extends ControllerProxy {
         checkPermission(userId, MarketActions.VIEW_PRODUCTS);
         return real.getProduct(productId);
     }
+
+    public String addDiscountRule(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
+        return real.getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
+
+    }
+
+    public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
+        return real.getStore(storeId).getDiscountPolicyCFG();
+    }
+
+    public boolean deleteAllDiscounts(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
+        return real.getStore(storeId).deleteAllDiscounts();
+    }
+
+
 }

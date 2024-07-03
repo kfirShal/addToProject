@@ -114,6 +114,10 @@ public class ProductInventory {
                 .toList();
     }
 
+    public Product getProduct(String ProductID) {
+        return productRepository.getProduct(ProductID);
+    }
+  
     public Map<String,Product> idToProduct() {
         return idToProduct;
     }

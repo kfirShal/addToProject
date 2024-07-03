@@ -1,5 +1,9 @@
 package com.amazonas.backend.business.stores;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
+import com.amazonas.backend.business.stores.discountPolicies.Node;
+import com.amazonas.backend.business.stores.discountPolicies.Parser;
+import com.amazonas.backend.business.stores.discountPolicies.Translator;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
@@ -140,5 +144,18 @@ public class StoresController {
             throw new StoreException("Product not found");
         }
         return productRepository.getProduct(productId);
+    }
+
+    public String addDiscountRule(String storeId,String cfg) throws StoreException, DiscountPolicyException {
+        return getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
+
+    }
+
+    public String getDiscountRule(String storeId) throws StoreException {
+        return getStore(storeId).getDiscountPolicyCFG();
+    }
+
+    public boolean deleteAllDiscounts(String storeId) throws StoreException {
+        return getStore(storeId).deleteAllDiscounts();
     }
 }

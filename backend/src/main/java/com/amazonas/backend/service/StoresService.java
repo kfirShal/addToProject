@@ -1,5 +1,7 @@
 package com.amazonas.backend.service;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
+import com.amazonas.backend.business.stores.discountPolicies.Translator;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
@@ -255,6 +257,41 @@ public class StoresService {
             List<Transaction> result = proxy.getStoreTransactionHistory(storeId, request.userId(), request.token());
             return Response.getOk(result);
         } catch (NoPermissionException | AuthenticationFailedException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String addDiscountRule(String json) {
+        Request request = Request.from(json);
+        try {
+            DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
+            String result = proxy.addDiscountRule(discountRequest.StoreID(), discountRequest.cfg(), request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | DiscountPolicyException | StoreException | NoPermissionException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String getDiscountRule(String json) {
+        Request request = Request.from(json);
+        try {
+            DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
+            String result = proxy.getDiscountRule(discountRequest.StoreID(), request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | StoreException e) {
+            return Response.getError(e);
+        } catch (NoPermissionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String deleteAllDiscounts(String json) {
+        Request request = Request.from(json);
+        try {
+            DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
+            boolean result = proxy.deleteAllDiscounts(discountRequest.StoreID(), request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
             return Response.getError(e);
         }
     }

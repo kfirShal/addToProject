@@ -74,6 +74,9 @@ public enum Endpoints {
     GET_STORE_PRODUCTS("stores/getstoreproducts", Product.class),
     GET_STORE_DETAILS("stores/getstoredetails", StoreDetails.class),
     GET_PRODUCT("stores/getproduct", Product.class),
+    ADD_DISCOUNT_RULE("stores/adddiscountrule", String.class),
+    GET_DISCOUNT_RULE("stores/getdiscountrule", String.class),
+    REMOVE_DISCOUNT_RULE("stores/removediscountrule", Boolean.class),
 
     //Permissions Endpoints
     GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),

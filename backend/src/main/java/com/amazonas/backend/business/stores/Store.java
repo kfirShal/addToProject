@@ -12,6 +12,7 @@ import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
+import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
@@ -22,6 +23,7 @@ import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
+import org.springframework.objenesis.SpringObjenesis;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -184,9 +186,22 @@ public class Store {
     //============================= PRODUCTS =============================== |
     //====================================================================== |
 
-    public double calculatePrice(Map<String,Integer> products){
-        // TODO: implement this in later versions
-        return 0.0;
+    public double calculatePrice(Map<String,Integer> products) throws StoreException {
+        try {
+            lock.acquireRead();
+            List<ProductWithQuantitiy> productsWithQuantitiy = new ArrayList<>();
+            for (String productID : products.keySet()){
+                productsWithQuantitiy.add(new ProductWithQuantitiy(inventory.getProduct(productID), products.get(productID)));
+            }
+            ProductAfterDiscount[] res = discountManager.applyDiscountPolicy(productsWithQuantitiy);
+            double ret = 0.0;
+            for (ProductAfterDiscount productAfterDiscount : res) {
+                ret += productAfterDiscount.priceAfterDiscount() * productAfterDiscount.quantity();
+            }
+            return ret;
+        } finally {
+            lock.releaseRead();
+        }
     }
 
     public List<Product> searchProduct(SearchRequest request) {
@@ -404,6 +419,7 @@ public class Store {
 
     public void addOwner(String logged, String username) {
         appointmentSystem.addOwner(logged,username);
+        permissionsController.addPermission(username,storeId,StoreActions.ALL);
     }
 
     public List<StorePosition> getRolesInformation() {
@@ -433,7 +449,11 @@ public class Store {
     public String getDiscountPolicyCFG() throws StoreException {
         try {
             lock.acquireRead();
-            return discountManager.getDiscountPolicyCFG();
+            String ret = discountManager.getDiscountPolicyCFG();
+            if (ret == null) {
+                throw new StoreException("No discount policy found");
+            }
+            return ret;
         } finally {
             lock.releaseRead();
         }
