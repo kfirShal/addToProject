@@ -5,5 +5,5 @@ import com.amazonas.common.utils.Rating;
 
 import java.util.List;
 
-public record Store(String storeName, String description, Rating rating, List<Product> products) {
+public record FrontendStore(String storeName, String description, Rating rating, List<Product> products) {
 }

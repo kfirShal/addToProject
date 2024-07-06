@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +62,7 @@ public class AppController {
         return post(endpoint.location(), endpoint.returnType(), payload);
     }
 
-    private <T> List<T> get(String location, Class<T> clazz) throws ApplicationException {
+    private <T> List<T> get(String location, Type clazz) throws ApplicationException {
         ApplicationException fetchFailed = new ApplicationException("Failed to fetch data");
 
         Response response;
@@ -84,7 +85,7 @@ public class AppController {
         return response.payload(clazz);
     }
 
-    private <T> List<T> post(String location, Class<T> clazz, Object payload) throws ApplicationException {
+    private <T> List<T> post(String location, Type clazz, Object payload) throws ApplicationException {
         ApplicationException postFailed = new ApplicationException("Failed to send data");
 
         String body = RequestBuilder.create()

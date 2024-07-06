@@ -2,6 +2,7 @@ package com.amazonas.backend.service;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
 import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
@@ -16,6 +17,8 @@ import com.amazonas.common.utils.Response;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component("storesService")
 public class StoresService {
@@ -177,7 +180,9 @@ public class StoresService {
         Request request = Request.from(json);
         try {
             String storeId = request.payload();
-            return Response.getOk(proxy.getStoreProducts(storeId, request.userId(), request.token()));
+            Map<Boolean, List<Product>> storeProducts = proxy.getStoreProducts(storeId, request.userId(), request.token());
+            String ok = Response.getOk(storeProducts);
+            return ok;
         } catch (NoPermissionException | AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
         }
