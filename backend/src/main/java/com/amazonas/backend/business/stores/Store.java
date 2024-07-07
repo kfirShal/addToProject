@@ -2,17 +2,19 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.business.stores.purchasePolicy.PurchasePolicyManager;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.backend.business.stores.reservations.PendingReservationMonitor;
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
-import com.amazonas.backend.repository.ProductRepository;
+import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
@@ -23,7 +25,6 @@ import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
-import org.springframework.objenesis.SpringObjenesis;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -42,6 +43,7 @@ public class Store {
     private final ProductInventory inventory;
     private final AppointmentSystem appointmentSystem;
     private final DiscountManager discountManager;
+    private final PurchasePolicyManager purchasePolicyManager;
     private final ReadWriteLock lock;
     private final String storeId;
     private final String storeName;
@@ -72,6 +74,7 @@ public class Store {
         this.permissionsController = permissionsController;
         this.repository = transactionRepository;
         this.discountManager = new DiscountManager();
+        this.purchasePolicyManager = new PurchasePolicyManager();
         lock = new ReadWriteLock();
         isOpen = true;
     }
@@ -498,6 +501,46 @@ public class Store {
         }
     }
 
+
+    //====================================================================== |
+    //========================== STORE POLICIES ============================ |
+    //====================================================================== |
+
+    public PurchaseRuleDTO getPurchasePolicyDTO() throws StoreException {
+        try {
+            lock.acquireRead();
+            return purchasePolicyManager.getPurchasePolicy();
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public boolean deleteAllPurchasePolicies() {
+        try {
+            lock.acquireWrite();
+            return purchasePolicyManager.deletePurchasePolicy();
+        } finally {
+            lock.releaseWrite();
+        }
+    }
+
+    public boolean isPurchasePolicySatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) throws StoreException {
+        try {
+            lock.acquireRead();
+            return purchasePolicyManager.isSatisfied(products, user);
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
+    public void changePurchasePolicy(PurchaseRuleDTO purchaseRuleDTO) throws StoreException {
+        try {
+            lock.acquireWrite();
+            purchasePolicyManager.changePurchasePolicy(purchaseRuleDTO);
+        } finally {
+            lock.releaseWrite();
+        }
+    }
 
     //====================================================================== |
     //======================= STORE PERMISSIONS ============================ |

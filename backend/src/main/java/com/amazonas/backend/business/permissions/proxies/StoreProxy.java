@@ -3,7 +3,8 @@ package com.amazonas.backend.business.permissions.proxies;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
@@ -170,24 +171,53 @@ public class StoreProxy extends ControllerProxy {
         return real.getProduct(productId);
     }
 
-    public String addDiscountRule(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
+    public String addDiscountRuleByCFG(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
-        return real.getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
+        return real.addDiscountRuleByCFG(storeId, cfg);
 
     }
 
-    public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String getDiscountRuleCFG(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.VIEW_STORES);
-        return real.getStore(storeId).getDiscountPolicyCFG();
+        return real.getDiscountRuleCFG(storeId);
+    }
+
+    public String addDiscountRuleByDTO(String storeId,DiscountComponentDTO dto, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
+        return real.addDiscountRuleByDTO(storeId, dto);
+    }
+
+    public DiscountComponentDTO getDiscountRuleDTO(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
+        return real.getDiscountRuleDTO(storeId);
     }
 
     public boolean deleteAllDiscounts(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
-        return real.getStore(storeId).deleteAllDiscounts();
+        return real.deleteAllDiscounts(storeId);
     }
 
+    public PurchaseRuleDTO getPurchasePolicyDTO(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
+        return real.getPurchasePolicyDTO(storeId);
+    }
+
+    public boolean deleteAllPurchasePolicies(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
+        return real.deleteAllPurchasePolicies(storeId);
+    }
+
+    public void changePurchasePolicy(String storeId, PurchaseRuleDTO purchaseRuleDTO, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
+        real.changePurchasePolicy(storeId, purchaseRuleDTO);
+    }
 
 }

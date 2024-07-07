@@ -4,16 +4,27 @@ import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.AuthenticationResponse;
 import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.payment.*;
+import com.amazonas.backend.business.permissions.proxies.NotificationProxy;
 import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.business.shipping.ShippingServiceController;
+import com.amazonas.backend.exceptions.AuthenticationFailedException;
+import com.amazonas.backend.exceptions.NoPermissionException;
+import com.amazonas.backend.exceptions.NotificationException;
+import com.amazonas.backend.service.NotificationsService;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.backend.repository.UserCredentialsRepository;
 import com.amazonas.backend.business.market.MarketInitializer;
+import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.notifications.NotificationRequest;
 import com.amazonas.common.requests.shipping.ShipmentRequest;
+import com.amazonas.common.utils.JsonUtils;
+import com.amazonas.common.utils.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -32,16 +43,25 @@ public class SystemAcceptanceTests {
     private StoreRepository storeRepository;
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private NotificationProxy notificationProxy;
+    @InjectMocks
+    private NotificationsService notificationService;
+
     @BeforeEach
     public void setUp() {
+        //Mocks
         storeRepository = mock(StoreRepository.class);
         repository = mock(UserCredentialsRepository.class);
         transactionRepository = mock(TransactionRepository.class);
+        notificationProxy = mock(NotificationProxy.class);
         authController = new AuthenticationController(repository); // Pass password encoder to controller
         paymentController = new PaymentServiceController();
         shippingController = new ShippingServiceController(storeRepository,transactionRepository);
         marketInitializer = new MarketInitializer(shippingController, paymentController);
+        notificationService = new NotificationsService(notificationProxy);
         creditCard = new CreditCard();
+
     }
 
     private String simpleHash(String input) {
@@ -286,5 +306,56 @@ public class SystemAcceptanceTests {
         // Assert final success
         assertTrue(finalResult);
     }
+
+    //-------------------------------Notifications-------------------------------
+
+    @Test
+    void testSendNotification_Success() throws AuthenticationFailedException, NotificationException, NoPermissionException {
+
+        String title = "title";
+        String message = "message";
+        String senderId = "senderId";
+        String receiverId = "receiverId";
+        String userId = "userId";
+        String token = "token";
+        NotificationRequest notificationRequest = new NotificationRequest(title, message, senderId, receiverId);
+        Request request = new Request(userId, token, JsonUtils.serialize(notificationRequest));
+        doNothing().when(notificationProxy).sendNotification(title, message, senderId, receiverId, userId, request.token());
+        String result = notificationService.sendNotification(request.toJson());
+        assertEquals(Response.getOk(), result);
+    }
+
+    @Test
+    void testSendNotification_FailureReceiverIdNotExist() throws AuthenticationFailedException, NotificationException, NoPermissionException {
+
+        String title = "title";
+        String message = "message";
+        String senderId = "senderId";
+        String receiverId = "wrongReceiverId";
+        String userId = "userId";
+        String token = "token";
+        NotificationRequest notificationRequest = new NotificationRequest(title, message, senderId, receiverId);
+        Request request = new Request(userId, token, JsonUtils.serialize(notificationRequest));
+        doThrow(new NotificationException("Failed to send notification - receiver user does not exists")).when(notificationProxy).sendNotification(title, message, senderId, receiverId, userId, request.token());
+        String result = notificationService.sendNotification(request.toJson());
+        assertEquals(Response.getError(new NotificationException("Failed to send notification - receiver user does not exists")), result);
+    }
+
+    @Test
+    void testSendNotification_FailureSenderIdNotExist() throws AuthenticationFailedException, NotificationException, NoPermissionException {
+
+        String title = "title";
+        String message = "message";
+        String senderId = "wrongSenderId";
+        String receiverId = "ReceiverId";
+        String userId = "userId";
+        String token = "token";
+        NotificationRequest notificationRequest = new NotificationRequest(title, message, senderId, receiverId);
+        Request request = new Request(userId, token, JsonUtils.serialize(notificationRequest));
+        doThrow(new NotificationException("Failed to send notification - sender user does not exists")).when(notificationProxy).sendNotification(title, message, senderId, receiverId, userId, request.token());
+        String result = notificationService.sendNotification(request.toJson());
+        assertEquals(Response.getError(new NotificationException("Failed to send notification - sender user does not exists")), result);
+    }
+
 
 }

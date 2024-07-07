@@ -1,3 +1,0 @@
-public interface PurchaseRule {
-    boolean isSatisfied(Cart cart, User user);
-}

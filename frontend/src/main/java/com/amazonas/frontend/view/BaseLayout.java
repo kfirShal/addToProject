@@ -8,6 +8,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
@@ -31,6 +32,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import java.time.LocalDate;
 
 import static com.amazonas.frontend.control.AppController.*;
 
@@ -239,6 +241,11 @@ public abstract class BaseLayout extends AppLayout {
         passwordField.setPlaceholder("Password");
         PasswordField confirmPasswordField = new PasswordField("Confirm Password");
         confirmPasswordField.setPlaceholder("Confirm Password");
+        DatePicker datePicker = new DatePicker("Date of birth");
+        LocalDate now = LocalDate.now();
+        datePicker.setMin(now.minusYears(150));
+        datePicker.setMax(now.minusYears(12));
+        datePicker.setPlaceholder("Date of birth");
         Icon confirmErrorIcon = VaadinIcon.EXCLAMATION_CIRCLE_O.create();
         confirmErrorIcon.getStyle().setMarginLeft("50px");
         confirmErrorIcon.setVisible(false);
@@ -257,12 +264,13 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             String confirmPassword = confirmPasswordField.getValue();
+            LocalDate birthDate = datePicker.getValue();
             if(!password.equals(confirmPassword)){
                 showNotification("Passwords do not match");
                 confirmErrorIcon.setVisible(true);
                 return;
             }
-            if (appController.register(email, username, password, confirmPassword)) {
+            if (appController.register(email, username, password, confirmPassword, birthDate)) {
                 if(appController.login(username, password)){
                     showNotification("Registration successful");
                     UI.getCurrent().getPage().reload();

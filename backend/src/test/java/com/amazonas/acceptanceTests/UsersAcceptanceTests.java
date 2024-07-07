@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -71,8 +73,9 @@ public class UsersAcceptanceTests {
         String email = "test@example.com";
         String userName = "testUser";
         String password = "password123@";
-        doNothing().when(usersController).register(email, userName, password,"","");
-        RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
+        LocalDate birthDate = LocalDate.now().minusYears(22);
+        doNothing().when(usersController).register(email, userName, password, birthDate, "","");
+        RegisterRequest registerRequest = new RegisterRequest(email, userName, password, birthDate);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getOk(), result);
@@ -84,8 +87,9 @@ public class UsersAcceptanceTests {
         String email = "test@example.com";
         String userName = "testUser";
         String password = "password";
-        doThrow(new UserException("Registration failed - Illegal Password")).when(usersController).register(email, userName, password,"","");
-        RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
+        LocalDate birthDate = LocalDate.now().minusYears(22);
+        doThrow(new UserException("Registration failed - Illegal Password")).when(usersController).register(email, userName, password,birthDate,"","");
+        RegisterRequest registerRequest = new RegisterRequest(email, userName, password, birthDate);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getError(new UserException("Registration failed - Illegal Password")), result);
@@ -96,8 +100,9 @@ public class UsersAcceptanceTests {
         String email = "test@example";
         String userName = "testUser";
         String password = "password";
-        doThrow(new UserException("Invalid email address.")).when(usersController).register(email, userName, password,"","");
-        RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
+        LocalDate birthDate = LocalDate.now().minusYears(22);
+        doThrow(new UserException("Invalid email address.")).when(usersController).register(email, userName, password,birthDate, "","");
+        RegisterRequest registerRequest = new RegisterRequest(email, userName, password, birthDate);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getError(new UserException("Invalid email address.")), result);
@@ -108,11 +113,12 @@ public class UsersAcceptanceTests {
         String email = "test@example.com";
         String userName = "existsTestUser";
         String password = "password";
-        RegisterRequest registerRequest = new RegisterRequest(email, userName, password);
+        LocalDate birthDate = LocalDate.now().minusYears(22);
+        RegisterRequest registerRequest = new RegisterRequest(email, userName, password, birthDate);
         Request request = new Request("userId","token",JsonUtils.serialize(registerRequest));
         userProfilesService.register(request.toJson());
         doThrow(new UserException("Registration failed - Username Already Exists"))
-                .when(usersController).register(email, userName, password,"","");
+                .when(usersController).register(email, userName, password, birthDate,"","");
         String result = userProfilesService.register(request.toJson());
         assertEquals(Response.getError(new UserException("Registration failed - Username Already Exists")), result);
     }

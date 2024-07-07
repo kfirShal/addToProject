@@ -1,9 +1,9 @@
 package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Node;
-import com.amazonas.backend.business.stores.discountPolicies.Parser;
 import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
@@ -151,16 +151,36 @@ public class StoresController {
         return productRepository.getProduct(productId);
     }
 
-    public String addDiscountRule(String storeId,String cfg) throws StoreException, DiscountPolicyException {
+    public String addDiscountRuleByCFG(String storeId,String cfg) throws StoreException, DiscountPolicyException {
         return getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
-
     }
 
-    public String getDiscountRule(String storeId) throws StoreException {
+    public String getDiscountRuleCFG(String storeId) throws StoreException {
         return getStore(storeId).getDiscountPolicyCFG();
+    }
+
+    public String addDiscountRuleByDTO(String storeId, DiscountComponentDTO dto) throws StoreException, DiscountPolicyException {
+        return getStore(storeId).changeDiscountPolicy(dto);
+    }
+
+    public DiscountComponentDTO getDiscountRuleDTO(String storeId) throws StoreException {
+        return getStore(storeId).getDiscountPolicyDTO();
     }
 
     public boolean deleteAllDiscounts(String storeId) throws StoreException {
         return getStore(storeId).deleteAllDiscounts();
     }
+
+    public PurchaseRuleDTO getPurchasePolicyDTO(String storeId) throws StoreException {
+        return getStore(storeId).getPurchasePolicyDTO();
+    }
+
+    public boolean deleteAllPurchasePolicies(String storeId) throws StoreException {
+        return getStore(storeId).deleteAllPurchasePolicies();
+    }
+
+    public void changePurchasePolicy(String storeId, PurchaseRuleDTO purchaseRuleDTO) throws StoreException {
+        getStore(storeId).changePurchasePolicy(purchaseRuleDTO);
+    }
+
 }

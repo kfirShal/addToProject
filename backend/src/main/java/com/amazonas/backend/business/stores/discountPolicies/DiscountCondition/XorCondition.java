@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountCondition;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleConditionType;
+import com.amazonas.common.DiscountDTOs.DiscountConditionDTO;
+import com.amazonas.common.DiscountDTOs.MultipleConditionDTO;
+import com.amazonas.common.DiscountDTOs.MultipleConditionType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
 
