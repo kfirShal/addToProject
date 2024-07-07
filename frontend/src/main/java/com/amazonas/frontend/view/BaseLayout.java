@@ -36,6 +36,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
+import static com.amazonas.common.permissions.actions.MarketActions.ALL;
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
@@ -67,10 +68,6 @@ public abstract class BaseLayout extends AppLayout {
 
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("Products", ProductsView.class, VaadinIcon.CART.create()));
-        nav1.addItem(new SideNavItem("Categories", CategoriesView.class, VaadinIcon.TAGS.create()));
 
         nav2 = new SideNav();
         nav2.setLabel("------------------");
@@ -124,6 +121,9 @@ public abstract class BaseLayout extends AppLayout {
             registerButton.getStyle().set("margin-right", "10px");
             addToNavbar(loginButton, registerButton);
         } else {
+            if(permissionsProfile.hasPermission(ALL)){
+                nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
+            }
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
             username.getStyle().set("margin-left", "65%");
 //            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
