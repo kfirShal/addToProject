@@ -38,6 +38,9 @@ public class PurchasePolicyManager {
     }
 
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
+        if(purchasePolicy == null) {
+            return true;
+        }
         return purchasePolicy.isSatisfied(products, user);
     }
 
