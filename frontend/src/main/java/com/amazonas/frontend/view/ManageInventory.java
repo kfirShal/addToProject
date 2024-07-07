@@ -10,11 +10,13 @@ import com.amazonas.frontend.utils.Converter;
 import com.amazonas.frontend.utils.POJOBinder;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
@@ -74,14 +76,44 @@ public class ManageInventory extends BaseLayout {
         grid.addColumn(Product::category).setHeader("Category");
         grid.addColumn(Product::description).setHeader("Description");
         grid.addColumn(Product::rating).setHeader("Rating");
-        //grid.addColumn(product -> String.join(", ", product.keyWords())).setHeader("Keywords");
-        grid.addColumn(p -> idToQuantity.get(p.productId())).setHeader("Quantity");
+        grid.addComponentColumn(product -> {
+            MultiSelectComboBox<String> keywordsComboBox = new MultiSelectComboBox<>();
+            keywordsComboBox.setItems("big", "small", "medium", "new", "old"); // Set available keyword options
+            return keywordsComboBox;
+        }).setHeader("Keywords");
+        grid.addComponentColumn(product -> {
+            VerticalLayout layout = new VerticalLayout();
+            TextField quantityField = new TextField("");
+            Integer quantity = idToQuantity.get(product.productId());
+            if (quantity != null) {
+                quantityField.setValue(quantity.toString());
+            }
+            quantityField.addValueChangeListener(event -> {
+                String value = event.getValue();
+                try {
+                    int newQuantity = Integer.parseInt(value);
+                    idToQuantity.put(product.productId(), newQuantity);
+
+                    appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, storeId);
+
+                } catch (NumberFormatException e) {
+                    openErrorDialog("Invalid quantity format");
+                } catch (ApplicationException e) {
+                    openErrorDialog("Failed to update quantity: " + e.getMessage());
+                }
+            });
+            layout.add(quantityField);
+            return layout;
+        }).setHeader("Quantity");
 
         // Add action buttons
         grid.addComponentColumn(product -> {
             Button editButton = new Button("Edit", click -> openEditDialog(product));
             return editButton;
         });
+
+        editDialog = createProductDialog("Edit Product", this::saveChanges);
+        content.add(editDialog);
 
         grid.addComponentColumn(product -> {
             Button toggleButton = new Button(products.get(true).contains(product) ? "Disable" : "Enable", click -> {
@@ -111,19 +143,13 @@ public class ManageInventory extends BaseLayout {
 
         content.add(grid);
 
-        // Create and configure the edit dialog
-        editDialog = createProductDialog("Edit Product", this::saveChanges);
-        content.add(editDialog);
-
-        // Create and configure the add dialog
-        addDialog = createProductDialog("Add Product", this::addProduct);
-        content.add(addDialog);
-
         Button addButton = new Button("Add", click -> openAddDialog());
         HorizontalLayout addButtonLayout = new HorizontalLayout(addButton);
         addButtonLayout.getStyle().set("justify-content", "center");
         content.add(addButtonLayout);
 
+        addDialog = createProductDialog("Add Product", this::addProduct);
+        content.add(addDialog);
     }
 
     private Dialog createProductDialog(String dialogTitle, Runnable saveAction) {
@@ -175,39 +201,6 @@ public class ManageInventory extends BaseLayout {
             }
         });
         formLayout.add(ratingField);
-
-//        TextField keywordsField = new TextField("Keywords");
-//        binder.bind(keywordsField, "keyWords").withConverter(new Converter<String, Set<String>>() {
-//            @Override
-//            public Class<String> fromType() {
-//                return String.class;
-//            }
-//
-//            @Override
-//            public Class<Set<String>> toType() {
-//                return (Class<Set<String>>) (Class<?>) Set.class;
-//            }
-//
-//            @Override
-//            public Function<String, Set<String>> to() {
-//                return value -> {
-//                    if (value == null || value.isEmpty()) {
-//                        return Collections.emptySet();
-//                    }
-//                    return new HashSet<>(Arrays.asList(value.split("\\s*,\\s*")));
-//                };
-//            }
-//
-//            @Override
-//            public Function<Set<String>, String> from() {
-//                return value -> {
-//                    if (value == null || value.isEmpty()) {
-//                        return "";
-//                    }
-//                    return String.join(", ", value);
-//                };
-//            }
-//        });
 
         Button saveButton = new Button("Save Changes", e -> saveAction.run());
         Button discardButton = new Button("Discard", e -> dialog.close());

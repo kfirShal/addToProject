@@ -78,10 +78,8 @@ public class ManageStoreOfficials extends BaseLayout {
         managersGrid.setItems(managers);
         managersGrid.addColumn(RegisteredUser::getEmail).setHeader("Email");
 
-        // Add Multi-Select Combo Box for Permissions
         managersGrid.addComponentColumn(registeredUser -> {
             MultiSelectComboBox<String> permissionsComboBox = new MultiSelectComboBox<>();
-            permissionsComboBox.setLabel("Permissions");
             permissionsComboBox.setItems(fetchAvailablePermissions().stream().map(Enum::name).collect(Collectors.toList()));
 
             permissionsComboBox.addValueChangeListener(event -> {
@@ -109,7 +107,7 @@ public class ManageStoreOfficials extends BaseLayout {
             });
 
             return permissionsComboBox;
-        });
+        }).setHeader("Permissions");
 
         content.add(managersTitle, managersGrid);
 
