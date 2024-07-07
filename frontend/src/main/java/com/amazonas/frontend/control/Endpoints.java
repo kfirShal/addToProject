@@ -1,5 +1,7 @@
 package com.amazonas.frontend.control;
 
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.Product;
 import com.google.gson.reflect.TypeToken;
 
@@ -84,9 +86,14 @@ public enum Endpoints {
     GET_PRODUCT_QUANTITY("stores/getproductquantity", Integer.class),
     GET_STORE_DETAILS("stores/getstoredetails", StoreDetails.class),
     GET_PRODUCT("stores/getproduct", Product.class),
-    ADD_DISCOUNT_RULE("stores/adddiscountrule", String.class),
-    GET_DISCOUNT_RULE("stores/getdiscountrule", String.class),
+    ADD_DISCOUNT_RULE_CFG("stores/adddiscountrulebycfg", String.class),
+    GET_DISCOUNT_RULE_CFG("stores/getcfgdiscountrule", String.class),
+    ADD_DISCOUNT_RULE_DTO("stores/adddiscountrulebydto", String.class),
+    GET_DISCOUNT_RULE_DTO("stores/getdtodiscountrule", DiscountComponentDTO.class),
     REMOVE_DISCOUNT_RULE("stores/removediscountrule", Boolean.class),
+    ADD_PURCHASE_POLICY("stores/addpuchasepolicy", Void.class),
+    GET_PURCHASE_POLICY("stores/getpurchasepolicy", PurchaseRuleDTO.class),
+    REMOVE_PURCHASE_POLICY("stores/removepuchasepolicy", Boolean.class),
 
     //Permissions Endpoints
     GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),
