@@ -9,6 +9,7 @@ import com.amazonas.backend.business.userProfiles.UsersController;
 import com.amazonas.backend.exceptions.*;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component("userProxy")
@@ -21,12 +22,12 @@ public class UserProxy extends ControllerProxy {
         this.real = usersController;
     }
 
-    public void register(String email, String userName, String password, String guestId, String token) throws UserException, AuthenticationFailedException {
+    public void register(String email, String userName, String password, LocalDate birthDate, String guestId, String token) throws UserException, AuthenticationFailedException {
         if(userName.equals("admin")) {
             throw new UserException();
         }
         authenticateToken(guestId, token);
-        real.register(email, userName, password);
+        real.register(email, userName, password, birthDate);
     }
 
     public String enterAsGuest() {

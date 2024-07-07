@@ -32,7 +32,7 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             RegisterRequest toAdd = RegisterRequest.from(request.payload());
-            proxy.register(toAdd.email(), toAdd.userid(), toAdd.password(), request.userId(), request.token());
+            proxy.register(toAdd.email(), toAdd.userid(), toAdd.password(), toAdd.birthDate(), request.userId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | UserException e){
             return Response.getError(e);

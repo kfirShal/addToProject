@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -263,7 +263,7 @@ public class AppController {
         return true;
     }
 
-    public boolean register(String email, String username, String password, String confirmPassword) {
+    public boolean register(String email, String username, String password, String confirmPassword, LocalDate birthDate) {
         if (isUserLoggedIn()) {
             return false;
         }
@@ -272,7 +272,7 @@ public class AppController {
             return false;
         }
 
-        RegisterRequest request = new RegisterRequest(email, username, password);
+        RegisterRequest request = new RegisterRequest(email, username, password, birthDate);
         try {
             postByEndpoint(Endpoints.REGISTER_USER, request);
         } catch (ApplicationException e) {
