@@ -14,17 +14,17 @@ import org.springframework.context.event.EventListener;
 public class PermissionsBeans {
 
     @Bean
-    public PermissionsProfile guestPermissionsProfile() {
+    public DefaultPermissionsProfile guestPermissionsProfile() {
         return new DefaultPermissionsProfile("guest");
     }
 
     @Bean
-    public PermissionsProfile defaultRegisteredUserPermissionsProfile() {
+    public DefaultPermissionsProfile defaultRegisteredUserPermissionsProfile() {
         return new DefaultPermissionsProfile("default_registered_user");
     }
 
     @Bean
-    public PermissionsProfile adminPermissionsProfile() {
+    public AdminPermissionsProfile adminPermissionsProfile() {
         return new AdminPermissionsProfile();
     }
 
