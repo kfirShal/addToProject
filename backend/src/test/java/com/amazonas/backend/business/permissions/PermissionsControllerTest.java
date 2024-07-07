@@ -1,9 +1,11 @@
 package com.amazonas.backend.business.permissions;
 
+import com.amazonas.backend.repository.PermissionsProfileRepository;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
+import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
-import com.amazonas.backend.repository.PermissionsProfileRepository;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,8 +24,8 @@ class PermissionsControllerTest {
 
     public PermissionsControllerTest() {
         PermissionsProfileRepository repository = mock(PermissionsProfileRepository.class);
-        PermissionsProfile mockProfile = mock(PermissionsProfile.class);
-        pc = new PermissionsController(mockProfile, mockProfile,mockProfile, repository);
+        DefaultPermissionsProfile mockProfile = mock(DefaultPermissionsProfile.class);
+        pc = new PermissionsController(mockProfile, mockProfile,mock(AdminPermissionsProfile.class), repository);
         profile = mock(PermissionsProfile.class);
         when(repository.getPermissionsProfile(USER_ID)).thenReturn(profile);
     }

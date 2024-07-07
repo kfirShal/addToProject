@@ -10,14 +10,14 @@ import java.util.*;
 public class UserPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
-    private final PermissionsProfile defaultProfile;
+    private final DefaultPermissionsProfile defaultProfile;
     private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
     private final ReadWriteLock lock;
 
 
-    public UserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
+    public UserPermissionsProfile(String userId, DefaultPermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
         this.userId = userId;
         storeIdToAllowedStoreActions = new HashMap<>();

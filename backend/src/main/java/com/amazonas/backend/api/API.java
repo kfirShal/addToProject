@@ -105,9 +105,14 @@ public class API {
             case "setproductquantity" -> storesService.setProductQuantity(body);
             case "getproductquantity" -> storesService.getProductQuantity(body);
             case "getstoredetails" -> storesService.getStoreDetails(body);
-            case "adddiscountrule" -> storesService.addDiscountRule(body);
-            case "getdiscountrule" -> storesService.getDiscountRule(body);
+            case "adddiscountrulebycfg" -> storesService.addDiscountRuleByCFG(body);
+            case "getcfgdiscountrule" -> storesService.getDiscountRuleCFG(body);
+            case "adddiscountrulebydto" -> storesService.addDiscountRuleByDTO(body);
+            case "getdtodiscountrule" -> storesService.getDiscountRuleDTO(body);
             case "removediscountrule" -> storesService.deleteAllDiscounts(body);
+            case "addpuchasepolicy" -> storesService.changePurchasePolicy(body);
+            case "removepuchasepolicy" -> storesService.deleteAllPurchasePolicies(body);
+            case "getpurchasepolicy" -> storesService.getPurchasePolicyDTO(body);
             default -> "Invalid endpoint";
         };
     }
