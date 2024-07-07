@@ -21,6 +21,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -85,7 +86,7 @@ public class UsersController {
             String adminEmail = "admin@amazonas.com";
             String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
-            register(adminEmail, adminId, adminPassword);
+            register(adminEmail, adminId, adminPassword, LocalDate.now().minusYears(22));
             permissionsController.registerAdmin(adminId);
         } catch (UserException e) {
             log.error("Failed to generate admin user");
@@ -98,7 +99,7 @@ public class UsersController {
     // =============================================================================== |
 
 
-    public void register(String email, String userId, String password) throws UserException {
+    public void register(String email, String userId, String password, LocalDate birthDate) throws UserException {
 
         userId = userId.toLowerCase();
         email = email.toLowerCase();
@@ -118,7 +119,12 @@ public class UsersController {
             throw new UserException("Invalid email address.");
         }
 
-        RegisteredUser newRegisteredUser = new RegisteredUser(userId,email);
+        if (!isValidBirthDate(birthDate)) {
+            log.debug("Invalid birth date");
+            throw new UserException("Invalid birth date.");
+        }
+
+        RegisteredUser newRegisteredUser = new RegisteredUser(userId,email, birthDate);
         userRepository.saveUser(newRegisteredUser);
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
         authenticationController.createUser(new UserCredentials(userId, password));
@@ -413,6 +419,13 @@ public class UsersController {
         Pattern emailPattern = Pattern.compile(emailRegex);
         Matcher matcher = emailPattern.matcher(email);
         return matcher.matches();
+    }
+
+    private boolean isValidBirthDate(LocalDate birthDate) {
+        if (birthDate == null) {
+            return false;
+        }
+        return birthDate.isBefore(LocalDate.now().minusYears(12));
     }
 
     // =============================================================================== |

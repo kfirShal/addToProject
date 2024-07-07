@@ -21,6 +21,7 @@ import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -86,12 +87,12 @@ public class ActionsOfAMarketAdministrator {
     public void testAdminViewsUserPurchaseHistory() throws UserException {
         // Arrange
         // Pre-register an administrator
-        usersController.register("admin@example.com", "admin", "AdminPassword1!");
+        usersController.register("admin@example.com", "admin", "AdminPassword1!", LocalDate.now().minusYears(22));
         String adminId = "admin";
         userRepository.getUser(adminId).equals("ADMIN");
 
         // Pre-register a customer
-        usersController.register("customer@example.com", "customer", "CustomerPassword1!");
+        usersController.register("customer@example.com", "customer", "CustomerPassword1!", LocalDate.now().minusYears(22));
         String customerId = "customer";
 
         // Act
@@ -107,7 +108,7 @@ public class ActionsOfAMarketAdministrator {
         // Arrange
         // Pre-register a customer
         try {
-            usersController.register("customer@example.com", "customer", "CustomerPassword1!");
+            usersController.register("customer@example.com", "customer", "CustomerPassword1!", LocalDate.now().minusYears(22));
         } catch (UserException e) {
             throw new RuntimeException(e);
         }
@@ -127,7 +128,7 @@ public class ActionsOfAMarketAdministrator {
     public void testAdminViewsUserWithNoPurchases() throws UserException {
         // Arrange
         // Pre-register a user with no purchases
-        usersController.register("userNoPurchases@example.com", "userNoPurchases", "UserNoPurchasesPassword1!");
+        usersController.register("userNoPurchases@example.com", "userNoPurchases", "UserNoPurchasesPassword1!", LocalDate.now().minusYears(22));
         String userIdWithNoPurchases = "userNoPurchases";
 
         // Act

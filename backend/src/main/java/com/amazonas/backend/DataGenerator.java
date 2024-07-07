@@ -17,6 +17,8 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 public class DataGenerator {
 
@@ -40,15 +42,15 @@ public class DataGenerator {
 
     public void generateData() throws Exception {
         // create users
-        usersController.register("user1@email.com","user1","Password12#");
-        usersController.register("user2@email.com","user2","Password22#");
-        usersController.register("user3@email.com","user3","Password32#");
-        usersController.register("user4@email.com","user4","Password42#");
-        usersController.register("user5@email.com","user5","Password52#");
-        usersController.register("user6@email.com","user6","Password62#");
-        usersController.register("user7@email.com","user7","Password72#");
-        usersController.register("user8@email.com","user8","Password82#");
-        usersController.register("user9@email.com","user9","Password92#");
+        usersController.register("user1@email.com","user1","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user2@email.com","user2","Password22#", LocalDate.now().minusYears(22));
+        usersController.register("user3@email.com","user3","Password32#", LocalDate.now().minusYears(22));
+        usersController.register("user4@email.com","user4","Password42#", LocalDate.now().minusYears(22));
+        usersController.register("user5@email.com","user5","Password52#", LocalDate.now().minusYears(22));
+        usersController.register("user6@email.com","user6","Password62#", LocalDate.now().minusYears(22));
+        usersController.register("user7@email.com","user7","Password72#", LocalDate.now().minusYears(22));
+        usersController.register("user8@email.com","user8","Password82#", LocalDate.now().minusYears(22));
+        usersController.register("user9@email.com","user9","Password92#", LocalDate.now().minusYears(22));
 
         // create stores
         String store1Id = storesController.addStore("user1", "user1Store", "this is user1 store");

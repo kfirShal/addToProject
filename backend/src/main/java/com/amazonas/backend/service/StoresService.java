@@ -1,6 +1,10 @@
 package com.amazonas.backend.service;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
+
+import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
+
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
@@ -17,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 
 @Component("storesService")
 public class StoresService {
@@ -323,6 +329,39 @@ public class StoresService {
         try {
             DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
             boolean result = proxy.deleteAllDiscounts(discountRequest.StoreID(), request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String changePurchasePolicy(String json) {
+        Request request = Request.from(json);
+        try {
+            PurchasePolicyRequest purchasePolicyRequest = JsonUtils.deserialize(request.payload(), PurchasePolicyRequest.class);
+            proxy.changePurchasePolicy(purchasePolicyRequest.StoreID(), purchasePolicyRequest.purchaseRule(), request.userId(), request.token());
+            return Response.getOk();
+        } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String getPurchasePolicyDTO(String json) {
+        Request request = Request.from(json);
+        try {
+            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            PurchaseRuleDTO result = proxy.getPurchasePolicyDTO(storeId, request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String deleteAllPurchasePolicies(String json) {
+        Request request = Request.from(json);
+        try {
+            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            boolean result = proxy.deleteAllPurchasePolicies(storeId, request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
             return Response.getError(e);
