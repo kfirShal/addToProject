@@ -157,6 +157,7 @@ public class ProductDetailsView extends BaseLayout implements BeforeEnterObserve
             CartRequest cartRequest = new CartRequest(finalProduct.getStoreId(), finalProduct.getProductId(), quantity);
             try {
                 appController.postByEndpoint(Endpoints.ADD_PRODUCT_TO_CART, cartRequest);
+                showNotification("Product added to cart successfully! with quantity: " + quantity);
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }

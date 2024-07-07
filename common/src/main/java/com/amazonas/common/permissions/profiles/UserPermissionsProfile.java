@@ -5,22 +5,19 @@ import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.utils.ReadWriteLock;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class UserPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
-    private final PermissionsProfile defaultProfile;
+    private final DefaultPermissionsProfile defaultProfile;
     private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
     private final ReadWriteLock lock;
 
 
-    public UserPermissionsProfile(String userId, PermissionsProfile defaultProfile) {
+    public UserPermissionsProfile(String userId, DefaultPermissionsProfile defaultProfile) {
         this.defaultProfile = defaultProfile;
         this.userId = userId;
         storeIdToAllowedStoreActions = new HashMap<>();
@@ -129,6 +126,11 @@ public class UserPermissionsProfile implements PermissionsProfile {
         boolean result = allowedActions != null && allowedActions.contains(action);
         lock.releaseRead();
         return result;
+    }
+
+    @Override
+    public List<String> getStoreIds() {
+        return new ArrayList<>(storeIdToAllowedStoreActions.keySet());
     }
 
     @Override

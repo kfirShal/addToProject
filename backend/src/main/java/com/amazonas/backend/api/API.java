@@ -110,6 +110,9 @@ public class API {
             case "adddiscountrule" -> storesService.addDiscountRule(body);
             case "getdiscountrule" -> storesService.getDiscountRule(body);
             case "removediscountrule" -> storesService.deleteAllDiscounts(body);
+            case "addpuchasepolicy" -> storesService.changePurchasePolicy(body);
+            case "removepuchasepolicy" -> storesService.deleteAllPurchasePolicies(body);
+            case "getpurchasepolicy" -> storesService.getPurchasePolicyDTO(body);
             default -> "Invalid endpoint";
         };
     }

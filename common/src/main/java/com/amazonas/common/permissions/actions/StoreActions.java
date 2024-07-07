@@ -29,7 +29,7 @@ public enum StoreActions {
     REMOVE_PERMISSION_FROM_MANAGER,
     VIEW_ROLES_INFORMATION,
 
-    // discounts
-
+    // discounts and policies
+    EDIT_POLICY,
     EDIT_DISCOUNT,
 }

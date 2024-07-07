@@ -3,7 +3,7 @@ package com.amazonas.backend.business.permissions.proxies;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
@@ -185,21 +185,38 @@ public class StoreProxy extends ControllerProxy {
     public String addDiscountRule(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
-        return real.getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
+        return real.addDiscountRule(storeId, cfg);
 
     }
 
     public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.VIEW_STORES);
-        return real.getStore(storeId).getDiscountPolicyCFG();
+        return real.getDiscountRule(storeId);
     }
 
     public boolean deleteAllDiscounts(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
-        return real.getStore(storeId).deleteAllDiscounts();
+        return real.deleteAllDiscounts(storeId);
     }
 
+    public PurchaseRuleDTO getPurchasePolicyDTO(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
+        return real.getPurchasePolicyDTO(storeId);
+    }
+
+    public boolean deleteAllPurchasePolicies(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
+        return real.deleteAllPurchasePolicies(storeId);
+    }
+
+    public void changePurchasePolicy(String storeId, PurchaseRuleDTO purchaseRuleDTO, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
+        real.changePurchasePolicy(storeId, purchaseRuleDTO);
+    }
 
 }

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -28,6 +29,7 @@ class UsersControllerTest {
     private static final String USER_ID = "userId".toLowerCase();
     private static final String PASSWORD = "Password12#";
     private static final String EMAIL = "email@post.bgu.ac.il";
+    private static final LocalDate BIRTH_DATE = LocalDate.now().minusYears(22);
     private UsersController usersController;
     private PaymentService paymentService;
     private UserRepository userRepository;
@@ -77,25 +79,25 @@ class UsersControllerTest {
     @Test
     void registerGood() {
         when(userRepository.userIdExists(USER_ID)).thenReturn(false);
-        assertDoesNotThrow(()-> usersController.register(EMAIL, USER_ID, PASSWORD));
+        assertDoesNotThrow(()-> usersController.register(EMAIL, USER_ID, PASSWORD, BIRTH_DATE));
     }
 
     @Test
     void registerUserIdAlreadyExists() {
         when(userRepository.userIdExists(USER_ID)).thenReturn(true);
-        assertThrows(UserException.class, ()-> usersController.register(EMAIL, USER_ID, PASSWORD));
+        assertThrows(UserException.class, ()-> usersController.register(EMAIL, USER_ID, PASSWORD, BIRTH_DATE));
     }
 
     @Test
     void registerBadEmail() {
         when(userRepository.userIdExists(USER_ID)).thenReturn(false);
-        assertThrows(UserException.class, ()-> usersController.register(EMAIL, USER_ID, "badEmail"));
+        assertThrows(UserException.class, ()-> usersController.register(EMAIL, USER_ID, "badEmail", BIRTH_DATE));
     }
 
     @Test
     void registerBadPassword() {
         when(userRepository.userIdExists(USER_ID)).thenReturn(false);
-        assertThrows(UserException.class, ()-> usersController.register(EMAIL,USER_ID,"badpassword"));
+        assertThrows(UserException.class, ()-> usersController.register(EMAIL,USER_ID,"badpassword", BIRTH_DATE));
     }
 
     @Test
@@ -108,7 +110,7 @@ class UsersControllerTest {
 
     @Test
     void loginToRegisteredGood() {
-        User user = new RegisteredUser(USER_ID, EMAIL);
+        User user = new RegisteredUser(USER_ID, EMAIL, BIRTH_DATE);
         when(userRepository.userIdExists(USER_ID)).thenReturn(true);
         when(userRepository.getUser(USER_ID)).thenReturn(user);
         when(shoppingCartRepository.getCart(USER_ID)).thenReturn(cart);
