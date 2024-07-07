@@ -85,7 +85,7 @@ public class StoresController {
         return getStore(storeId).getProductQuantity(productId);
     }
 
-    public Map<Boolean,Set<Product>> getStoreProducts(String storeId) throws StoreException {
+    public Map<Boolean,List<Product>> getStoreProducts(String storeId) throws StoreException {
         return getStore(storeId).getStoreProducts();
     }
 

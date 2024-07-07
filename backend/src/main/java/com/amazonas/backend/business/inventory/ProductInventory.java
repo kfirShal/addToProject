@@ -127,12 +127,11 @@ public class ProductInventory {
      * @return a map with two sets of products, one for enabled products and one for disabled products
      * the key is a boolean, false for disabled products and true for enabled products
      */
-    public Map<Boolean,Set<Product>> getProducts(){
-        HashMap<Boolean, Set<Product>> map = new HashMap<>(){{
-            put(true, new HashSet<>());
-            put(false, new HashSet<>());
-        }};
-        idToProduct.forEach((key, value) -> map.get(disabledProductsId.contains(key)).add(value));
+    public Map<Boolean,List<Product>> getProducts(){
+        Map<Boolean, List<Product>> map = new HashMap<>();
+        map.put(true, new LinkedList<>());
+        map.put(false, new LinkedList<>());
+        idToProduct.forEach((key, value) -> map.get(!disabledProductsId.contains(key)).add(value));
         return map;
     }
 }

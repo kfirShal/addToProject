@@ -93,9 +93,9 @@ public enum Endpoints {
     GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class);
 
     private final String location;
-    private final Class<?> returnType;
+    private final Type returnType;
 
-    Endpoints(String location, Class<?> returnType) {
+    Endpoints(String location, Type returnType) {
         this.location = location;
         this.returnType = returnType;
     }
@@ -103,13 +103,12 @@ public enum Endpoints {
     public String location() {
         return location;
     }
-    
-    @SuppressWarnings("unchecked")
-    public <T> Class<T> returnType() {
-        return (Class<T>) returnType;
+
+    public Type returnType() {
+        return returnType;
     }
 
     private static class Types {
-        private static final Class<? extends Type> GET_STORE_PRODUCTS_TYPE = new TypeToken<Map<Boolean, List<Product>>>() {}.getType().getClass();
+        private static final Type GET_STORE_PRODUCTS_TYPE = new TypeToken<Map<Boolean, List<Product>>>() {}.getType();
     }
 }

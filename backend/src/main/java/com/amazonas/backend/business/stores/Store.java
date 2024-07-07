@@ -330,7 +330,7 @@ public class Store {
         }
     }
 
-    public Map<Boolean,Set<Product>> getStoreProducts() throws StoreException {
+    public Map<Boolean,List<Product>> getStoreProducts() throws StoreException {
         try {
             lock.acquireRead();
             checkIfOpen();

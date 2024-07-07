@@ -6,7 +6,7 @@ import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
-import com.amazonas.frontend.model.Store;
+import com.amazonas.frontend.model.FrontendStore;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -21,8 +21,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Route("store")
 public class StoreView extends BaseLayout implements BeforeEnterObserver {
@@ -34,7 +34,7 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
     }
 
     private void createView() {
-        String storeId = getParam("storeId");
+        String storeId = getParam("storeid");
         StoreDetails storeDetails = null;
         try {
             List<StoreDetails> fetched = appController.postByEndpoint(Endpoints.GET_STORE_DETAILS, storeId);
@@ -45,14 +45,15 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
         }
 
         // Get list of products from the backend
-        List<Product> products = new ArrayList<>();
+        List<Product> products = null;
         try {
-            products = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS, storeId);
+            List<Map<Boolean,List<Product>>> fetched = appController.postByEndpoint(Endpoints.GET_STORE_PRODUCTS, storeId);
+            products = fetched.getFirst().get(true);
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
 
-        Store store = new Store(storeDetails.storeName(), storeDetails.storeDescription(), storeDetails.storeRating(), products);
+        FrontendStore store = new FrontendStore(storeDetails.storeName(), storeDetails.storeDescription(), storeDetails.storeRating(), products);
 
 
 //        // Example store details

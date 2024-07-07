@@ -5,6 +5,7 @@ import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -63,6 +64,11 @@ public class DefaultPermissionsProfile implements PermissionsProfile {
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
         return false;
+    }
+
+    @Override
+    public List<String> getStoreIds() {
+        return List.of();
     }
 
     @Override
