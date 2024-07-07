@@ -17,15 +17,15 @@ class ProductTest {
     }
 
     @Test
-    void addKeyWords() {
+    void addGetKeyWords() {
         pTest.addKeyWords("shi");
-        assertTrue(pTest.keyWords().contains("shi"));
+        assertTrue(pTest.getKeyWords().contains("shi"));
     }
 
     @Test
-    void removeKeyWords() {
+    void removeGetKeyWords() {
         pTest.addKeyWords("shi");
         pTest.removeKeyWords("shi");
-        assertFalse(pTest.keyWords().contains("shi"));
+        assertFalse(pTest.getKeyWords().contains("shi"));
     }
 }

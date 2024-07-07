@@ -55,6 +55,8 @@ public class SearchRequestBuilder {
         return new SearchRequest(productName, keyWords, minPrice, maxPrice, productCategory, productRating);
     }
 
+
+
     public static SearchRequestBuilder create() {
         return new SearchRequestBuilder();
     }

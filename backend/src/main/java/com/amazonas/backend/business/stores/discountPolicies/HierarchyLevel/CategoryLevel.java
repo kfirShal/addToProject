@@ -15,6 +15,6 @@ public class CategoryLevel implements DiscountHierarchyLevel{
 
     @Override
     public boolean isTheProductEligible(Product product) {
-        return product.category().equals(category);
+        return product.getCategory().equals(category);
     }
 }

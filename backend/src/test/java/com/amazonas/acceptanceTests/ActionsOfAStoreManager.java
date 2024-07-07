@@ -51,7 +51,7 @@ public class ActionsOfAStoreManager {
         String userId = "user1";
         String token = "validToken";
         Product productToAdd = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, storeId);
-        SearchRequest request = new SearchRequest(productToAdd.productName(), new ArrayList<>(), 0, 200, productToAdd.category(), productToAdd.rating());
+        SearchRequest request = new SearchRequest(productToAdd.getProductName(), new ArrayList<>(), 0, 200, productToAdd.getCategory(), productToAdd.getRating());
 
         // Act
         assertTrue(storesController.searchProductsInStore(storeId, request).contains(productToAdd));

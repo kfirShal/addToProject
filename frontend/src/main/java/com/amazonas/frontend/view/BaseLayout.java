@@ -80,12 +80,34 @@ public abstract class BaseLayout extends AppLayout {
         H1 title = new H1("Amazonas");
         title.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
+        title.addClickListener(event -> UI.getCurrent().navigate(""));
+        title.getStyle().set("cursor", "pointer");
 
         Scroller scroller = new Scroller(sideNav);
         scroller.setClassName(LumoUtility.Padding.SMALL);
 
         addToDrawer(scroller);
         addToNavbar(toggle, title);
+        // add search bar to search products and store
+        TextField searchField = new TextField();
+        searchField.setPlaceholder("Search");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        // put in the middle
+        searchField.getStyle().set("margin-mid", "auto");
+
+        HorizontalLayout searchLayout = new HorizontalLayout(searchField);
+        searchLayout.setWidthFull();
+        searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+
+        // function to search for products and stores
+        searchField.addValueChangeListener(event -> {
+            String search = searchField.getValue();
+            if (search.isEmpty()) {
+                return;
+            }
+            UI.getCurrent().navigate("search?search=" + search);
+        });
+        addToNavbar(true, searchLayout);
 
         // set up login/logout button
         if (! isUserLoggedIn()) {
@@ -160,10 +182,10 @@ public abstract class BaseLayout extends AppLayout {
     }
 
     public void returnToMainIfNotLogged(){
-//        if (!isUserLoggedIn()) {
-//            UI.getCurrent().navigate("");
-//            return;
-//        }
+        if (!isUserLoggedIn()) {
+            UI.getCurrent().navigate("");
+            return;
+        }
     }
 
     /**

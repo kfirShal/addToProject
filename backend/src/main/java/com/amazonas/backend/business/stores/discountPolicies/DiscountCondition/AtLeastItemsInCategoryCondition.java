@@ -29,7 +29,7 @@ public class AtLeastItemsInCategoryCondition implements Condition{
         }
         int count = 0;
         for (ProductWithQuantitiy productWithQuantitiy : products) {
-            if (productWithQuantitiy.product().category().equals(categoryName)) {
+            if (productWithQuantitiy.product().getCategory().equals(categoryName)) {
                 count += productWithQuantitiy.quantity();
             }
         }

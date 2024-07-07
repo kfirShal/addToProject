@@ -140,6 +140,18 @@ public class StoreProxy extends ControllerProxy {
         return real.searchProductsGlobally(request);
     }
 
+    public List<StoreDetails> searchStoresByKeyword(String keyword, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        //checkPermission(userId, MarketActions.SEARCH_STORES);
+        return real.searchStoresByKeyword(keyword);
+    }
+
+    public List<Product> searchProductsByKeyword(String keyword, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.SEARCH_PRODUCTS);
+        return real.searchProductsByKeyword(keyword);
+    }
+
     public List<Product> searchProductsInStore(String storeId, SearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.SEARCH_PRODUCTS);

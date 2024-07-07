@@ -10,7 +10,6 @@ import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.Stor
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.common.dtos.Product;
 
 import java.util.List;
 
@@ -50,18 +49,18 @@ public class SimpleDiscount implements DiscountComponent{
             }
             if (discountHierarchyLevel.isTheProductEligible(productWithQuantitiy.product())) {
                 ret[index] = new ProductAfterDiscount(
-                                            productWithQuantitiy.product().productId(),
+                                            productWithQuantitiy.product().getProductId(),
                                             productWithQuantitiy.quantity(),
-                                            productWithQuantitiy.product().price(),
-                                            productWithQuantitiy.product().price() * (1 - percent)
+                                            productWithQuantitiy.product().getPrice(),
+                                            productWithQuantitiy.product().getPrice() * (1 - percent)
                                             );
             }
             else {
                 ret[index] = new ProductAfterDiscount(
-                                            productWithQuantitiy.product().productId(),
+                                            productWithQuantitiy.product().getProductId(),
                                             productWithQuantitiy.quantity(),
-                                            productWithQuantitiy.product().price(),
-                                            productWithQuantitiy.product().price()
+                                            productWithQuantitiy.product().getPrice(),
+                                            productWithQuantitiy.product().getPrice()
                                             );
             }
             index++;

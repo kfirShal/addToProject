@@ -118,6 +118,24 @@ public class StoresController {
         return repository.getStore(storeId);
     }
 
+    public List<Product> searchProductsByKeyword(String keyword) {
+        List<Product> ret = new LinkedList<>();
+        for (Store store : repository.getAllStores()){
+            ret.addAll(store.searchProduct(keyword));
+        }
+        return ret;
+    }
+
+    public List<StoreDetails> searchStoresByKeyword(String keyword) {
+        List<StoreDetails> ret = new LinkedList<>();
+        for (Store store : repository.getAllStores()){
+            if(store.getStoreName().contains(keyword)){
+                ret.add(store.getDetails());
+            }
+        }
+        return ret;
+    }
+
     public List<Product> searchProductsGlobally(GlobalSearchRequest request) {
         List<Product> ret = new LinkedList<>();
         for (Store store : repository.getAllStores()) {

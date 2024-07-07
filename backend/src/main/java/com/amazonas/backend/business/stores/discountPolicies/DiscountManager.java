@@ -47,10 +47,10 @@ public class DiscountManager {
             ProductAfterDiscount[] productsAfterDiscounts = new ProductAfterDiscount[products.size()];
             int index = 0;
             for (ProductWithQuantitiy product : products) {
-                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().productId(),
+                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().getProductId(),
                                                                            product.quantity(),
-                                                                           product.product().price(),
-                                                                           product.product().price());
+                                                                           product.product().getPrice(),
+                                                                           product.product().getPrice());
             }
             return productsAfterDiscounts;
         }

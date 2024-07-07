@@ -141,7 +141,7 @@ public class PreviousOrdersView extends BaseLayout{
             Product product = entry.getKey();
             Integer quantity = entry.getValue();
 
-            String productName = product.productName();
+            String productName = product.getProductName();
             if (quantity > 1) {
                 productName += "s"; // Add "s" for plural
             }

@@ -12,7 +12,6 @@ import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
 import com.amazonas.backend.business.stores.storePositions.StorePosition;
 import com.amazonas.backend.business.stores.storePositions.StoreRole;
-import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.TransactionRepository;
@@ -23,7 +22,6 @@ import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
-import org.springframework.objenesis.SpringObjenesis;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -206,6 +204,23 @@ public class Store {
         }
     }
 
+    public List<Product> searchProduct(String keyword) {
+        try{
+            lock.acquireRead();
+            if(!isOpen){
+                return List.of();
+            }
+            List<Product> ret = new LinkedList<>();
+            for (Product product : inventory.getAllAvailableProducts())
+                if(product.getKeyWords().stream().anyMatch(s -> s.contains(keyword))){
+                    ret.add(product);
+                }
+            return ret;
+        } finally {
+            lock.releaseRead();
+        }
+    }
+
     public List<Product> searchProduct(SearchRequest request) {
         try{
             lock.acquireRead();
@@ -215,25 +230,25 @@ public class Store {
 
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
-                if(product.price() < request.minPrice() || product.price() > request.maxPrice()){
+                if(product.getPrice() < request.minPrice() || product.getPrice() > request.maxPrice()){
                     continue;
                 }
-                if(product.rating().ordinal() < request.productRating().ordinal()){
+                if(product.getRating().ordinal() < request.productRating().ordinal()){
                     continue;
                 }
-                if(!request.productName().isBlank() && product.productName().toLowerCase().contains(request.productName())){
+                if(!request.productName().isBlank() && product.getProductName().toLowerCase().contains(request.productName())){
                     toReturn.add(product);
                     continue;
                 }
-                if(!request.productCategory().isBlank() && product.category().toLowerCase().contains(request.productCategory())){
+                if(!request.productCategory().isBlank() && product.getCategory().toLowerCase().contains(request.productCategory())){
                     toReturn.add(product);
                     continue;
                 }
-                if(!request.productName().isBlank() && product.description().toLowerCase().contains(request.productName())){
+                if(!request.productName().isBlank() && product.getDescription().toLowerCase().contains(request.productName())){
                     toReturn.add(product);
                     continue;
                 }
-                Set<String> keywords = product.keyWords();
+                Set<String> keywords = product.getKeyWords();
                 if(request.keyWords().stream().anyMatch(keywords::contains)){
                     toReturn.add(product);
                 }

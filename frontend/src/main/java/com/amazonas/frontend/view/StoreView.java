@@ -98,13 +98,13 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
             Product product = products.get(i);
 
             Div nameDiv = new Div();
-            nameDiv.add(new Span(product.productName()));
+            nameDiv.add(new Span(product.getProductName()));
 
             Div priceDiv = new Div();
-            priceDiv.add(new Span("$" + String.format("%.2f", product.price())));
+            priceDiv.add(new Span("$" + String.format("%.2f", product.getPrice())));
 
             HorizontalLayout productRatingLayout = new HorizontalLayout();
-            int productRating = product.rating().ordinal();
+            int productRating = product.getRating().ordinal();
             for (int j = 0; j < productRating; j++) {
                 Icon star = new Icon(VaadinIcon.STAR);
                 star.setSize("12px");
@@ -117,8 +117,8 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
                 productRatingLayout.add(star);
             }
 
-            Button productButton = new Button(product.productName(), event -> {
-                String url = getPath("product-details", Pair.of("productId", product.productId()));
+            Button productButton = new Button(product.getProductName(), event -> {
+                String url = getPath("product-details", Pair.of("productId", product.getProductId()));
 //                String url = String.format("product-details?productId=%s&productName=%s&productPrice=%s&productCategory=%s&productDescription=%s&productRating=%s&storeId=%s",
 //                        product.productId(), product.productName(), product.price(), product.category(), product.description(), product.rating().name(), product.storeId());
                 getUI().ifPresent(ui -> ui.navigate(url));
