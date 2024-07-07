@@ -1,9 +1,11 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.*;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.DiscountDTOs.MultipleDiscountDTO;
+import com.amazonas.common.DiscountDTOs.MultipleDiscountType;
 
 import java.util.ArrayList;
 import java.util.List;

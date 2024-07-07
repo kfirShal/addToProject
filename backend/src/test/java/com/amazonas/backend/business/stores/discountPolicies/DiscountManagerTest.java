@@ -1,7 +1,6 @@
 package com.amazonas.backend.business.stores.discountPolicies;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.Condition;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.*;
+import com.amazonas.common.DiscountDTOs.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;

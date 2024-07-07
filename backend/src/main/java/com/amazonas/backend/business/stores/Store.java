@@ -2,7 +2,7 @@ package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.inventory.ProductInventory;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
