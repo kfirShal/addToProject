@@ -65,8 +65,7 @@ public class AppController {
         return post(endpoint.location(), endpoint.returnType(), payload);
     }
 
-    private <T> List<T> get(String location, Type
-                            clazz) throws ApplicationException {
+    private <T> List<T> get(String location, Type clazz) throws ApplicationException {
         ApplicationException fetchFailed = new ApplicationException("Failed to fetch data");
 
         Response response;
@@ -139,7 +138,7 @@ public class AppController {
         }
 
         String token, userId, body;
-        UserPermissionsProfile profile;;
+        UserPermissionsProfile profile;
         try {
             userId = (String) getByEndpoint(Endpoints.ENTER_AS_GUEST).getFirst();
             AuthenticationRequest request = new AuthenticationRequest(userId, null);
