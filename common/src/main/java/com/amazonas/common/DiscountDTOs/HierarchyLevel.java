@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs;
+package com.amazonas.common.DiscountDTOs;
 
 public enum HierarchyLevel {
     StoreLevel,

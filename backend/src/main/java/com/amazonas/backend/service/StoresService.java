@@ -1,7 +1,7 @@
 package com.amazonas.backend.service;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.actions.StoreActions;
@@ -19,8 +19,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map;
-import java.util.Set;
 
 @Component("storesService")
 public class StoresService {
@@ -278,22 +276,46 @@ public class StoresService {
         }
     }
 
-    public String addDiscountRule(String json) {
+    public String addDiscountRuleByCFG(String json) {
         Request request = Request.from(json);
         try {
-            DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
-            String result = proxy.addDiscountRule(discountRequest.StoreID(), discountRequest.cfg(), request.userId(), request.token());
+            DiscountCFGRequest discountCFGRequest = JsonUtils.deserialize(request.payload(), DiscountCFGRequest.class);
+            String result = proxy.addDiscountRuleByCFG(discountCFGRequest.StoreID(), discountCFGRequest.cfg(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | DiscountPolicyException | StoreException | NoPermissionException e) {
             return Response.getError(e);
         }
     }
 
-    public String getDiscountRule(String json) {
+    public String getDiscountRuleCFG(String json) {
         Request request = Request.from(json);
         try {
-            DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
-            String result = proxy.getDiscountRule(discountRequest.StoreID(), request.userId(), request.token());
+            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            String result = proxy.getDiscountRuleCFG(storeId, request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | StoreException e) {
+            return Response.getError(e);
+        } catch (NoPermissionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String addDiscountRuleByDTO(String json) {
+        Request request = Request.from(json);
+        try {
+            DiscountDTORequest discountDTORequest = JsonUtils.deserialize(request.payload(), DiscountDTORequest.class);
+            String result = proxy.addDiscountRuleByDTO(discountDTORequest.StoreID(), discountDTORequest.discountComponentDTO(), request.userId(), request.token());
+            return Response.getOk(result);
+        } catch (AuthenticationFailedException | DiscountPolicyException | StoreException | NoPermissionException e) {
+            return Response.getError(e);
+        }
+    }
+
+    public String getDiscountRuleDTO(String json) {
+        Request request = Request.from(json);
+        try {
+            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            DiscountComponentDTO result = proxy.getDiscountRuleDTO(storeId, request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
@@ -305,8 +327,8 @@ public class StoresService {
     public String deleteAllDiscounts(String json) {
         Request request = Request.from(json);
         try {
-            DiscountRequest discountRequest = JsonUtils.deserialize(request.payload(), String.class);
-            boolean result = proxy.deleteAllDiscounts(discountRequest.StoreID(), request.userId(), request.token());
+            DiscountCFGRequest discountCFGRequest = JsonUtils.deserialize(request.payload(), DiscountCFGRequest.class);
+            boolean result = proxy.deleteAllDiscounts(discountCFGRequest.StoreID(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
             return Response.getError(e);
