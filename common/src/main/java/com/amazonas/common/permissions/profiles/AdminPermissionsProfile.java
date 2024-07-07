@@ -4,6 +4,8 @@ import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 
+import java.util.List;
+
 public class AdminPermissionsProfile implements PermissionsProfile {
 
     private static final String USER_ID = "admin";
@@ -51,6 +53,11 @@ public class AdminPermissionsProfile implements PermissionsProfile {
     @Override
     public boolean hasPermission(String storeId, StoreActions action) {
         return true;
+    }
+
+    @Override
+    public List<String> getStoreIds() {
+        return List.of();
     }
 
     @Override

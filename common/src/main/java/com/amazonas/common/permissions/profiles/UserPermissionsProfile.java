@@ -5,10 +5,7 @@ import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.utils.ReadWriteLock;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class UserPermissionsProfile implements PermissionsProfile {
 
@@ -129,6 +126,11 @@ public class UserPermissionsProfile implements PermissionsProfile {
         boolean result = allowedActions != null && allowedActions.contains(action);
         lock.releaseRead();
         return result;
+    }
+
+    @Override
+    public List<String> getStoreIds() {
+        return new ArrayList<>(storeIdToAllowedStoreActions.keySet());
     }
 
     @Override

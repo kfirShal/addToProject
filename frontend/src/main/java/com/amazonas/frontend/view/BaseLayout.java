@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.Key;
@@ -56,6 +57,8 @@ public abstract class BaseLayout extends AppLayout {
         Location activeViewLocation = current.getActiveViewLocation();
         params = activeViewLocation.getQueryParameters();
 
+        PermissionsProfile permissionsProfile = AppController.getPermissionsProfile();
+
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
         }
@@ -73,7 +76,7 @@ public abstract class BaseLayout extends AppLayout {
         nav2.addItem(new SideNavItem("Settings", Settings.class, VaadinIcon.COG.create()));
 
         VerticalLayout sideNav = new VerticalLayout();
-        sideNav.add(nav1);
+        sideNav.add(nav1,nav2);
 
         DrawerToggle toggle = new DrawerToggle();
 
