@@ -1,10 +1,11 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
@@ -12,18 +13,14 @@ import java.util.List;
 
 @Route("example5")
 public class PurchaseHistory extends BaseLayout {
-    private final Grid<Transaction> grid;
     private final AppController appController;
+    private final Grid<Transaction> grid;
     private final List<Transaction> transactions;
+    private String storeId;
 
     public PurchaseHistory(AppController appController) {
         super(appController);
         this.appController = appController;
-
-        // Sample transaction data
-        transactions = new ArrayList<>();
-        transactions.add(new Transaction("1", "User1", "2024-06-29", new ArrayList<>())); // Replace with actual data
-        // Add more sample transactions as needed
 
         // Set the window title
         String newTitle = "Purchase History";
@@ -33,69 +30,41 @@ public class PurchaseHistory extends BaseLayout {
 
         // Create and configure the grid
         grid = new Grid<>(Transaction.class);
-        grid.setItems(transactions);
 
         // Clear default columns
         grid.removeAllColumns();
 
         // Configure the columns manually
-        grid.addColumn(Transaction::getId).setHeader("ID");
-        grid.addColumn(Transaction::getUserId).setHeader("User ID");
-        grid.addColumn(Transaction::getDate).setHeader("Date");
-        grid.addColumn(Transaction::getProductsList).setHeader("Products");
+        grid.addColumn(Transaction::transactionId).setHeader("ID");
+        grid.addColumn(Transaction::userId).setHeader("User ID");
+        grid.addColumn(Transaction::dateOfTransaction).setHeader("Date");
+        grid.addColumn(transaction -> transaction.productToQuantity().keySet().toString()).setHeader("Products"); // Assuming getProductToQuantity() returns a Map<String, Integer>
 
         content.add(grid); // Add grid to the content from BaseLayout
+
+        // Initialize transactions list
+        transactions = new ArrayList<>();
+
+        // Fetch and populate transactions from backend
+        fetchAndPopulateTransactions();
+
+        // Set items in the grid
+        grid.setItems(transactions);
     }
 
-    //TODO:
-    // make components such as add manager visible to only certain people based on their permissions
-    // connect to:
-    // GET_STORE_TRANSACTION_HISTORY
+    private void fetchAndPopulateTransactions() {
+        try {
+            // Call the endpoint to fetch transactions
+            List<Transaction> fetchedTransactions = appController.postByEndpoint(Endpoints.GET_STORE_TRANSACTION_HISTORY, storeId);
 
+            // Update the local transactions list
+            transactions.clear();
+            transactions.addAll(fetchedTransactions);
 
-    public static class Transaction {
-        private String id;
-        private String userId;
-        private String date;
-        private List<String> productsList;
-
-        public Transaction(String id, String userId, String date, List<String> productsList) {
-            this.id = id;
-            this.userId = userId;
-            this.date = date;
-            this.productsList = productsList;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-
-        public List<String> getProductsList() {
-            return productsList;
-        }
-
-        public void setProductsList(List<String> productsList) {
-            this.productsList = productsList;
+            // Refresh grid with updated data
+            grid.setItems(transactions);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
         }
     }
 }

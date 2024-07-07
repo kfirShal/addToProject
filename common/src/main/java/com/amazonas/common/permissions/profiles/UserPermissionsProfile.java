@@ -137,4 +137,5 @@ public class UserPermissionsProfile implements PermissionsProfile {
     public String getUserId() {
         return userId;
     }
+
 }

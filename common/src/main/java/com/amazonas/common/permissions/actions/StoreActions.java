@@ -30,6 +30,5 @@ public enum StoreActions {
     VIEW_ROLES_INFORMATION,
 
     // discounts
-
     EDIT_DISCOUNT,
 }

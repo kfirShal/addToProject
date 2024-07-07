@@ -268,7 +268,7 @@ public class StoresService {
     public String getStoreTransactionHistory(String json){
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            String storeId = request.payload();
             List<Transaction> result = proxy.getStoreTransactionHistory(storeId, request.userId(), request.token());
             return Response.getOk(result);
         } catch (NoPermissionException | AuthenticationFailedException e) {

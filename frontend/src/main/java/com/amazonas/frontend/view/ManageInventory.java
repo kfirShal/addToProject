@@ -21,7 +21,7 @@ import com.vaadin.flow.router.Route;
 import java.util.*;
 import java.util.function.Function;
 
-@Route("manageinventory")
+@Route("example2")
 public class ManageInventory extends BaseLayout {
     private final Grid<Product> grid;
     private final POJOBinder<Product> binder;
@@ -74,6 +74,7 @@ public class ManageInventory extends BaseLayout {
         grid.addColumn(Product::category).setHeader("Category");
         grid.addColumn(Product::description).setHeader("Description");
         grid.addColumn(Product::rating).setHeader("Rating");
+        //grid.addColumn(product -> String.join(", ", product.keyWords())).setHeader("Keywords");
         grid.addColumn(p -> idToQuantity.get(p.productId())).setHeader("Quantity");
 
         // Add action buttons
@@ -175,6 +176,39 @@ public class ManageInventory extends BaseLayout {
         });
         formLayout.add(ratingField);
 
+//        TextField keywordsField = new TextField("Keywords");
+//        binder.bind(keywordsField, "keyWords").withConverter(new Converter<String, Set<String>>() {
+//            @Override
+//            public Class<String> fromType() {
+//                return String.class;
+//            }
+//
+//            @Override
+//            public Class<Set<String>> toType() {
+//                return (Class<Set<String>>) (Class<?>) Set.class;
+//            }
+//
+//            @Override
+//            public Function<String, Set<String>> to() {
+//                return value -> {
+//                    if (value == null || value.isEmpty()) {
+//                        return Collections.emptySet();
+//                    }
+//                    return new HashSet<>(Arrays.asList(value.split("\\s*,\\s*")));
+//                };
+//            }
+//
+//            @Override
+//            public Function<Set<String>, String> from() {
+//                return value -> {
+//                    if (value == null || value.isEmpty()) {
+//                        return "";
+//                    }
+//                    return String.join(", ", value);
+//                };
+//            }
+//        });
+
         Button saveButton = new Button("Save Changes", e -> saveAction.run());
         Button discardButton = new Button("Discard", e -> dialog.close());
         HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
@@ -184,8 +218,13 @@ public class ManageInventory extends BaseLayout {
 
     private void openEditDialog(Product product) {
         currentProduct = product;
-        binder.readObject(product);
-        editDialog.open();
+        try {
+            binder.readObject(product);
+            editDialog.open();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            // Handle the exception appropriately
+        }
     }
 
     private void saveChanges() {
@@ -231,8 +270,16 @@ public class ManageInventory extends BaseLayout {
         products.computeIfAbsent(true, _ -> new LinkedList<>());
         products.computeIfAbsent(false, _ -> new LinkedList<>());
 
-        products.get(true).add(new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS));
-        products.get(false).add(new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS));
+        // Sample product 1 with keywords
+        Product product1 = new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS);
+        product1.addKeyWords("big");
+        products.get(true).add(product1);
+
+        // Sample product 2 with keywords
+        Product product2 = new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS);
+        product2.addKeyWords("small");
+        products.get(false).add(product2);
+
         return products;
     }
 
@@ -246,4 +293,5 @@ public class ManageInventory extends BaseLayout {
         allP.addAll(products.get(false));
         grid.setItems(allP);
     }
+
 }

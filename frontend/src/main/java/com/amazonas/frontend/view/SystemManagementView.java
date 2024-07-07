@@ -1,10 +1,13 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,8 +15,8 @@ import com.vaadin.flow.router.Route;
 
 @Route("SystemManagementView")
 public class SystemManagementView extends BaseLayout {
-
     private final AppController appController;
+    private String userId;
 
     public SystemManagementView(AppController appController) {
         super(appController);
@@ -26,12 +29,21 @@ public class SystemManagementView extends BaseLayout {
         content.add(title);
 
         Button shutdownButton = new Button("Shutdown System", click -> {
-            // Add logic to shutdown the system
+            try {
+                appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, userId);
+                Notification.show("System shutdown initiated.");
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
         });
 
-        // Create buttons for starting and shutting down the system
         Button startButton = new Button("Start System", click -> {
-            // Add logic to start the system
+            try {
+                appController.postByEndpoint(Endpoints.START_MARKET, userId);
+                Notification.show("System started successfully.");
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
         });
 
         // Styling for the buttons and their layout

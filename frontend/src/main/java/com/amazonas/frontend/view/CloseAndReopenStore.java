@@ -1,6 +1,8 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.BeforeEvent;
@@ -14,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 @Route("example6")
 public class CloseAndReopenStore extends BaseLayout {
     private final AppController appController;
+    private String storeId;
 
     public CloseAndReopenStore(AppController appController) {
         super(appController);
@@ -71,12 +74,20 @@ public class CloseAndReopenStore extends BaseLayout {
     }
 
     private void closeStore() {
-        // Logic to close the store
+        try {
+            appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
+        } catch (ApplicationException e) {
+            throw new RuntimeException(e);
+        }
         Notification.show("Store is closed.");
     }
 
     private void reopenStore() {
-        // Logic to reopen the store
+        try {
+            appController.postByEndpoint(Endpoints.OPEN_STORE, storeId);
+        } catch (ApplicationException e) {
+            throw new RuntimeException(e);
+        }
         Notification.show("Store is reopened.");
     }
 }

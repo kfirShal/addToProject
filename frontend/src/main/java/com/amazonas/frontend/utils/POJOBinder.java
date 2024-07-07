@@ -1,10 +1,12 @@
 package com.amazonas.frontend.utils;
 
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import io.jsonwebtoken.lang.Collections;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class POJOBinder<T> {
@@ -229,4 +231,38 @@ public class POJOBinder<T> {
             };
         }
     }
+
+//    public class StringToSetConverter implements Converter<String, Set<String>> {
+//
+//        @Override
+//        public Class<String> fromType() {
+//            return String.class;
+//        }
+//
+//        @Override
+//        public Class<Set<String>> toType() {
+//            return (Class<Set<String>>) (Class<?>) Set.class;
+//        }
+//
+//        @Override
+//        public Function<String, Set<String>> to() {
+//            return value -> {
+//                if (value == null || value.isEmpty()) {
+//                    return Collections.emptySet();
+//                }
+//                return new HashSet<>(Arrays.asList(value.split("\\s*,\\s*")));
+//            };
+//        }
+//
+//        @Override
+//        public Function<Set<String>, String> from() {
+//            return value -> {
+//                if (value == null || value.isEmpty()) {
+//                    return "";
+//                }
+//                return String.join(", ", value);
+//            };
+//        }
+//    }
+
 }

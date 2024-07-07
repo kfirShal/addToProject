@@ -120,6 +120,11 @@ public class Product implements Cloneable {
         return keyWords;
     }
 
+    public void setKeyWords(Set<String> keywords) {
+        this.keyWords.clear();
+        this.keyWords.addAll(keywords);
+    }
+
     public void addKeyWords(String key){
         keyWords.add(key.toLowerCase());
     }

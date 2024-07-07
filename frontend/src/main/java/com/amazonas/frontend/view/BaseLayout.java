@@ -25,8 +25,6 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
@@ -65,7 +63,7 @@ public abstract class BaseLayout extends AppLayout {
 
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.NEWSPAPER.create()));
+        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.PENCIL.create()));
         nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
         nav1.addItem(new SideNavItem("Products", ProductsView.class, VaadinIcon.CART.create()));
         nav1.addItem(new SideNavItem("Categories", CategoriesView.class, VaadinIcon.TAGS.create()));
