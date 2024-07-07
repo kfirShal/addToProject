@@ -86,7 +86,7 @@ public class UsersController {
             String adminEmail = "admin@amazonas.com";
             String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
-            register(adminEmail, adminId, adminPassword, LocalDate.now().plusYears(22));
+            register(adminEmail, adminId, adminPassword, LocalDate.now().minusYears(22));
             permissionsController.registerAdmin(adminId);
         } catch (UserException e) {
             log.error("Failed to generate admin user");
