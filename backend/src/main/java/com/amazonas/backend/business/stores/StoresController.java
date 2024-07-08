@@ -9,7 +9,7 @@ import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.factories.StoreFactory;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Component("storesController")
 public class StoresController {

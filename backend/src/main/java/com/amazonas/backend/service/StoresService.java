@@ -6,7 +6,7 @@ import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;

@@ -2,18 +2,15 @@ package com.amazonas.frontend.control;
 
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
-import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.*;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import com.amazonas.common.dtos.Notification;
 import java.util.List;
 import com.amazonas.common.dtos.Notification;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.common.dtos.StoreDetails;
-import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 
@@ -37,6 +34,7 @@ public enum Endpoints {
     PAY_FOR_PURCHASE("userprofiles/payforpurchase", Void.class),
     CANCEL_PURCHASE("userprofiles/cancelpurchase", Void.class),
     GET_USER_TRANSACTION_HISTORY("userprofiles/getusertransactionhistory", Transaction.class),
+    GET_USER_INFORMATION("userprofiles/getuserinformation", UserInformation.class),
 
     // Authentication Endpoints
     AUTHENTICATE_USER("auth/user", String.class),

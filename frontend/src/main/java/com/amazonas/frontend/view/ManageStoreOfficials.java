@@ -1,6 +1,5 @@
 package com.amazonas.frontend.view;
 
-import com.amazonas.common.dtos.RegisteredUser;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
