@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Route("example3")
+@Route("managestoreofficials")
 public class ManageStoreOfficials extends BaseLayout {
     private final AppController appController;
     private String storeId;
