@@ -23,7 +23,7 @@ import com.vaadin.flow.router.Route;
 import java.util.*;
 import java.util.function.Function;
 
-@Route("example2")
+@Route("manageinventory")
 public class ManageInventory extends BaseLayout {
     private final Grid<Product> grid;
     private final POJOBinder<Product> binder;
