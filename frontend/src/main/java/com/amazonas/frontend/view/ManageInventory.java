@@ -25,14 +25,14 @@ import java.util.function.Function;
 
 @Route("manageinventory")
 public class ManageInventory extends BaseLayout {
-    private final Grid<Product> grid;
-    private final POJOBinder<Product> binder;
     private final AppController appController;
     private String storeId;
+    private final Grid<Product> grid;
+    private final POJOBinder<Product> binder;
+    private final Map<Boolean, List<Product>> products;
     private final Dialog editDialog;
     private final Dialog addDialog;
     private Product currentProduct;
-    private final Map<Boolean, List<Product>> products;
 
     public ManageInventory(AppController appController) {
         super(appController);
@@ -49,38 +49,39 @@ public class ManageInventory extends BaseLayout {
         content.add(title); // Use content from BaseLayout
 
         List<Product> allP = new LinkedList<>();
-        // Check if products list is null or empty
         if (allP.isEmpty()) {
             addSampleProducts();
         }
-
         allP.addAll(products.get(true));
         allP.addAll(products.get(false));
 
         Map<String, Integer> idToQuantity = new HashMap<>();
         allP.forEach(p -> {
-            ProductRequest payload = new ProductRequest(storeId, new Product(p.productId()));
+            ProductRequest request = new ProductRequest(storeId, new Product(p.productId()));
             try {
-                appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, payload);
-            } catch (ApplicationException e) {
+                List<Integer> quantity = appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, request);
+                if (quantity.get(0) != null) {
+                    idToQuantity.put(p.productId(), quantity.get(0));
+                }
+                } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }
         });
 
-        grid.setItems(allP);
-
-        // Configure the columns
         grid.addColumn(Product::productId).setHeader("ID");
         grid.addColumn(Product::productName).setHeader("Name");
         grid.addColumn(Product::price).setHeader("Price");
         grid.addColumn(Product::category).setHeader("Category");
         grid.addColumn(Product::description).setHeader("Description");
         grid.addColumn(Product::rating).setHeader("Rating");
+
         grid.addComponentColumn(product -> {
             MultiSelectComboBox<String> keywordsComboBox = new MultiSelectComboBox<>();
-            keywordsComboBox.setItems("big", "small", "medium", "new", "old"); // Set available keyword options
+            keywordsComboBox.setItems(product.keyWords());
+            keywordsComboBox.setValue(new HashSet<>(product.keyWords()));
             return keywordsComboBox;
         }).setHeader("Keywords");
+
         grid.addComponentColumn(product -> {
             VerticalLayout layout = new VerticalLayout();
             TextField quantityField = new TextField("");
@@ -93,9 +94,8 @@ public class ManageInventory extends BaseLayout {
                 try {
                     int newQuantity = Integer.parseInt(value);
                     idToQuantity.put(product.productId(), newQuantity);
-
-                    appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, storeId);
-
+                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, request);
                 } catch (NumberFormatException e) {
                     openErrorDialog("Invalid quantity format");
                 } catch (ApplicationException e) {
@@ -106,12 +106,12 @@ public class ManageInventory extends BaseLayout {
             return layout;
         }).setHeader("Quantity");
 
-        // Add action buttons
+        grid.setItems(allP);
+
         grid.addComponentColumn(product -> {
             Button editButton = new Button("Edit", click -> openEditDialog(product));
             return editButton;
         });
-
         editDialog = createProductDialog("Edit Product", this::saveChanges);
         content.add(editDialog);
 
@@ -132,7 +132,8 @@ public class ManageInventory extends BaseLayout {
         grid.addComponentColumn(product -> {
             Button removeButton = new Button("Remove", click -> {
                 try {
-                    appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, storeId);
+                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, request);
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
                 }
@@ -156,7 +157,6 @@ public class ManageInventory extends BaseLayout {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
-        // Add title to the dialog
         H2 title = new H2(dialogTitle);
         dialog.add(title);
 
@@ -210,20 +210,19 @@ public class ManageInventory extends BaseLayout {
     }
 
     private void openEditDialog(Product product) {
-        currentProduct = product;
         try {
             binder.readObject(product);
             editDialog.open();
         } catch (Exception ex) {
             ex.printStackTrace();
-            // Handle the exception appropriately
         }
     }
 
     private void saveChanges() {
         binder.writeObject(currentProduct);
         try {
-            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, currentProduct);
+            ProductRequest request = new ProductRequest(storeId, currentProduct.productId());
+            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, request);
             refreshGrid();
             editDialog.close();
         } catch (ApplicationException e) {
@@ -240,7 +239,8 @@ public class ManageInventory extends BaseLayout {
     private void addProduct() {
         binder.writeObject(currentProduct);
         try {
-            appController.postByEndpoint(Endpoints.ADD_PRODUCT, currentProduct);
+            ProductRequest request = new ProductRequest(storeId, currentProduct.productId());
+            appController.postByEndpoint(Endpoints.ADD_PRODUCT, request);
             refreshGrid();
             addDialog.close();
         } catch (ApplicationException e) {
@@ -265,7 +265,7 @@ public class ManageInventory extends BaseLayout {
 
         // Sample product 1 with keywords
         Product product1 = new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS);
-        product1.addKeyWords("big");
+        product1.addKeyWords("fatass");
         products.get(true).add(product1);
 
         // Sample product 2 with keywords
@@ -286,5 +286,7 @@ public class ManageInventory extends BaseLayout {
         allP.addAll(products.get(false));
         grid.setItems(allP);
     }
-
 }
+
+//TODO: how should i add/edit keywords? not included in UPDATE_PRODUCT endpoint, openEditDialog doesnt show old products in dialog's fields
+

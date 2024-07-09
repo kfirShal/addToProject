@@ -11,7 +11,7 @@ import com.vaadin.flow.router.Route;
 import java.util.ArrayList;
 import java.util.List;
 
-@Route("example5")
+@Route("purchasehistory")
 public class PurchaseHistory extends BaseLayout {
     private final AppController appController;
     private final Grid<Transaction> grid;
@@ -28,40 +28,31 @@ public class PurchaseHistory extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-        // Create and configure the grid
         grid = new Grid<>(Transaction.class);
 
-        // Clear default columns
         grid.removeAllColumns();
 
-        // Configure the columns manually
         grid.addColumn(Transaction::transactionId).setHeader("ID");
         grid.addColumn(Transaction::userId).setHeader("User ID");
         grid.addColumn(Transaction::dateOfTransaction).setHeader("Date");
         grid.addColumn(transaction -> transaction.productToQuantity().keySet().toString()).setHeader("Products"); // Assuming getProductToQuantity() returns a Map<String, Integer>
 
-        content.add(grid); // Add grid to the content from BaseLayout
+        content.add(grid);
 
-        // Initialize transactions list
         transactions = new ArrayList<>();
 
-        // Fetch and populate transactions from backend
         fetchAndPopulateTransactions();
 
-        // Set items in the grid
         grid.setItems(transactions);
     }
 
     private void fetchAndPopulateTransactions() {
         try {
-            // Call the endpoint to fetch transactions
             List<Transaction> fetchedTransactions = appController.postByEndpoint(Endpoints.GET_STORE_TRANSACTION_HISTORY, storeId);
 
-            // Update the local transactions list
             transactions.clear();
             transactions.addAll(fetchedTransactions);
 
-            // Refresh grid with updated data
             grid.setItems(transactions);
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());

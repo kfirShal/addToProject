@@ -5,15 +5,13 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Route("Example4View")
+@Route("purchaseanddiscout")
 public class PurchaseAndDiscount extends BaseLayout {
     private final AppController appController;
     private final List<String> purchasePolicies;

@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.requests.stores.StoreStaffRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
@@ -13,12 +14,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
-@Route("SystemManagementView")
-public class SystemManagementView extends BaseLayout {
+@Route("systemmanagement")
+public class SystemManagement extends BaseLayout {
     private final AppController appController;
     private String userId;
+    private String serviceId;
 
-    public SystemManagementView(AppController appController) {
+    public SystemManagement(AppController appController) {
         super(appController);
         this.appController = appController;
 
@@ -28,9 +30,15 @@ public class SystemManagementView extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title);
 
+
+
+
+
+
+
         Button shutdownButton = new Button("Shutdown System", click -> {
             try {
-                appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, userId);
+                appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, userId); //what is the request
                 Notification.show("System shutdown initiated.");
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
@@ -39,21 +47,30 @@ public class SystemManagementView extends BaseLayout {
 
         Button startButton = new Button("Start System", click -> {
             try {
-                appController.postByEndpoint(Endpoints.START_MARKET, userId);
+                appController.postByEndpoint(Endpoints.START_MARKET, userId); //what is the request
                 Notification.show("System started successfully.");
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }
         });
 
-        // Styling for the buttons and their layout
         shutdownButton.getStyle().set("background-color", "red");
-        shutdownButton.getStyle().set("color", "white"); // Set text color to white
+        shutdownButton.getStyle().set("color", "white");
         startButton.getStyle().set("background-color", "green");
-        startButton.getStyle().set("color", "white"); // Set text color to white
+        startButton.getStyle().set("color", "white");
         HorizontalLayout buttonsLayout = new HorizontalLayout(shutdownButton, startButton);
-        buttonsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Center align the buttons
+        buttonsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         content.add(buttonsLayout);
+
+
+
+
+
+
+
+
+
+
 
         // Shipping Companies Grid
         H3 shippingTitle = new H3("Shipping Companies");
@@ -61,21 +78,26 @@ public class SystemManagementView extends BaseLayout {
         Grid<String> shippingGrid = new Grid<>();
         shippingGrid.addColumn(name -> name).setHeader("Company Name");
 
-        // Remove button for shipping grid
         shippingGrid.addComponentColumn(name -> {
             Button removeButton = new Button("Remove", click -> {
-                // Add logic to remove the company (name) from the grid
             });
             return removeButton;
         });
 
         Button addShippingButton = new Button("Add", click -> {
-            // Add logic to add a new shipping company
-            shippingGrid.setItems("New Shipping Company"); // Example of adding a new item
         });
 
         VerticalLayout shippingLayout = new VerticalLayout(shippingTitle, shippingGrid, addShippingButton);
         content.add(shippingLayout);
+
+
+
+
+
+
+
+
+
 
         // Payment Companies Grid
         H3 paymentTitle = new H3("Payment Companies");
@@ -83,20 +105,26 @@ public class SystemManagementView extends BaseLayout {
         Grid<String> paymentGrid = new Grid<>();
         paymentGrid.addColumn(name -> name).setHeader("Company Name");
 
-        // Remove button for payment grid
         paymentGrid.addComponentColumn(name -> {
             Button removeButton = new Button("Remove", click -> {
-                // Add logic to remove the company (name) from the grid
+//                try {
+//                    PaymentServiceManagementRequest request = new PaymentServiceManagementRequest(serviceId, );
+//                    appController.postByEndpoint(Endpoints.REMOVE_PAYMENT_SERVICE, request);
+//                    refreshGrid();
+//                } catch (ApplicationException e) {
+//                    openErrorDialog(e.getMessage());
+//                }
             });
             return removeButton;
         });
 
         Button addPaymentButton = new Button("Add", click -> {
-            // Add logic to add a new payment company
-            paymentGrid.setItems("New Payment Company"); // Example of adding a new item
         });
 
         VerticalLayout paymentLayout = new VerticalLayout(paymentTitle, paymentGrid, addPaymentButton);
         content.add(paymentLayout);
+
     }
 }
+
+//TODO: what is the request, PaymentServiceManagementRequest IS NOT IN common

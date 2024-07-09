@@ -13,7 +13,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-@Route("example6")
+@Route("closeandreopen")
 public class CloseAndReopenStore extends BaseLayout {
     private final AppController appController;
     private String storeId;
@@ -39,6 +39,8 @@ public class CloseAndReopenStore extends BaseLayout {
                 "The products of an inactive store do not appear in the results of a product information requests\n" +
                 "in the market.\n "));
         content.add(closeStoreLayout);
+        closeStoreButton.getStyle().set("background-color", "red");
+        closeStoreButton.getStyle().set("color", "white");
 
         // Reopen store button
         Button reopenStoreButton = new Button("Reopen Store");
@@ -47,6 +49,8 @@ public class CloseAndReopenStore extends BaseLayout {
         reopenStoreLayout.add(reopenStoreButton, new Paragraph("Reopening a store that was previously closed will lead to sending a \n" +
                 "notification to the owners and managers of the store"));
         content.add(reopenStoreLayout);
+        reopenStoreButton.getStyle().set("background-color", "green");
+        reopenStoreButton.getStyle().set("color", "white");
     }
 
     private void showCloseStoreConfirmation() {
@@ -75,7 +79,7 @@ public class CloseAndReopenStore extends BaseLayout {
 
     private void closeStore() {
         try {
-            appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
+            appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId); //what is the request?
         } catch (ApplicationException e) {
             throw new RuntimeException(e);
         }
@@ -90,4 +94,6 @@ public class CloseAndReopenStore extends BaseLayout {
         }
         Notification.show("Store is reopened.");
     }
+
+    //TODO: what is the request of CLOSE_STORE and OPEN_STORE
 }

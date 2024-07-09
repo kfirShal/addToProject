@@ -1,10 +1,14 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.requests.stores.StorePermissionRequest;
+import com.amazonas.common.requests.stores.StoreStaffRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
-import com.amazonas.frontend.utils.POJOBinder;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -25,36 +29,43 @@ import java.util.stream.Collectors;
 public class ManageStoreOfficials extends BaseLayout {
     private final AppController appController;
     private String storeId;
+    private String userId;
     private final Dialog addOwnerDialog;
     private final Dialog addManagerDialog;
-    private final POJOBinder<RegisteredUser> binder;
-    private RegisteredUser currentRegisteredUser;
-    private final Grid<RegisteredUser> ownersGrid = new Grid<>(RegisteredUser.class, false);
-    private final Grid<RegisteredUser> managersGrid = new Grid<>(RegisteredUser.class, false);
+    private final Grid<UserInformation> ownersGrid = new Grid<>();
+    private final Grid<UserInformation> managersGrid = new Grid<>();
 
     public ManageStoreOfficials(AppController appController) {
         super(appController);
         this.appController = appController;
-        binder = new POJOBinder<>(RegisteredUser.class);
 
         // Set the window's title
         String newTitle = "Manage Store Officials";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
-        content.add(title); // Use content from BaseLayout
+        content.add(title);
+
+
+
+
+
+
+
+
 
         // Store Owners section
         H3 ownersTitle = new H3("Store Owners");
         ownersTitle.getStyle().set("margin-top", "30px");
-        List<RegisteredUser> owners = new ArrayList<>();
-        ownersGrid.setItems(owners);
-        ownersGrid.addColumn(RegisteredUser::getEmail).setHeader("Email");
+        ownersGrid.addColumn(UserInformation::getUserId).setHeader("ID");
+        ownersGrid.addColumn(UserInformation::getEmail).setHeader("Email");
         content.add(ownersTitle, ownersGrid);
 
-        ownersGrid.addComponentColumn(registeredUser -> {
+        ownersGrid.addComponentColumn(user -> {
             Button removeButton = new Button("Remove Owner", click -> {
                 try {
-                    appController.postByEndpoint(Endpoints.REMOVE_OWNER, storeId);
+                    StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                    appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
+                    //refreshGrid();
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
                 }
@@ -62,22 +73,33 @@ public class ManageStoreOfficials extends BaseLayout {
             return removeButton;
         });
 
-        // Create and configure the add dialog
-        addOwnerDialog = createUserDialog("Add Owner", this::addOwner, "New Owner's Email");
+        addOwnerDialog = createUserDialog("Add Owner", this::addOwner);
         content.add(addOwnerDialog);
-
-        Button addOwnerButton = new Button("Add", click -> openAddDialog(addOwnerDialog));
+        Button addOwnerButton = new Button("Add", click -> addOwnerDialog.open());
         HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton);
         content.add(ownersButtonsLayout);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Store Managers section
         H3 managersTitle = new H3("Store Managers");
         managersTitle.getStyle().set("margin-top", "30px");
-        List<RegisteredUser> managers = new ArrayList<>();
-        managersGrid.setItems(managers);
-        managersGrid.addColumn(RegisteredUser::getEmail).setHeader("Email");
+        managersGrid.addColumn(UserInformation::getUserId).setHeader("ID");
+        managersGrid.addColumn(UserInformation::getEmail).setHeader("Email");
 
-        managersGrid.addComponentColumn(registeredUser -> {
+        managersGrid.addComponentColumn(user -> {
             MultiSelectComboBox<String> permissionsComboBox = new MultiSelectComboBox<>();
             permissionsComboBox.setItems(fetchAvailablePermissions().stream().map(Enum::name).collect(Collectors.toList()));
 
@@ -86,19 +108,21 @@ public class ManageStoreOfficials extends BaseLayout {
                 Set<String> removedPermissions = event.getOldValue();
                 removedPermissions.removeAll(addedPermissions);
 
-                // Add new permissions
                 addedPermissions.forEach(permission -> {
                     try {
-                        appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, storeId);
+                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "ADD_PERMISSION_TO_MANAGER");
+                        appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
+                        //refreshGrid();
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
                     }
                 });
 
-                // Remove old permissions
                 removedPermissions.forEach(permission -> {
                     try {
-                        appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, storeId);
+                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "REMOVE_PERMISSION_FROM_MANAGER");
+                        appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, permissionRequest);
+                        //refreshGrid();
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
                     }
@@ -110,10 +134,12 @@ public class ManageStoreOfficials extends BaseLayout {
 
         content.add(managersTitle, managersGrid);
 
-        managersGrid.addComponentColumn(registeredUser -> {
+        managersGrid.addComponentColumn(user  -> {
             Button removeButton = new Button("Remove Manager", click -> {
                 try {
-                    appController.postByEndpoint(Endpoints.REMOVE_MANAGER, storeId);
+                    StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                    appController.postByEndpoint(Endpoints.REMOVE_MANAGER, request);
+                    //refreshGrid();
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
                 }
@@ -121,82 +147,105 @@ public class ManageStoreOfficials extends BaseLayout {
             return removeButton;
         });
 
-        // Create and configure the add dialog
-        addManagerDialog = createUserDialog("Add Manager", this::addManager, "New Manager's Email");
+        addManagerDialog = createUserDialog("Add Manager", this::addManager);
         content.add(addManagerDialog);
-
-        Button addManagerButton = new Button("Add", click -> openAddDialog(addManagerDialog));
+        Button addManagerButton = new Button("Add", click -> addManagerDialog.open());
         HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton);
         content.add(managersButtonsLayout);
 
-        // Initial grid refresh with sample users
-        refreshGrid();
     }
 
-    private Dialog createUserDialog(String dialogTitle, Runnable saveAction, String data) {
+
+
+
+
+
+
+
+
+
+
+    private Dialog createUserDialog(String dialogTitle, Runnable saveAction) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
-        // Add title to the dialog
         H2 title = new H2(dialogTitle);
         dialog.add(title);
 
         FormLayout formLayout = new FormLayout();
-        TextField userEmailField = new TextField(data);
-        binder.bind(userEmailField, "email");
-        formLayout.add(userEmailField);
+        TextField userIdField = new TextField("User ID");
+        formLayout.add(userIdField);
 
-        Button saveButton = new Button("Save Changes", e -> saveAction.run());
+        Button saveButton = new Button("Save Changes", e -> {
+            saveAction.run();
+            dialog.close();
+        });
         Button discardButton = new Button("Discard", e -> dialog.close());
         HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
         dialog.add(formLayout, buttonsLayout);
         return dialog;
     }
 
-    private void openAddDialog(Dialog dialogType) {
-        currentRegisteredUser = new RegisteredUser("-1", "");
-        binder.readObject(currentRegisteredUser);
-        dialogType.open();
-    }
-
-
     private void addOwner() {
-        binder.writeObject(currentRegisteredUser);
+        TextField userIdField = (TextField) addOwnerDialog.getChildren().filter(component -> component instanceof TextField).findFirst().get();
+        String addedUserId = userIdField.getValue();
+        StoreStaffRequest request = new StoreStaffRequest(storeId, userId, addedUserId);
         try {
-            appController.postByEndpoint(Endpoints.ADD_OWNER, currentRegisteredUser);
-            refreshGrid();
-            addOwnerDialog.close();
+            appController.postByEndpoint(Endpoints.ADD_OWNER, request);
+            //refreshGrid();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
     }
 
     private void addManager() {
-        binder.writeObject(currentRegisteredUser);
+        TextField userIdField = (TextField) addOwnerDialog.getChildren().filter(component -> component instanceof TextField).findFirst().get();
+        String addedUserId = userIdField.getValue();
+        StoreStaffRequest request = new StoreStaffRequest(storeId, userId, addedUserId);
         try {
-            appController.postByEndpoint(Endpoints.ADD_MANAGER, currentRegisteredUser);
-            refreshGrid();
-            addManagerDialog.close();
+            appController.postByEndpoint(Endpoints.ADD_MANAGER, request);
+            //refreshGrid();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private void refreshGrid() {
-        List<RegisteredUser> registeredUsers = getUsers();
-        if (registeredUsers == null || registeredUsers.isEmpty()) {
-            registeredUsers = addSampleUsers();
+        List<UserInformation> owners = new ArrayList<>();
+        List<UserInformation> managers = new ArrayList<>();
+
+        List<StorePosition> roles = null;
+        try {
+            roles = appController.postByEndpoint(Endpoints.GET_STORE_ROLES_INFORMATION, storeId);
+        } catch (ApplicationException e) {
+            throw new RuntimeException(e);
         }
 
-        // Separate the users into owners and managers
-        List<RegisteredUser> owners = new ArrayList<>();
-        List<RegisteredUser> managers = new ArrayList<>();
+        for (StorePosition idToRole : roles) {
+            try {
+                List<UserInformation> userInfomation = appController.postByEndpoint(Endpoints.GET_USER_INFORMATION, idToRole.userId());
+                if (idToRole.role() == StoreRole.STORE_OWNER) {
+                    owners.add(userInfomation.get(0));
 
-        for (int i = 0; i < registeredUsers.size(); i++) {
-            if (i < 2) {
-                owners.add(registeredUsers.get(i));
-            } else {
-                managers.add(registeredUsers.get(i));
+                } else if (idToRole.role() == StoreRole.STORE_MANAGER) {
+                    managers.add(userInfomation.get(0));
+                }
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
             }
         }
 
@@ -204,27 +253,9 @@ public class ManageStoreOfficials extends BaseLayout {
         managersGrid.setItems(managers);
     }
 
-    private List<RegisteredUser> getUsers() {
-        List<RegisteredUser> users = null;
-        try {
-            users = appController.postByEndpoint(Endpoints.GET_STORE_ROLES_INFORMATION, storeId); //what should be the payload
-        } catch (ApplicationException e) {
-            openErrorDialog(e.getMessage());
-        }
-        return users;
-    }
-
     private Set<StoreActions> fetchAvailablePermissions() {
         return Set.of(StoreActions.values());
     }
-
-    private List<RegisteredUser> addSampleUsers() {
-        List<RegisteredUser> sampleUsers = new ArrayList<>();
-        sampleUsers.add(new RegisteredUser("1", "owner1@example.com"));
-        sampleUsers.add(new RegisteredUser("2", "owner2@example.com"));
-        sampleUsers.add(new RegisteredUser("3", "manager1@example.com"));
-        sampleUsers.add(new RegisteredUser("4", "manager2@example.com"));
-        return sampleUsers;
-    }
-
 }
+
+//TODO: refreshGrid crashes localhost

@@ -77,7 +77,7 @@ public enum Endpoints {
     REMOVE_MANAGER("stores/removemanager", Void.class),
     ADD_PERMISSION_TO_MANAGER("stores/addpermissiontomanager", Void.class),
     REMOVE_PERMISSION_FROM_MANAGER("stores/removepermissionfrommanager", Void.class),
-    GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", Void.class),
+    GET_STORE_ROLES_INFORMATION("stores/getstorerolesinformation", StorePosition.class),
     GET_STORE_TRANSACTION_HISTORY("stores/getstoretransactionhistory", Transaction.class),
     SET_PRODUCT_QUANTITY("stores/setproductquantity", Void.class),
     GET_STORE_PRODUCTS("stores/getstoreproducts", Types.GET_STORE_PRODUCTS_TYPE),
