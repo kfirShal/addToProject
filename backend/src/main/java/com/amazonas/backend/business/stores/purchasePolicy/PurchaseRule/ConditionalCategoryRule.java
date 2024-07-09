@@ -42,7 +42,7 @@ public class ConditionalCategoryRule implements PurchaseRule {
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
         int categoryCount = 0;
         for (ProductWithQuantitiy product : products) {
-            if (product.product().category().equals(categoryName)) {
+            if (product.product().getCategory().equals(categoryName)) {
                 categoryCount += product.quantity();
             }
         }
