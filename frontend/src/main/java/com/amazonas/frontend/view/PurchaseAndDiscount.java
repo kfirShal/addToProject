@@ -1,6 +1,7 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
