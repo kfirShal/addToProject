@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs;
+package com.amazonas.common.DiscountDTOs;
 
 public enum UnaryConditionType {
     AT_LEAST_NUMBER_OF_ITEMS_FROM_CATEGORY,

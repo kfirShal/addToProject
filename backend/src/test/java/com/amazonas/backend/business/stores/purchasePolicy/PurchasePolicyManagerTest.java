@@ -1,20 +1,12 @@
 package com.amazonas.backend.business.stores.purchasePolicy;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.UnaryConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountManager;
-import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
-import com.amazonas.backend.business.stores.purchasePolicy.PurchaseRule.AgeRestrictionRule;
-import com.amazonas.backend.business.stores.purchasePolicy.PurchaseRule.PurchaseRule;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.common.PurchaseRuleDTO.*;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.utils.Rating;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
