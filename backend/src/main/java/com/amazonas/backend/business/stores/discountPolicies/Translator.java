@@ -1,6 +1,6 @@
 package com.amazonas.backend.business.stores.discountPolicies;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.*;
+import com.amazonas.common.DiscountDTOs.*;
 
 import java.util.ArrayList;
 import java.util.List;

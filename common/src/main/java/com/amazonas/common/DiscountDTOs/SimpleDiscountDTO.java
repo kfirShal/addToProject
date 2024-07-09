@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs;
+package com.amazonas.common.DiscountDTOs;
 
 /***
  * Representing a simple discount - The level of generality of the discount, and the percentage of the discount

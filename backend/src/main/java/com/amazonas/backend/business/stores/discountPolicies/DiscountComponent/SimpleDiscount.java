@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.HierarchyLevel;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.SimpleDiscountDTO;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.DiscountDTOs.HierarchyLevel;
+import com.amazonas.common.DiscountDTOs.SimpleDiscountDTO;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.CategoryLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.DiscountHierarchyLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;

@@ -2,11 +2,11 @@ package com.amazonas.backend.business.stores.discountPolicies;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountComponent.*;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.*;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.*;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.CategoryLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.DiscountDTOs.*;
 
 import java.util.LinkedList;
 import java.util.List;
