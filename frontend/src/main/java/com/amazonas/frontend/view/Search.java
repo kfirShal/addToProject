@@ -18,11 +18,9 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Route("search")
@@ -30,9 +28,8 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
     private final AppController appController;
     private final Grid<Product> productGrid;
     private final Grid<StoreDetails> storeGrid;
-    private final Div resultsLayout;
     private final TextField searchField;
-    private Div noResults;
+    private final Div noResults;
 
     public Search(AppController appController) {
         super(appController);
@@ -44,7 +41,7 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         mainLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
         noResults = new Div();
-        resultsLayout = new Div();
+        Div resultsLayout = new Div();
         resultsLayout.setWidth("100%");
 
         // Results grids
@@ -63,10 +60,17 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
         searchField = new TextField();
         searchField.setPlaceholder("Search");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
-        searchField.addKeyPressListener(Key.ENTER, _ -> performSearch(searchField.getValue()));
+        searchField.addKeyPressListener(Key.ENTER, _ -> {
+            String input = searchField.getValue();
+            String keywords = String.join("+", input.split("\\s+")); // Join keywords with '+' for URL
+            UI.getCurrent().navigate("search?search=" + keywords);
+        });
 
-        // add also button to click instead of pressing enter
-        Button searchButton = new Button("Search", _ -> performSearch(searchField.getValue()));
+        Button searchButton = new Button("Search", _ -> {
+            String input = searchField.getValue();
+            String keywords = String.join("+", input.split("\\s+")); // Join keywords with '+' for URL
+            UI.getCurrent().navigate("search?search=" + keywords);
+        });
 
         HorizontalLayout buttonLayout = new HorizontalLayout(searchField, searchButton);
         buttonLayout.setWidth("100%");
@@ -81,21 +85,26 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         QueryParameters queryParameters = event.getLocation().getQueryParameters();
-        String searchKey = queryParameters.getParameters().getOrDefault("search", List.of()).stream().findFirst().orElse(null);
-
-        if (searchKey != null) {
-            performSearch(searchKey);
-            searchField.setValue(searchKey);
-        } else {
-            System.out.println("No search parameter");
-        }
+        List<String> searchKey = queryParameters.getParameters().getOrDefault("search", List.of());
+        // Join the search keywords with spaces to set in the search field
+        String searchKeywords = String.join(" ", searchKey);
+        searchField.setValue(searchKeywords);
+        performSearch(searchKey);
     }
 
-    private void performSearch(String keywords) {
-        List<Product> products = appController.searchProducts(keywords);
-        List<StoreDetails> stores = appController.searchStores(keywords);
+    private void performSearch(List<String> keywords) {
+        // print the search keywords
+        if (keywords.isEmpty()) {
+            return; // Optionally handle empty search
+        }
+        // split by spaces or + to get individual keywords
+        List<String> searchKeywords = new ArrayList<>();
+        for (String keyword : keywords) {
+            searchKeywords.addAll(Arrays.asList(keyword.split("\\s+|\\+")));
+        }
+        List<Product> products = appController.searchProducts(searchKeywords);
+        List<StoreDetails> stores = appController.searchStores(searchKeywords);
         // navigate to the search page with the search parameter
-        UI.getCurrent().navigate("search?search=" + keywords);
         // if no results, display a message
         if (products == null || products.isEmpty()) {
             productGrid.setVisible(false);

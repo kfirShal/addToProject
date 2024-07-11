@@ -21,7 +21,7 @@ import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.StoreActions;
-import com.amazonas.common.requests.stores.SearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
@@ -209,24 +209,7 @@ public class Store {
         }
     }
 
-    public List<Product> searchProduct(String keyword) {
-        try{
-            lock.acquireRead();
-            if(!isOpen){
-                return List.of();
-            }
-            List<Product> ret = new LinkedList<>();
-            for (Product product : inventory.getAllAvailableProducts())
-                if(product.getKeyWords().stream().anyMatch(s -> s.contains(keyword))){
-                    ret.add(product);
-                }
-            return ret;
-        } finally {
-            lock.releaseRead();
-        }
-    }
-
-    public List<Product> searchProduct(SearchRequest request) {
+    public List<Product> searchProduct(ProductSearchRequest request) {
         try{
             lock.acquireRead();
             if(!isOpen){
@@ -254,8 +237,12 @@ public class Store {
                     continue;
                 }
                 Set<String> keywords = product.getKeyWords();
-                if(request.keyWords().stream().anyMatch(keywords::contains)){
-                    toReturn.add(product);
+                for (String keyword : request.keyWords()) {
+                    if(keywords.stream().anyMatch(s -> s.contains(keyword))){
+                        if (!toReturn.contains(product)) {
+                            toReturn.add(product);
+                        }
+                    }
                 }
             }
             return toReturn;

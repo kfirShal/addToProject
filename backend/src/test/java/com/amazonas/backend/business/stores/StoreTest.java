@@ -11,7 +11,7 @@ import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.common.requests.stores.SearchRequestBuilder;
+import com.amazonas.common.requests.stores.ProductSearchRequestBuilder;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,7 +118,7 @@ class StoreTest {
     @Test
     void searchProductByName() {
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -149,7 +149,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndRating() {
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setProductRating(Rating.ONE_STAR);
@@ -185,7 +185,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndRatingBad(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setProductRating(Rating.TWO_STARS);
@@ -211,7 +211,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndPriceGood(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setMinPrice(999);
@@ -252,7 +252,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndPriceBad(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setMinPrice(1000);
@@ -288,7 +288,7 @@ class StoreTest {
     @Test
     void searchProductByKeywords(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setKeyWords(List.of("Dell"));
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -319,7 +319,7 @@ class StoreTest {
     @Test
     void searchProductByCategory() {
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductCategory("Electronics");
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -350,7 +350,7 @@ class StoreTest {
     @Test
     void searchProductsMultipleConditions(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setProductRating(Rating.ONE_STAR);
@@ -406,7 +406,7 @@ class StoreTest {
     @Test
     void searchProductMultipleResults(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS").setKeyWords(List.of("Novel"));
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -432,7 +432,7 @@ class StoreTest {
     @Test
     void searchProductNoResults(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Apple");
         List<Product> actual = store.searchProduct(searchRequest.build());

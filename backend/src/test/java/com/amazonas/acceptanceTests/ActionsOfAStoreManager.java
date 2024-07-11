@@ -10,7 +10,7 @@ import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
-import com.amazonas.common.requests.stores.SearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequest;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ public class ActionsOfAStoreManager {
         String userId = "user1";
         String token = "validToken";
         Product productToAdd = new Product("product1", "LAPTOP", 100.0, "Technologies", "PC", rating.FIVE_STARS, storeId);
-        SearchRequest request = new SearchRequest(productToAdd.getProductName(), new ArrayList<>(), 0, 200, productToAdd.getCategory(), productToAdd.getRating());
+        ProductSearchRequest request = new ProductSearchRequest(productToAdd.getProductName(), new ArrayList<>(), 0, 200, productToAdd.getCategory(), productToAdd.getRating());
 
         // Act
         assertTrue(storesController.searchProductsInStore(storeId, request).contains(productToAdd));

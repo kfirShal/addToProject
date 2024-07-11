@@ -51,6 +51,7 @@ public class PermissionsBeans {
         profile.addMarketActionPermission(MarketActions.SEARCH_PRODUCTS);
         profile.addMarketActionPermission(MarketActions.VIEW_STORES);
         profile.addMarketActionPermission(MarketActions.VIEW_PRODUCTS);
+        profile.addMarketActionPermission(MarketActions.SEARCH_STORES);
     }
 
     private void buildDefaultRegisteredUserProfile() {

@@ -15,13 +15,12 @@ import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.StoreRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.requests.stores.GlobalSearchRequest;
-import com.amazonas.common.requests.stores.SearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Component("storesController")
 public class StoresController {
@@ -118,19 +117,15 @@ public class StoresController {
         return repository.getStore(storeId);
     }
 
-    public List<Product> searchProductsByKeyword(String keyword) {
-        List<Product> ret = new LinkedList<>();
-        for (Store store : repository.getAllStores()){
-            ret.addAll(store.searchProduct(keyword));
-        }
-        return ret;
-    }
-
-    public List<StoreDetails> searchStoresByKeyword(String keyword) {
+    public List<StoreDetails> searchStoresGlobally(String keyword) {
         List<StoreDetails> ret = new LinkedList<>();
+        List<String> split = List.of(keyword.split(" "));
         for (Store store : repository.getAllStores()){
-            if(store.getStoreName().contains(keyword)){
-                ret.add(store.getDetails());
+            for (String key : split){
+                if (store.getDetails().getStoreName().contains(key)){
+                    ret.add(store.getDetails());
+                    break;
+                }
             }
         }
         return ret;
@@ -140,13 +135,13 @@ public class StoresController {
         List<Product> ret = new LinkedList<>();
         for (Store store : repository.getAllStores()) {
             if (store.getStoreRating().ordinal() >= request.storeRating().ordinal()) {
-                ret.addAll(store.searchProduct(request.searchRequest()));
+                ret.addAll(store.searchProduct(request.productSearchRequest()));
             }
         }
         return ret;
     }
 
-    public List<Product> searchProductsInStore(String storeId, SearchRequest request) {
+    public List<Product> searchProductsInStore(String storeId, ProductSearchRequest request) {
         return getStore(storeId).searchProduct(request);
     }
 

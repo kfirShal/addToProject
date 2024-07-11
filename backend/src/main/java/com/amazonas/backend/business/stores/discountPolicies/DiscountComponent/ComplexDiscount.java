@@ -1,8 +1,6 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.Condition;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.ComplexDiscountDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.DiscountDTOs.ComplexDiscountDTO;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;

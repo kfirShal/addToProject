@@ -10,8 +10,9 @@ import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import com.amazonas.common.requests.RequestBuilder;
 import com.amazonas.common.requests.auth.AuthenticationRequest;
 import com.amazonas.common.requests.stores.GlobalSearchRequest;
-import com.amazonas.common.requests.stores.SearchRequest;
-import com.amazonas.common.requests.stores.StoreRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequestBuilder;
+import com.amazonas.common.requests.stores.StoreDetailsRequestBuilder;
+import com.amazonas.common.requests.stores.StoreSearchRequest;
 import com.amazonas.common.requests.users.LoginRequest;
 import com.amazonas.common.requests.users.RegisterRequest;
 import com.amazonas.common.utils.APIFetcher;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -449,26 +449,24 @@ public class AppController {
     }
 
 
-    public List<Product> searchProducts(String keyWords) {
-        List<Product> products = new ArrayList<>();
-        SearchRequest request = new SearchRequest(keyWords);
+    public List<Product> searchProducts(List<String> keyWords) {
         try {
-            products = postByEndpoint(Endpoints.SEARCH_PRODUCTS_BY_KEYWORD, request);
-
+            GlobalSearchRequest request = new GlobalSearchRequest(Rating.ONE_STAR, ProductSearchRequestBuilder.create().setKeyWords(keyWords).build());
+            return postByEndpoint(Endpoints.SEARCH_PRODUCTS_GLOBALLY, request);
         } catch (ApplicationException e) {
             e.printStackTrace();
+            return new ArrayList<>();
         }
-        return products;
     }
 
-    public List<StoreDetails> searchStores(String keywords) {
-        List<StoreDetails> stores = new ArrayList<>();
-        StoreRequest request = new StoreRequest(keywords);
+    public List<StoreDetails> searchStores(List<String> keyWords) {
         try {
-            stores = postByEndpoint(Endpoints.SEARCH_STORES_BY_KEYWORD, request);
+            StoreSearchRequest request = StoreDetailsRequestBuilder.create().setStoreName(String.join(" ", keyWords)).build();
+            return postByEndpoint(Endpoints.SEARCH_STORES_GLOBALLY, request);
         } catch (ApplicationException e) {
             e.printStackTrace();
+            return new ArrayList<>();
         }
-        return stores;
+
     }
 }

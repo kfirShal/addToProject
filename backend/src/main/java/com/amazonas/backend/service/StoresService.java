@@ -1,7 +1,6 @@
 package com.amazonas.backend.service;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Translator;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 @Component("storesService")
@@ -53,21 +51,11 @@ public class StoresService {
         }
     }
 
-    public String searchProductsByKeyword(String json) {
+    public String searchStoresGlobally(String json) {
         Request request = Request.from(json);
         try {
-            SearchRequest toSearch = SearchRequest.from(request.payload());
-            return Response.getOk(proxy.searchProductsByKeyword(toSearch.keyword(), request.userId(), request.token()));
-        } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
-            return Response.getError(e);
-        }
-    }
-
-    public String searchStoresByKeyword(String json) {
-        Request request = Request.from(json);
-        try {
-            StoreRequest toSearch = StoreRequest.from(request.payload());
-            return Response.getOk(proxy.searchStoresByKeyword(toSearch.keyword(), request.userId(), request.token()));
+            StoreSearchRequest toSearch = StoreSearchRequest.from(request.payload());
+            return Response.getOk(proxy.searchStoresGlobally(toSearch.storeName(), request.userId(), request.token()));
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
@@ -77,7 +65,7 @@ public class StoresService {
         Request request = Request.from(json);
         try {
             SearchInStoreRequest toSearch = SearchInStoreRequest.from(request.payload());
-            return Response.getOk(proxy.searchProductsInStore(toSearch.storeId(), toSearch.searchRequest(), request.userId(), request.token()));
+            return Response.getOk(proxy.searchProductsInStore(toSearch.storeId(), toSearch.productSearchRequest(), request.userId(), request.token()));
         } catch (StoreException | NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
