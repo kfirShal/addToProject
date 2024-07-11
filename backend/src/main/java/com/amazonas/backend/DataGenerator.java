@@ -16,6 +16,8 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DataGenerator {
 
@@ -88,6 +90,13 @@ public class DataGenerator {
         storesController.addProduct(store5Id, product10);
         storesController.setProductQuantity(store5Id, product10.productId(), 100);
 
+
+        // add key words to products
+        List<Product> products = List.of(product1, product2, product3, product4, product5, product6, product7, product8, product9, product10);
+        for(Product product : products){
+            product.addKeyWords(product.productName());
+        }
+        products.getFirst().addKeyWords("Laptop");
         // add shipping services
         shippingServiceController.addShippingService("service1", new ShippingService());
 

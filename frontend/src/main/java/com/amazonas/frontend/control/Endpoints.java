@@ -62,7 +62,7 @@ public enum Endpoints {
 
     // Stores Endpoints
     SEARCH_PRODUCTS_GLOBALLY("stores/searchproductsglobally", Void.class),
-    SEARCH_PRODUCTS_IN_STORE("stores/searchproductsinstore", Void.class),
+    SEARCH_PRODUCTS_IN_STORE("stores/searchproductsinstore", Product.class),
     ADD_STORE("stores/addstore", Void.class),
     OPEN_STORE("stores/openstore", Void.class),
     CLOSE_STORE("stores/closestore", Void.class),

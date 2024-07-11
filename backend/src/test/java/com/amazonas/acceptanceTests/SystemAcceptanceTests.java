@@ -314,8 +314,8 @@ public class SystemAcceptanceTests {
 
         String title = "title";
         String message = "message";
-        String senderId = "senderId";
         String receiverId = "receiverId";
+        String senderId = "senderId";
         String userId = "userId";
         String token = "token";
         NotificationRequest notificationRequest = new NotificationRequest(title, message, senderId, receiverId);

@@ -234,8 +234,12 @@ public class Store {
                     continue;
                 }
                 Set<String> keywords = product.keyWords();
-                if(request.keyWords().stream().anyMatch(keywords::contains)){
-                    toReturn.add(product);
+                for (String keyword : request.keyWords()) {
+                    if(keywords.stream().anyMatch(s -> s.contains(keyword))){
+                        if (!toReturn.contains(product)) {
+                            toReturn.add(product);
+                        }
+                    }
                 }
             }
             return toReturn;
