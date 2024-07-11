@@ -39,11 +39,7 @@ public class Cart extends Profile {
         }
 
         grid = new Grid<>(ShoppingCart.class, false);
-        try {
-            configureGrid();
-        } catch (ApplicationException e) {
-            e.printStackTrace();
-        }
+        configureGrid();
 
         // add in the bottom right button for proceed to checkout
         Button checkoutButton = new Button("Checkout", _ -> UI.getCurrent().navigate("Payment"));
@@ -52,10 +48,17 @@ public class Cart extends Profile {
         content.add(grid, checkoutButton);
     }
 
-    private void configureGrid() throws ApplicationException {
+    private void configureGrid() {
         String userId = AppController.getCurrentUserId();
         System.out.println("userId: " + userId);
-        this.cart = (ShoppingCart) appController.postByEndpoint(Endpoints.VIEW_CART, null);
+        List<ShoppingCart> fetched = null;
+        try {
+            fetched = appController.postByEndpoint(Endpoints.VIEW_CART, null);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
+        this.cart = fetched.getFirst();
         Map<String, StoreBasket> baskets = cart.getBaskets(); // storeId -> StoreBasket
 
         for (Map.Entry<String, StoreBasket> entry : baskets.entrySet()) {

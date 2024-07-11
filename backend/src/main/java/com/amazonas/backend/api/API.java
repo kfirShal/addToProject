@@ -1,11 +1,16 @@
 package com.amazonas.backend.api;
 
 import com.amazonas.backend.service.*;
+import com.amazonas.common.utils.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 @SuppressWarnings("SpellCheckingInspection")
 @RestController
 public class API {
+
+    private static final Logger log = LoggerFactory.getLogger(API.class);
 
     private final AuthenticationService authenticationService;
     private final ExternalServicesService externalServicesService;
@@ -41,16 +46,22 @@ public class API {
                               @RequestBody String body) {
         service=service.toLowerCase();
         endpoint=endpoint.toLowerCase();
-        return switch(service){
-            case "auth" -> forwardAuth(endpoint, body);
-            case "external" -> forwardExternal(endpoint,body);
-            case "market" -> forwardMarket(endpoint,body);
-            case "notifications" -> forwardNotifications(endpoint,body);
-            case "stores" -> forwardStores(endpoint,body);
-            case "userprofiles" -> forwardUserProfiles(endpoint,body);
-            case "permissions" -> forwardPermissions(endpoint,body);
-            default -> "Invalid service";
-        };
+
+        try{
+            return switch(service){
+                case "auth" -> forwardAuth(endpoint, body);
+                case "external" -> forwardExternal(endpoint,body);
+                case "market" -> forwardMarket(endpoint,body);
+                case "notifications" -> forwardNotifications(endpoint,body);
+                case "stores" -> forwardStores(endpoint,body);
+                case "userprofiles" -> forwardUserProfiles(endpoint,body);
+                case "permissions" -> forwardPermissions(endpoint,body);
+                default -> "Invalid service";
+            };
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+            return Response.getError(e.getMessage());
+        }
     }
 
     private String forwardPermissions(String endpoint, String body) {
