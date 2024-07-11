@@ -131,7 +131,7 @@ public class DataGenerator {
         storesController.getStore(store2Id).addManager("user2", "user7");
 
         // add some products to some carts
-        usersController.addProductToCart("user3",store3Id, product5.getProductId(),5);
+        usersController.addProductToCart("user1",store3Id, product5.getProductId(),5);
         usersController.addProductToCart("user3",store3Id, product6.getProductId(),5);
         usersController.addProductToCart("user4",store4Id, product7.getProductId(),5);
         usersController.addProductToCart("user4",store4Id, product8.getProductId(),5);
