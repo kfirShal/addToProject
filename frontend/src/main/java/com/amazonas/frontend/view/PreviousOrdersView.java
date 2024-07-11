@@ -86,19 +86,19 @@ public class PreviousOrdersView extends BaseLayout{
             Span transactionIdLabel = new Span("Transaction ID: ");
             transactionIdLabel.getStyle().set("font-weight", "bold");
             transactionIdDiv.add(transactionIdLabel);
-            transactionIdDiv.add(new Span(transaction.transactionId()));
+            transactionIdDiv.add(new Span(transaction.getTransactionId()));
 
             Div storeIdDiv = new Div();
             Span storeIdLabel = new Span("Store ID: ");
             storeIdLabel.getStyle().set("font-weight", "bold");
             storeIdDiv.add(storeIdLabel);
-            storeIdDiv.add(new Span(transaction.storeId()));
+            storeIdDiv.add(new Span(transaction.getStoreId()));
 
             Div dateOfTransactionDiv = new Div();
             Span dateOfTransactionLabel = new Span("Date of Transaction: ");
             dateOfTransactionLabel.getStyle().set("font-weight", "bold");
             dateOfTransactionDiv.add(dateOfTransactionLabel);
-            dateOfTransactionDiv.add(new Span(formatDate(transaction.dateOfTransaction())));
+            dateOfTransactionDiv.add(new Span(formatDate(transaction.getDateOfTransaction())));
 
             Button detailsButton = new Button("Details", event -> openDetailsDialog(transaction));
 
@@ -120,13 +120,13 @@ public class PreviousOrdersView extends BaseLayout{
         Dialog dialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
 
-        Span transactionId = new Span("Transaction ID: " + transaction.transactionId());
+        Span transactionId = new Span("Transaction ID: " + transaction.getTransactionId());
         transactionId.getStyle().set("font-weight", "bold");
 
-        Span storeId = new Span("Store ID: " + transaction.storeId());
+        Span storeId = new Span("Store ID: " + transaction.getStoreId());
         storeId.getStyle().set("font-weight", "bold");
 
-        Span dateOfTransaction = new Span("Date of Transaction: " + formatDate(transaction.dateOfTransaction()));
+        Span dateOfTransaction = new Span("Date of Transaction: " + formatDate(transaction.getDateOfTransaction()));
         dateOfTransaction.getStyle().set("font-weight", "bold");
 
 
@@ -137,7 +137,7 @@ public class PreviousOrdersView extends BaseLayout{
         productsLabel.getStyle().set("font-weight", "bold");
         layout.add(productsLabel);
 
-        for (Map.Entry<Product, Integer> entry : transaction.productToQuantity().entrySet()) {
+        for (Map.Entry<Product, Integer> entry : transaction.getProductToQuantity().entrySet()) {
             Product product = entry.getKey();
             Integer quantity = entry.getValue();
 
