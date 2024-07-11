@@ -26,8 +26,7 @@ public class Confirmation extends Profile {
         confirmationMessage.getStyle().set("font-size", "20px");
         confirmationMessage.getStyle().set("font-weight", "bold");
 
-        // Add order details (assuming AppController provides order details)
-        Span orderDetails = new Span(appController.getOrderDetails(123));
+        Span orderDetails = new Span();
 
         // Add a button to go back to the home page
         Button homeButton = new Button("Go to Home");

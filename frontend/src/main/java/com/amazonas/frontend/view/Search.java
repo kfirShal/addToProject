@@ -1,8 +1,15 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.requests.stores.GlobalSearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequestBuilder;
+import com.amazonas.common.requests.stores.StoreDetailsRequestBuilder;
+import com.amazonas.common.requests.stores.StoreSearchRequest;
+import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -89,10 +96,14 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
         // Join the search keywords with spaces to set in the search field
         String searchKeywords = String.join(" ", searchKey);
         searchField.setValue(searchKeywords);
-        performSearch(searchKey);
+        try {
+            performSearch(searchKey);
+        } catch (ApplicationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void performSearch(List<String> keywords) {
+    private void performSearch(List<String> keywords) throws ApplicationException {
         // print the search keywords
         if (keywords.isEmpty()) {
             return; // Optionally handle empty search
@@ -102,8 +113,10 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
         for (String keyword : keywords) {
             searchKeywords.addAll(Arrays.asList(keyword.split("\\s+|\\+")));
         }
-        List<Product> products = appController.searchProducts(searchKeywords);
-        List<StoreDetails> stores = appController.searchStores(searchKeywords);
+        GlobalSearchRequest productRequest = new GlobalSearchRequest(Rating.ONE_STAR, ProductSearchRequestBuilder.create().setKeyWords(searchKeywords).build());
+        List<Product> products = appController.postByEndpoint(Endpoints.SEARCH_PRODUCTS_GLOBALLY, productRequest);
+        StoreSearchRequest storeRequest = StoreDetailsRequestBuilder.create().setStoreName(String.join(" ", searchKeywords)).build();
+        List<StoreDetails> stores = appController.postByEndpoint(Endpoints.SEARCH_STORES_GLOBALLY, storeRequest);
         // navigate to the search page with the search parameter
         // if no results, display a message
         if (products == null || products.isEmpty()) {
