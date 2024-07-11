@@ -8,6 +8,7 @@ public enum MarketActions {
     SEARCH_PRODUCTS,
     VIEW_PRODUCTS,
     VIEW_STORES,
+    SEARCH_STORES,
 
     // market management
     SHUTDOWN_MARKET,

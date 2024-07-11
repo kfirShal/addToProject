@@ -42,7 +42,7 @@ public class ConditionalProductRule implements PurchaseRule {
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
         int productCount = 0;
         for (ProductWithQuantitiy product : products) {
-            if (product.product().productId().equals(productID)) {
+            if (product.product().getProductId().equals(productID)) {
                 productCount += product.quantity();
             }
         }

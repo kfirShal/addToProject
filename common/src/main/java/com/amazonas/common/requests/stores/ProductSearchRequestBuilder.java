@@ -4,7 +4,7 @@ import com.amazonas.common.utils.Rating;
 
 import java.util.List;
 
-public class SearchRequestBuilder {
+public class ProductSearchRequestBuilder {
     private String productName;
     private List<String> keyWords;
     private Integer minPrice;
@@ -12,7 +12,7 @@ public class SearchRequestBuilder {
     private String productCategory;
     private Rating productRating;
 
-    private SearchRequestBuilder() {
+    private ProductSearchRequestBuilder() {
         productName = "";
         keyWords = List.of();
         minPrice = 0;
@@ -21,41 +21,41 @@ public class SearchRequestBuilder {
         productRating = Rating.NOT_RATED;
     }
 
-    public SearchRequestBuilder setProductName(String productName) {
+    public ProductSearchRequestBuilder setProductName(String productName) {
         this.productName = productName.toLowerCase();
         return this;
     }
 
-    public SearchRequestBuilder setKeyWords(List<String> keyWords) {
+    public ProductSearchRequestBuilder setKeyWords(List<String> keyWords) {
         this.keyWords = keyWords.stream().map(String::toLowerCase).toList();
         return this;
     }
 
-    public SearchRequestBuilder setMinPrice(Integer minPrice) {
+    public ProductSearchRequestBuilder setMinPrice(Integer minPrice) {
         this.minPrice = minPrice;
         return this;
     }
 
-    public SearchRequestBuilder setMaxPrice(Integer maxPrice) {
+    public ProductSearchRequestBuilder setMaxPrice(Integer maxPrice) {
         this.maxPrice = maxPrice;
         return this;
     }
 
-    public SearchRequestBuilder setProductCategory(String productCategory) {
+    public ProductSearchRequestBuilder setProductCategory(String productCategory) {
         this.productCategory = productCategory.toLowerCase();
         return this;
     }
 
-    public SearchRequestBuilder setProductRating(Rating productRating) {
+    public ProductSearchRequestBuilder setProductRating(Rating productRating) {
         this.productRating = productRating;
         return this;
     }
 
-    public SearchRequest build() {
-        return new SearchRequest(productName, keyWords, minPrice, maxPrice, productCategory, productRating);
+    public ProductSearchRequest build() {
+        return new ProductSearchRequest(productName, keyWords, minPrice, maxPrice, productCategory, productRating);
     }
 
-    public static SearchRequestBuilder create() {
-        return new SearchRequestBuilder();
+    public static ProductSearchRequestBuilder create() {
+        return new ProductSearchRequestBuilder();
     }
 }
