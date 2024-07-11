@@ -115,7 +115,7 @@ public class DataGenerator {
         usersController.payForPurchase("user1");
         // set order shipped
         Transaction transaction1 = usersController.getUserTransactionHistory("user1").getFirst();
-        storesController.getStore(store1Id).setOrderShipped(transaction1.transactionId());
+        storesController.getStore(store1Id).setOrderShipped(transaction1.getTransactionId());
 
         usersController.addProductToCart("user2",store2Id, product3.getProductId(),5);
         usersController.addProductToCart("user2",store2Id, product4.getProductId(),5);
