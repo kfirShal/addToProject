@@ -57,6 +57,7 @@ public class API {
         return switch (endpoint) {
             case "getuserpermissions" -> permissionsService.getUserPermissions(body);
             case "getguestpermissions" -> permissionsService.getGuestPermissions(body);
+            case "isadmin" -> permissionsService.isAdmin(body);
             default -> "Invalid endpoint";
         };
     }

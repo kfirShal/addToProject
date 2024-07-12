@@ -99,7 +99,8 @@ public enum Endpoints {
 
     //Permissions Endpoints
     GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),
-    GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class);
+    GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class),
+    IS_ADMIN("permissions/isadmin", Boolean.class);
 
     private final String location;
     private final Type returnType;

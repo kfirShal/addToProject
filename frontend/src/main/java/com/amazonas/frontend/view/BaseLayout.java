@@ -109,13 +109,11 @@ public abstract class BaseLayout extends AppLayout {
             }
             UI.getCurrent().navigate("search?search=" + search);
         });
-        addToNavbar(true, searchLayout);
 
         // set up login/logout button
         if (! isUserLoggedIn()) {
             Button loginButton = new Button("Login", event -> openLoginDialog());
             Button registerButton = new Button("Register", event -> openRegisterDialog());
-//            loginButton.getStyle().setMarginLeft("75%");
             loginButton.getStyle().setMarginLeft("auto"); // Pushes buttons to the right
             registerButton.getStyle().set("margin-left", "10px");
             registerButton.getStyle().set("margin-right", "10px");
@@ -125,9 +123,7 @@ public abstract class BaseLayout extends AppLayout {
                 nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
             }
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-            username.getStyle().set("margin-left", "65%");
-//            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-//            username.getStyle().set("margin-right", "10px");
+            username.getStyle().set("margin-left", "25%");
 
             Button notificationsButton = new Button(new Icon(VaadinIcon.ENVELOPE));
             notificationsButton.addClickListener(event -> {
@@ -141,12 +137,9 @@ public abstract class BaseLayout extends AppLayout {
             });
             previousOrdersButton.getStyle().set("margin-right", "20px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton, searchLayout);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
-//            addToNavbar(username, notificationsButton);
-
-
 
             // Profile button with an icon and text "Profile", click on it should open the page with user profile
             Button profileButton = new Button("Profile", new Icon(VaadinIcon.USER), event -> {
@@ -163,10 +156,7 @@ public abstract class BaseLayout extends AppLayout {
                     showNotification("Logout failed");
                 }
             });
-//            logoutButton.getStyle().set("margin-left", "50px");
-//            addToNavbar(username, logoutButton);
-//            addToNavbar(logoutButton);
-            userActions.getStyle().set("margin-left", "auto"); // Pushes userActions to the right
+            userActions.getStyle().set("margin-left", "25%"); // Pushes userActions to the right
             logoutButton.getStyle().set("margin-right", "10px");
             addToNavbar(userActions, logoutButton);
 
@@ -189,7 +179,6 @@ public abstract class BaseLayout extends AppLayout {
     public void returnToMainIfNotLogged(){
         if (!isUserLoggedIn()) {
             UI.getCurrent().navigate("");
-            return;
         }
     }
 

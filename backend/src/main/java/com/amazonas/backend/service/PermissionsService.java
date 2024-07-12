@@ -35,4 +35,14 @@ public class PermissionsService {
             return Response.getError(e);
         }
     }
+
+    public String isAdmin(String json){
+        try{
+            Request request = Request.from(json);
+            boolean isAdmin = proxy.isAdmin(request.userId(), request.token());
+            return Response.getOk(isAdmin);
+        } catch (IllegalArgumentException | AuthenticationFailedException e){
+            return Response.getError(e);
+        }
+    }
 }

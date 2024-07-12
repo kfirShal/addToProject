@@ -1,6 +1,8 @@
 package com.amazonas.frontend.control;
 
 
+import com.amazonas.common.permissions.profiles.AdminPermissionsProfile;
+import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 
@@ -139,8 +141,8 @@ public class AppController {
             return false;
         }
 
-        String token, userId, body;
-        UserPermissionsProfile profile;
+        String token, userId;
+        PermissionsProfile profile;
         try {
             userId = (String) getByEndpoint(Endpoints.ENTER_AS_GUEST).getFirst();
             AuthenticationRequest request = new AuthenticationRequest(userId, null);
@@ -150,24 +152,10 @@ public class AppController {
         }
         // ---------> logged in as guest
         // get permissions profile
-        try{
-            body = RequestBuilder.create()
-                    .withUserId(userId)
-                    .withToken(token)
-                    .build()
-                    .toJson();
-            String fetched = APIFetcher.create()
-                    .withUri(BACKEND_URI + Endpoints.GET_USER_PERMISSIONS.location())
-                    .withHeader("Authorization", "Bearer " + token)
-                    .withBody(body)
-                    .withPost()
-                    .fetch();
-            Response response = Response.fromJson(fetched);
-            if(response == null || !response.success()){
-                return false;
-            }
-            profile = response.<UserPermissionsProfile>payload(UserPermissionsProfile.class).getFirst();
-        } catch (IOException | InterruptedException e) {
+        try {
+            List<PermissionsProfile> fetched = postCustom(Endpoints.GET_GUEST_PERMISSIONS, userId, token, "Bearer "+token, null);
+            profile = fetched.getFirst();
+        } catch (ApplicationException e) {
             return false;
         }
         setCurrentUserId(userId);
@@ -191,67 +179,40 @@ public class AppController {
         String credentialsString = "%s:%s".formatted(userId, password);
         String auth = "Basic " + new String(Base64.getEncoder().encode(credentialsString.getBytes()));
 
-        String body, token, guestId = getCurrentUserId();
-        Response authResponse, loginResponse;
-        UserPermissionsProfile profile;
+        String token, guestId = getCurrentUserId();
+        PermissionsProfile profile;
+        boolean isAdmin;
+
         try {
-            body = RequestBuilder.create()
-                    .withPayload(new AuthenticationRequest(userId, password))
-                    .build()
-                    .toJson();
-            String fetched = APIFetcher.create()
-                    .withUri(BACKEND_URI + Endpoints.AUTHENTICATE_USER.location())
-                    .withHeader("Authorization", auth)
-                    .withBody(body)
-                    .withPost()
-                    .fetch();
-            authResponse = Response.fromJson(fetched);
-            if (authResponse == null || !authResponse.success()) {
-                return false;
-            }
+            AuthenticationRequest authRequest = new AuthenticationRequest(userId, password);
+            List<String> fetched1 = postCustom(Endpoints.AUTHENTICATE_USER, null, null,auth, authRequest);
+            token = fetched1.getFirst();
+
             // ---------> passed authentication
-            token = authResponse.<String>payload(String.class).getFirst();
-            body = RequestBuilder.create()
-                    .withUserId(userId)
-                    .withToken(token)
-                    .withPayload(new LoginRequest(guestId, userId))
-                    .build()
-                    .toJson();
-            fetched = APIFetcher.create()
-                    .withUri(BACKEND_URI + Endpoints.LOGIN_TO_REGISTERED.location())
-                    .withHeader("Authorization", getBearerAuth())
-                    .withBody(body)
-                    .withPost()
-                    .fetch();
-            loginResponse = Response.fromJson(fetched);
-            if (loginResponse == null || !loginResponse.success()) {
-                return false;
-            }
+            // send login request
+
+            LoginRequest loginRequest = new LoginRequest(guestId, userId);
+            postCustom(Endpoints.LOGIN_TO_REGISTERED, userId, token, "Bearer "+token, loginRequest);
+
             // ---------> logged in
-        } catch (IOException | InterruptedException | JsonSyntaxException e) {
-            return false;
-        }
-        // get permissions profile
-        try{
-            body = RequestBuilder.create()
-                    .withUserId(userId)
-                    .withToken(token)
-                    .build()
-                    .toJson();
-            String fetched = APIFetcher.create()
-                    .withUri(BACKEND_URI + Endpoints.GET_USER_PERMISSIONS.location())
-                    .withHeader("Authorization", "Bearer " + token)
-                    .withBody(body)
-                    .withPost()
-                    .fetch();
-            Response response = Response.fromJson(fetched);
-            if(response == null || !response.success()){
-                return false;
+            // Check if the user is an admin
+
+            List<Boolean> fetched3 = postCustom(Endpoints.IS_ADMIN, userId, token, "Bearer "+token, null);
+            isAdmin = fetched3.getFirst();
+
+            // ---------> checked if admin
+            // get permissions profile
+
+            if(isAdmin){
+                profile = new AdminPermissionsProfile();
+            } else {
+                List<UserPermissionsProfile> fetched4 = postCustom(Endpoints.GET_USER_PERMISSIONS, userId, token, "Bearer "+token, null);
+                profile = fetched4.getFirst();
             }
-            profile = response.<UserPermissionsProfile>payload(UserPermissionsProfile.class).getFirst();
-        } catch (IOException | InterruptedException e) {
+        } catch (ApplicationException e) {
             return false;
         }
+
         setCurrentUserId(userId);
         setToken(token);
         setUserLoggedIn(true);
@@ -435,4 +396,38 @@ public class AppController {
         }
     }
 
+    // ==================================================================================== |
+    // =============================  UTILITY METHODS ===================================== |
+    // ==================================================================================== |
+
+    private <T> List<T> postCustom(Endpoints endpoint,String userId,String token, String auth, Object payload) throws ApplicationException {
+        ApplicationException postFailed = new ApplicationException("Failed to send data");
+
+        String body = RequestBuilder.create()
+                .withUserId(userId)
+                .withToken(token)
+                .withPayload(payload)
+                .build()
+                .toJson();
+
+        Response response;
+        try {
+            String fetched = APIFetcher.create()
+                    .withUri(BACKEND_URI + endpoint.location())
+                    .withHeader("Authorization", auth)
+                    .withBody(body)
+                    .withPost()
+                    .fetch();
+            response = Response.fromJson(fetched);
+        } catch (IOException | InterruptedException | JsonSyntaxException e) {
+            throw postFailed;
+        }
+        if (response == null) {
+            throw postFailed;
+        }
+        if (!response.success()) {
+            throw new ApplicationException(response.message());
+        }
+        return response.payload(endpoint.returnType());
+    }
 }
