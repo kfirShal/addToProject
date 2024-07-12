@@ -56,6 +56,10 @@ public final class Transaction {
         this.state = TransactionState.CANCELED;
     }
 
+    public TransactionState getState() {
+        return state;
+    }
+
     public String getTransactionId() {
         return transactionId;
     }

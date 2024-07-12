@@ -46,7 +46,7 @@ public class Orders extends Profile {
         // Grid to display orders
         Grid<Transaction> orderGrid = new Grid<>(Transaction.class);
         orderGrid.setItems(orderList);
-        orderGrid.setColumns("transactionId", "storeId", "userId", "dateOfTransaction", "productToQuantity");
+        orderGrid.setColumns("transactionId", "storeId", "userId", "dateOfTransaction", "productToQuantity", "state");
 
         // Add click listener to show order details in a popup
         orderGrid.addItemClickListener(event -> showOrderDetails(event.getItem()));
@@ -67,6 +67,7 @@ public class Orders extends Profile {
         for (Map.Entry<Product, Integer> entry : order.getProductToQuantity().entrySet()) {
             dialog.add(entry.getKey().getProductName() + " - " + entry.getValue());
         }
+        dialog.add("\nState: " + order.getState());
 
         Button closeButton = new Button("Close", _ -> dialog.close());
 

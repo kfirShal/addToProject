@@ -2,18 +2,15 @@ package com.amazonas.frontend.control;
 
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
-import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.*;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import com.amazonas.common.dtos.Notification;
 import java.util.List;
 import com.amazonas.common.dtos.Notification;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.common.dtos.StoreDetails;
-import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.profiles.DefaultPermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 
@@ -32,7 +29,7 @@ public enum Endpoints {
     ADD_PRODUCT_TO_CART("userprofiles/addproducttocart", Boolean.class),
     REMOVE_PRODUCT_FROM_CART("userprofiles/removeproductfromcart", Void.class),
     CHANGE_PRODUCT_QUANTITY("userprofiles/changeproductquantity", Void.class),
-    VIEW_CART("userprofiles/viewcart", Void.class),
+    VIEW_CART("userprofiles/viewcart", ShoppingCart.class),
     START_PURCHASE("userprofiles/startpurchase", Void.class),
     PAY_FOR_PURCHASE("userprofiles/payforpurchase", Void.class),
     CANCEL_PURCHASE("userprofiles/cancelpurchase", Void.class),
