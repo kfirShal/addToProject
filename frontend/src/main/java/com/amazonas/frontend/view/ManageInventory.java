@@ -57,7 +57,7 @@ public class ManageInventory extends BaseLayout {
 
         Map<String, Integer> idToQuantity = new HashMap<>();
         allP.forEach(p -> {
-            ProductRequest payload = new ProductRequest(storeId, new Product(p.productId()));
+            ProductRequest payload = new ProductRequest(storeId, new Product(p.getProductId()));
             try {
                 appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, payload);
             } catch (ApplicationException e) {
@@ -68,13 +68,13 @@ public class ManageInventory extends BaseLayout {
         grid.setItems(allP);
 
         // Configure the columns
-        grid.addColumn(Product::productId).setHeader("ID");
-        grid.addColumn(Product::productName).setHeader("Name");
-        grid.addColumn(Product::price).setHeader("Price");
-        grid.addColumn(Product::category).setHeader("Category");
-        grid.addColumn(Product::description).setHeader("Description");
-        grid.addColumn(Product::rating).setHeader("Rating");
-        grid.addColumn(p -> idToQuantity.get(p.productId())).setHeader("Quantity");
+        grid.addColumn(Product::getProductId).setHeader("ID");
+        grid.addColumn(Product::getProductName).setHeader("Name");
+        grid.addColumn(Product::getPrice).setHeader("Price");
+        grid.addColumn(Product::getCategory).setHeader("Category");
+        grid.addColumn(Product::getDescription).setHeader("Description");
+        grid.addColumn(Product::getRating).setHeader("Rating");
+        grid.addColumn(p -> idToQuantity.get(p.getProductId())).setHeader("Quantity");
 
         // Add action buttons
         grid.addComponentColumn(product -> {
@@ -86,7 +86,7 @@ public class ManageInventory extends BaseLayout {
             Button toggleButton = new Button(products.get(true).contains(product) ? "Disable" : "Enable", click -> {
                 try {
                     Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
-                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
                     appController.postByEndpoint(endpoint, request);
                     refreshGrid();
                 } catch (ApplicationException e) {

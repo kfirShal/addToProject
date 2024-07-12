@@ -26,7 +26,7 @@ public class AtLeastPriceCondition implements Condition{
         }
         double count = 0;
         for (ProductWithQuantitiy productWithQuantitiy : products) {
-            count += productWithQuantitiy.product().price() * productWithQuantitiy.quantity();
+            count += productWithQuantitiy.product().getPrice() * productWithQuantitiy.quantity();
         }
         return count >= limit;
     }

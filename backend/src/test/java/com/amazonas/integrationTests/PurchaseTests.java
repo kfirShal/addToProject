@@ -89,7 +89,7 @@ public class PurchaseTests {
 
             @Override
             public Transaction getTransactionById(String transactionId) {
-                if(transaction.transactionId().equals(transactionId)){
+                if(transaction.getTransactionId().equals(transactionId)){
                     return transaction;
                 }
                 return null;
@@ -254,7 +254,7 @@ public class PurchaseTests {
         verify(shoppingCartRepository,times(1)).saveCart(any());
 
         // ================== Test execution ================== |
-        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.transactionId(),SHIPPING_SERVICE_ID)));
+        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.getTransactionId(),SHIPPING_SERVICE_ID)));
 
         // ================== Test verification ================== |
         // check that the shipping was attempted

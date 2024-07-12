@@ -50,10 +50,10 @@ public class ComplexDiscount implements DiscountComponent {
                     throw new IllegalArgumentException("Product cannot be null");
                 }
                 ret[index++] = new ProductAfterDiscount(
-                                                        product.product().productId(),
+                                                        product.product().getProductId(),
                                                         product.quantity(),
-                                                        product.product().price(),
-                                                        product.product().price()
+                                                        product.product().getPrice(),
+                                                        product.product().getPrice()
                                                         );
             }
             return ret;

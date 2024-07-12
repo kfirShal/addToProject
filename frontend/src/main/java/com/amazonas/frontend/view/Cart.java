@@ -108,12 +108,12 @@ public class Cart extends Profile {
 
 
         public Item(Product product) {
-            this.productId = product.productId();
-            this.productName = product.productName();
-            this.price = product.price();
-            this.category = product.category();
-            this.description = product.description();
-            this.rating = product.rating();
+            this.productId = product.getProductId();
+            this.productName = product.getProductName();
+            this.price = product.getPrice();
+            this.category = product.getCategory();
+            this.description = product.getDescription();
+            this.rating = product.getRating();
             this.quantity = 1;
         }
 

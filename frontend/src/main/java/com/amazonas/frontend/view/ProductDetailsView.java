@@ -100,26 +100,26 @@ public class ProductDetailsView extends BaseLayout implements BeforeEnterObserve
         }
 
         // Product name
-        H2 productName = new H2(product.productName());
+        H2 productName = new H2(product.getProductName());
 
         // Product price
-        H3 productPrice = new H3("$" + String.format("%.2f", product.price()));
+        H3 productPrice = new H3("$" + String.format("%.2f", product.getPrice()));
 
         // Product category
         Span categoryTitle = new Span("Category: ");
         categoryTitle.getStyle().set("font-weight", "bold");
-        Span categoryValue = new Span(product.category());
+        Span categoryValue = new Span(product.getCategory());
         HorizontalLayout categoryLayout = new HorizontalLayout(categoryTitle, categoryValue);
 
         // Product description
         Span descriptionTitle = new Span("Description: ");
         descriptionTitle.getStyle().set("font-weight", "bold");
-        Span descriptionValue = new Span(product.description());
+        Span descriptionValue = new Span(product.getDescription());
         HorizontalLayout descriptionLayout = new HorizontalLayout(descriptionTitle, descriptionValue);
 
         // Product rating
         HorizontalLayout ratingLayout = new HorizontalLayout();
-        int rating = product.rating().ordinal();
+        int rating = product.getRating().ordinal();
         for (int i = 0; i < rating; i++) {
             ratingLayout.add(new Icon(VaadinIcon.STAR));
         }
@@ -154,7 +154,7 @@ public class ProductDetailsView extends BaseLayout implements BeforeEnterObserve
         Product finalProduct = product;
         addToCartButton.addClickListener(event -> {
             int quantity = quantityField.getValue();
-            CartRequest cartRequest = new CartRequest(finalProduct.storeId(), finalProduct.productId(), quantity);
+            CartRequest cartRequest = new CartRequest(finalProduct.getStoreId(), finalProduct.getProductId(), quantity);
             try {
                 appController.postByEndpoint(Endpoints.ADD_PRODUCT_TO_CART, cartRequest);
                 showNotification("Product added to cart successfully! with quantity: " + quantity);

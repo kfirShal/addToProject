@@ -1,7 +1,9 @@
 package com.amazonas.frontend.control;
 
+
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
+
 import com.amazonas.common.requests.RequestBuilder;
 import com.amazonas.common.requests.auth.AuthenticationRequest;
 import com.amazonas.common.requests.users.LoginRequest;
@@ -22,7 +24,6 @@ import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -430,13 +431,8 @@ public class AppController {
             }
             try {
                 Thread.sleep(10000);
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException _) {}
         }
     }
-
-    public String getOrderDetails(int orderId) {
-        return "Order details for order " + orderId; //TODO: implement
-    }
-
 
 }

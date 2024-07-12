@@ -36,34 +36,34 @@ public class ProductInventory {
 
     public boolean nameExists(String productName){
         return idToProduct.entrySet().stream()
-                .anyMatch((x -> x.getValue().productName().equalsIgnoreCase(productName)));
+                .anyMatch((x -> x.getValue().getProductName().equalsIgnoreCase(productName)));
     }
 
     public String addProduct(Product product) throws StoreException {
-        if(nameExists(product.productName())){
-            throw new StoreException("Product with name " + product.productName() + " already exists");
+        if(nameExists(product.getProductName())){
+            throw new StoreException("Product with name " + product.getProductName() + " already exists");
         }
 
         product.setProductId(UUID.randomUUID().toString());
-        log.debug("Adding product {} with id {} to inventory", product.productName(), product.productId());
-        idToProduct.put(product.productId(),product);
+        log.debug("Adding product {} with id {} to inventory", product.getProductName(), product.getProductId());
+        idToProduct.put(product.getProductId(),product);
         productRepository.saveProduct(product);
-        return product.productId();
+        return product.getProductId();
     }
 
     public boolean updateProduct(Product product) {
 
-        log.debug("Updating product {} with id {} in inventory", product.productName(), product.productId());
+        log.debug("Updating product {} with id {} in inventory", product.getProductName(), product.getProductId());
 
         // we want to make sure the object is the same object
         // we can update it for the entire system
-        if(idToProduct.containsKey(product.productId())) {
-            Product product1 = idToProduct.get(product.productId());
-            product1.setProductName(product.productName());
-            product1.setCategory(product.category());
-            product1.setRating(product.rating());
-            product1.setPrice(product.price());
-            product1.setDescription(product.description());
+        if(idToProduct.containsKey(product.getProductId())) {
+            Product product1 = idToProduct.get(product.getProductId());
+            product1.setProductName(product.getProductName());
+            product1.setCategory(product.getCategory());
+            product1.setRating(product.getRating());
+            product1.setPrice(product.getPrice());
+            product1.setDescription(product.getDescription());
             return true;
         }
         return false;
@@ -110,8 +110,8 @@ public class ProductInventory {
 
     public List<Product> getAllAvailableProducts(){
         return idToProduct.values().stream()
-                .filter(product -> !disabledProductsId.contains(product.productId())
-                                    && idToQuantity.get(product.productId()) > 0)
+                .filter(product -> !disabledProductsId.contains(product.getProductId())
+                                    && idToQuantity.get(product.getProductId()) > 0)
                 .toList();
     }
 

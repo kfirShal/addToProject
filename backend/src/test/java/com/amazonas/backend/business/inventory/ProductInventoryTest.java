@@ -35,11 +35,11 @@ public class ProductInventoryTest {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
-        String productId = product.productId();
+        String productId = product.getProductId();
         Product updatedProduct = new Product(productId, "UpdatedProduct", 200.0, "UpdatedCategory", "UpdatedDescription", Rating.FOUR_STARS, "store1");
 
         assertTrue(inventory.updateProduct(updatedProduct));
-        assertEquals("UpdatedProduct", inventory.idToProduct().get(productId).productName());
+        assertEquals("UpdatedProduct", inventory.idToProduct().get(productId).getProductName());
     }
 
     @Test
@@ -57,7 +57,7 @@ public class ProductInventoryTest {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
-        String productId = product.productId();
+        String productId = product.getProductId();
         inventory.setQuantity(productId, 10);
 
         assertEquals(10, inventory.getQuantity(productId));
@@ -68,7 +68,7 @@ public class ProductInventoryTest {
         Product product = new Product(null, "Product1", 100.0, "Category1", "Description1", Rating.FIVE_STARS, "store1");
         inventory.addProduct(product);
 
-        String productId = product.productId();
+        String productId = product.getProductId();
         assertTrue(inventory.disableProduct(productId));
         assertTrue(inventory.isProductDisabled(productId));
 
@@ -83,8 +83,8 @@ public class ProductInventoryTest {
         inventory.addProduct(product1);
         inventory.addProduct(product2);
 
-        String productId1 = product1.productId();
-        String productId2 = product2.productId();
+        String productId1 = product1.getProductId();
+        String productId2 = product2.getProductId();
 
         inventory.setQuantity(productId1, 10);
         inventory.setQuantity(productId2, 0);
