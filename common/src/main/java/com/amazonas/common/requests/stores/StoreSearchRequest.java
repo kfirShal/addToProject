@@ -6,7 +6,11 @@ import com.amazonas.common.utils.Rating;
 public record StoreSearchRequest(String storeId, String storeName, String storeDescription, Rating storeRating) {
 
     public StoreSearchRequest(String storeName){
-        this("", storeName, "", Rating.FIVE_STARS);
+        this("", storeName, "", Rating.NOT_RATED);
+    }
+
+    public StoreSearchRequest(String storeId, String storeName) {
+        this(storeId, "", "", Rating.NOT_RATED);
     }
     public static StoreSearchRequest from(String json) {
         return JsonUtils.deserialize(json, StoreSearchRequest.class);

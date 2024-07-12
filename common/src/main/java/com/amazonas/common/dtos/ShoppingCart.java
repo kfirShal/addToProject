@@ -4,6 +4,7 @@ import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ShoppingCart {
@@ -13,6 +14,12 @@ public class ShoppingCart {
     private String userId;
     private ReadWriteLock lock;
 
+    public ShoppingCart(StoreBasketFactory storeBasketFactory, String userId) {
+        this.storeBasketFactory = storeBasketFactory;
+        this.userId = userId;
+        baskets = new HashMap<>();
+        lock = new ReadWriteLock();
+    }
     public ShoppingCart(Map<String, StoreBasket> baskets) {
         this.baskets = baskets;
     }

@@ -1,18 +1,20 @@
 package com.amazonas.common.dtos;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 public class StoreBasket {
-
+    private static final Logger log = LoggerFactory.getLogger(StoreBasket.class);
     private final Map<String, Integer> products;
     private final Function<Map<String, Integer>, Reservation> makeReservation;
     private final Function<Map<String, Integer>, Double> calculatePrice;
     private boolean reserved;
 
-    public StoreBasket(Function<Map<String, Integer>, Reservation> makeReservation,
-                       Function<Map<String, Integer>, Double> calculatePrice) {
+    public StoreBasket(Function<Map<String, Integer>, Reservation> makeReservation, Function<Map<String, Integer>, Double> calculatePrice) {
         this.makeReservation = makeReservation;
         this.calculatePrice = calculatePrice;
         products = new HashMap<>();
