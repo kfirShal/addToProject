@@ -20,10 +20,6 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
-      <dependency>
-          <groupId>org.springframework.data</groupId>
-          <artifactId>spring-data-mongodb</artifactId>
-      </dependency>
   </dependencies>
 
 </project>
