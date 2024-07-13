@@ -33,10 +33,10 @@ public class PurchaseHistory extends BaseLayout {
 
         grid.removeAllColumns();
 
-        grid.addColumn(Transaction::transactionId).setHeader("ID");
-        grid.addColumn(Transaction::userId).setHeader("User ID");
-        grid.addColumn(Transaction::dateOfTransaction).setHeader("Date");
-        grid.addColumn(transaction -> transaction.productToQuantity().keySet().toString()).setHeader("Products");
+        grid.addColumn(Transaction::getTransactionId).setHeader("ID");
+        grid.addColumn(Transaction::getUserId).setHeader("User ID");
+        grid.addColumn(Transaction::getDateOfTransaction).setHeader("Date");
+        grid.addColumn(transaction -> transaction.getProductToQuantity().keySet().toString()).setHeader("Products");
 
         content.add(grid);
 
