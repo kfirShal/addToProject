@@ -37,6 +37,7 @@ public class ManageInventory extends BaseLayout {
     public ManageInventory(AppController appController) {
         super(appController);
         this.appController = appController;
+        storeId = getParam("storeid");
         binder = new POJOBinder<>(Product.class);
         grid = new Grid<>(Product.class);
         Map<Boolean, List<Product>> fetchedProducts = getProducts();
@@ -263,6 +264,7 @@ public class ManageInventory extends BaseLayout {
         products.computeIfAbsent(true, _ -> new LinkedList<>());
         products.computeIfAbsent(false, _ -> new LinkedList<>());
 
+
         // Sample product 1 with keywords
         Product product1 = new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS);
         product1.addKeyWords("fatass");
@@ -288,5 +290,5 @@ public class ManageInventory extends BaseLayout {
     }
 }
 
-//TODO: how should i add/edit keywords? not included in UPDATE_PRODUCT endpoint, openEditDialog doesnt show old products in dialog's fields
+//TODO: connect storeId (present backend on gui). how should i add/edit keywords? not included in UPDATE_PRODUCT endpoint, openEditDialog doesnt show old products in dialog's fields
 

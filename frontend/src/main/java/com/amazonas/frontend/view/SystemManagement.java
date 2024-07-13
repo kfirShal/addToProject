@@ -38,7 +38,7 @@ public class SystemManagement extends BaseLayout {
 
         Button shutdownButton = new Button("Shutdown System", click -> {
             try {
-                appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, userId); //what is the request
+                appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, null);
                 Notification.show("System shutdown initiated.");
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
@@ -47,7 +47,7 @@ public class SystemManagement extends BaseLayout {
 
         Button startButton = new Button("Start System", click -> {
             try {
-                appController.postByEndpoint(Endpoints.START_MARKET, userId); //what is the request
+                appController.postByEndpoint(Endpoints.START_MARKET, null);
                 Notification.show("System started successfully.");
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
@@ -108,7 +108,7 @@ public class SystemManagement extends BaseLayout {
         paymentGrid.addComponentColumn(name -> {
             Button removeButton = new Button("Remove", click -> {
 //                try {
-//                    PaymentServiceManagementRequest request = new PaymentServiceManagementRequest(serviceId, );
+//                    PaymentServiceManagementRequest request = new PaymentS.erviceManagementRequest(serviceId, );
 //                    appController.postByEndpoint(Endpoints.REMOVE_PAYMENT_SERVICE, request);
 //                    refreshGrid();
 //                } catch (ApplicationException e) {
@@ -123,8 +123,7 @@ public class SystemManagement extends BaseLayout {
 
         VerticalLayout paymentLayout = new VerticalLayout(paymentTitle, paymentGrid, addPaymentButton);
         content.add(paymentLayout);
-
     }
 }
 
-//TODO: what is the request, PaymentServiceManagementRequest IS NOT IN common
+//TODO: PaymentServiceManagementRequest IS NOT IN common

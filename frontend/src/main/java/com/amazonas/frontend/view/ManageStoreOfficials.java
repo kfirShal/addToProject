@@ -38,6 +38,8 @@ public class ManageStoreOfficials extends BaseLayout {
     public ManageStoreOfficials(AppController appController) {
         super(appController);
         this.appController = appController;
+        storeId = getParam("storeid");
+        userId = getParam("userid");
 
         // Set the window's title
         String newTitle = "Manage Store Officials";

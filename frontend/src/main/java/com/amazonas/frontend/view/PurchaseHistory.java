@@ -14,13 +14,14 @@ import java.util.List;
 @Route("purchasehistory")
 public class PurchaseHistory extends BaseLayout {
     private final AppController appController;
+    private String storeId;
     private final Grid<Transaction> grid;
     private final List<Transaction> transactions;
-    private String storeId;
 
     public PurchaseHistory(AppController appController) {
         super(appController);
         this.appController = appController;
+        storeId = getParam("storeid");
 
         // Set the window title
         String newTitle = "Purchase History";
@@ -35,7 +36,7 @@ public class PurchaseHistory extends BaseLayout {
         grid.addColumn(Transaction::transactionId).setHeader("ID");
         grid.addColumn(Transaction::userId).setHeader("User ID");
         grid.addColumn(Transaction::dateOfTransaction).setHeader("Date");
-        grid.addColumn(transaction -> transaction.productToQuantity().keySet().toString()).setHeader("Products"); // Assuming getProductToQuantity() returns a Map<String, Integer>
+        grid.addColumn(transaction -> transaction.productToQuantity().keySet().toString()).setHeader("Products");
 
         content.add(grid);
 

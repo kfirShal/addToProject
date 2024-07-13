@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
@@ -65,9 +66,9 @@ public abstract class BaseLayout extends AppLayout {
 
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
+//        String path = getPath("store", Pair.of("", store.storeId), Pair.of("", getCurrentUserId()));
+//        nav1.addItem(new SideNavItem("Store Management", path, VaadinIcon.STORAGE.create()));
         nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.STORAGE.create()));
-        nav1.addItem(new SideNavItem("System Management", SystemManagement.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("Open Store", OpenStore.class, VaadinIcon.STAR.create()));
 
         nav2 = new SideNav();
         nav2.setLabel("------------------");
@@ -99,6 +100,10 @@ public abstract class BaseLayout extends AppLayout {
             registerButton.getStyle().set("margin-right", "10px");
             addToNavbar(loginButton, registerButton);
         } else {
+            if(permissionsProfile.hasPermission(MarketActions.ALL)){
+                nav1.addItem(new SideNavItem("System Management", SystemManagement.class, VaadinIcon.NEWSPAPER.create()));
+            }
+            nav1.addItem(new SideNavItem("Open Store", OpenStore.class, VaadinIcon.STAR.create()));
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
             username.getStyle().set("margin-left", "65%");
 //            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");

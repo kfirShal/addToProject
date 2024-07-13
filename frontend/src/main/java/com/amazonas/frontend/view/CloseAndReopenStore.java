@@ -21,6 +21,7 @@ public class CloseAndReopenStore extends BaseLayout {
     public CloseAndReopenStore(AppController appController) {
         super(appController);
         this.appController = appController;
+        storeId = getParam("storeid");
 
         // Set the window title
         String newTitle = "Close/Reopen Store";
@@ -66,7 +67,6 @@ public class CloseAndReopenStore extends BaseLayout {
 
         // Buttons inside the dialog
         Button confirmButton = new Button("Confirm", event -> {
-            // Perform action to close the store (e.g., notify backend)
             closeStore();
             confirmationDialog.close();
         });
@@ -79,7 +79,7 @@ public class CloseAndReopenStore extends BaseLayout {
 
     private void closeStore() {
         try {
-            appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId); //what is the request?
+            appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
         } catch (ApplicationException e) {
             throw new RuntimeException(e);
         }
@@ -94,6 +94,4 @@ public class CloseAndReopenStore extends BaseLayout {
         }
         Notification.show("Store is reopened.");
     }
-
-    //TODO: what is the request of CLOSE_STORE and OPEN_STORE
 }
