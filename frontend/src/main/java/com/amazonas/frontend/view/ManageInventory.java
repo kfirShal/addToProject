@@ -58,35 +58,39 @@ public class ManageInventory extends BaseLayout {
 
         Map<String, Integer> idToQuantity = new HashMap<>();
         allP.forEach(p -> {
-            ProductRequest request = new ProductRequest(storeId, new Product(p.productId()));
+            ProductRequest request = new ProductRequest(storeId, new Product(p.getProductId()));
             try {
                 List<Integer> quantity = appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, request);
                 if (quantity.get(0) != null) {
-                    idToQuantity.put(p.productId(), quantity.get(0));
+                    idToQuantity.put(p.getProductId(), quantity.get(0));
                 }
                 } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }
         });
 
-        grid.addColumn(Product::productId).setHeader("ID");
-        grid.addColumn(Product::productName).setHeader("Name");
-        grid.addColumn(Product::price).setHeader("Price");
-        grid.addColumn(Product::category).setHeader("Category");
-        grid.addColumn(Product::description).setHeader("Description");
-        grid.addColumn(Product::rating).setHeader("Rating");
+        grid.setItems(allP);
+
+        // Configure the columns
+        grid.addColumn(Product::getProductId).setHeader("ID");
+        grid.addColumn(Product::getProductName).setHeader("Name");
+        grid.addColumn(Product::getPrice).setHeader("Price");
+        grid.addColumn(Product::getCategory).setHeader("Category");
+        grid.addColumn(Product::getDescription).setHeader("Description");
+        grid.addColumn(Product::getRating).setHeader("Rating");
+        grid.addColumn(p -> idToQuantity.get(p.getProductId())).setHeader("Quantity");
 
         grid.addComponentColumn(product -> {
             MultiSelectComboBox<String> keywordsComboBox = new MultiSelectComboBox<>();
-            keywordsComboBox.setItems(product.keyWords());
-            keywordsComboBox.setValue(new HashSet<>(product.keyWords()));
+            keywordsComboBox.setItems(product.getKeyWords());
+            keywordsComboBox.setValue(new HashSet<>(product.getKeyWords()));
             return keywordsComboBox;
         }).setHeader("Keywords");
 
         grid.addComponentColumn(product -> {
             VerticalLayout layout = new VerticalLayout();
             TextField quantityField = new TextField("");
-            Integer quantity = idToQuantity.get(product.productId());
+            Integer quantity = idToQuantity.get(product.getProductId());
             if (quantity != null) {
                 quantityField.setValue(quantity.toString());
             }
@@ -94,8 +98,8 @@ public class ManageInventory extends BaseLayout {
                 String value = event.getValue();
                 try {
                     int newQuantity = Integer.parseInt(value);
-                    idToQuantity.put(product.productId(), newQuantity);
-                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    idToQuantity.put(product.getProductId(), newQuantity);
+                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
                     appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, request);
                 } catch (NumberFormatException e) {
                     openErrorDialog("Invalid quantity format");
@@ -120,7 +124,7 @@ public class ManageInventory extends BaseLayout {
             Button toggleButton = new Button(products.get(true).contains(product) ? "Disable" : "Enable", click -> {
                 try {
                     Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
-                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
                     appController.postByEndpoint(endpoint, request);
                     refreshGrid();
                 } catch (ApplicationException e) {
@@ -133,7 +137,7 @@ public class ManageInventory extends BaseLayout {
         grid.addComponentColumn(product -> {
             Button removeButton = new Button("Remove", click -> {
                 try {
-                    ProductRequest request = new ProductRequest(storeId, product.productId());
+                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
                     appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, request);
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
@@ -222,7 +226,7 @@ public class ManageInventory extends BaseLayout {
     private void saveChanges() {
         binder.writeObject(currentProduct);
         try {
-            ProductRequest request = new ProductRequest(storeId, currentProduct.productId());
+            ProductRequest request = new ProductRequest(storeId, currentProduct.getProductId());
             appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, request);
             refreshGrid();
             editDialog.close();
@@ -240,7 +244,7 @@ public class ManageInventory extends BaseLayout {
     private void addProduct() {
         binder.writeObject(currentProduct);
         try {
-            ProductRequest request = new ProductRequest(storeId, currentProduct.productId());
+            ProductRequest request = new ProductRequest(storeId, currentProduct.getProductId());
             appController.postByEndpoint(Endpoints.ADD_PRODUCT, request);
             refreshGrid();
             addDialog.close();

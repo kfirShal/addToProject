@@ -114,7 +114,7 @@ public class ActionsOfAStoreOwner {
         }
 
         // Assert
-        assertTrue(inventory.nameExists(product.productName()));
+        assertTrue(inventory.nameExists(product.getProductName()));
     }
 
     @Test

@@ -29,7 +29,7 @@ public enum Endpoints {
     ADD_PRODUCT_TO_CART("userprofiles/addproducttocart", Boolean.class),
     REMOVE_PRODUCT_FROM_CART("userprofiles/removeproductfromcart", Void.class),
     CHANGE_PRODUCT_QUANTITY("userprofiles/changeproductquantity", Void.class),
-    VIEW_CART("userprofiles/viewcart", Void.class),
+    VIEW_CART("userprofiles/viewcart", ShoppingCart.class),
     START_PURCHASE("userprofiles/startpurchase", Void.class),
     PAY_FOR_PURCHASE("userprofiles/payforpurchase", Void.class),
     CANCEL_PURCHASE("userprofiles/cancelpurchase", Void.class),
@@ -61,8 +61,10 @@ public enum Endpoints {
     DELETE_NOTIFICATION("notifications/deletenotification", Void.class),
 
     // Stores Endpoints
-    SEARCH_PRODUCTS_GLOBALLY("stores/searchproductsglobally", Void.class),
+    SEARCH_PRODUCTS_GLOBALLY("stores/searchproductsglobally", Product.class),
+    SEARCH_PRODUCTS_BY_KEYWORD("stores/searchproductsbykeyword", Product.class),
     SEARCH_PRODUCTS_IN_STORE("stores/searchproductsinstore", Void.class),
+    SEARCH_STORES_GLOBALLY("stores/searchstoresglobally", StoreDetails.class),
     ADD_STORE("stores/addstore", Void.class),
     OPEN_STORE("stores/openstore", Void.class),
     CLOSE_STORE("stores/closestore", Void.class),
@@ -95,7 +97,8 @@ public enum Endpoints {
 
     //Permissions Endpoints
     GET_USER_PERMISSIONS("permissions/getuserpermissions", UserPermissionsProfile.class),
-    GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class);
+    GET_GUEST_PERMISSIONS("permissions/getguestpermissions", DefaultPermissionsProfile.class),
+    IS_ADMIN("permissions/isadmin", Boolean.class);
 
     private final String location;
     private final Type returnType;

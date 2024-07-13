@@ -43,7 +43,7 @@ public class ShippingServiceController {
             Transaction transaction = transactionRepository.getTransactionById(transactionId);
             boolean shipped = activeShippingServices.get(serviceId).ship(transaction);
             if(shipped){
-                Store store = storeRepository.getStore(transaction.storeId());
+                Store store = storeRepository.getStore(transaction.getStoreId());
                 try {
                     store.setOrderShipped(transactionId);
                 } catch (StoreException e) {

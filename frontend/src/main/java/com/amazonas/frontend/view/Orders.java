@@ -1,130 +1,78 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Route("Orders")
 public class Orders extends Profile {
-    private AppController appController;
-    private List<Order> orderList;
-    private Grid<Order> orderGrid;
+    private final AppController appController;
+    private List<Transaction> orderList;
 
     public Orders(AppController appController) {
         super(appController);
         this.appController = appController;
         returnToMainIfNotLogged();
-        initializeOrderList();
+        InitialOrders();
         createOrdersLayout();
     }
 
-    private void initializeOrderList() {
+    private void InitialOrders() {
         orderList = new ArrayList<>();
-        // Example orders
-        orderList.add(new Order(1, "Order001", LocalDate.now(), "Completed"));
-        orderList.add(new Order(2, "Order002", LocalDate.now().minusDays(1), "Shipped"));
+        // get user transaction history
+        String userID = AppController.getCurrentUserId();
+        try {
+            orderList = appController.postByEndpoint(Endpoints.GET_USER_TRANSACTION_HISTORY, userID);
+        } catch (ApplicationException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     private void createOrdersLayout() {
         VerticalLayout ordersLayout = new VerticalLayout();
 
         // Grid to display orders
-        orderGrid = new Grid<>(Order.class);
+        Grid<Transaction> orderGrid = new Grid<>(Transaction.class);
         orderGrid.setItems(orderList);
-        orderGrid.setColumns("id", "orderNumber", "date", "status");
-
-        // Add button to add new order for demonstration
-        Button addOrderButton = new Button("Add Order", event -> {
-            addOrder();
-        });
+        orderGrid.setColumns("transactionId", "storeId", "userId", "dateOfTransaction", "productToQuantity", "state");
 
         // Add click listener to show order details in a popup
-        orderGrid.addItemClickListener(event -> {
-            showOrderDetails(event.getItem());
-        });
+        orderGrid.addItemClickListener(event -> showOrderDetails(event.getItem()));
 
-        ordersLayout.add(orderGrid, addOrderButton);
+        ordersLayout.add(orderGrid);
         content.add(ordersLayout);
     }
 
-    private void addOrder() {
-        // Example method to add a new order
-        int newOrderId = orderList.size() + 1;
-        Order newOrder = new Order(newOrderId, "Order00" + newOrderId, LocalDate.now(), "Pending");
-        orderList.add(newOrder);
-        orderGrid.getDataProvider().refreshAll();
-        Notification.show("New order added");
-    }
-
-    private void showOrderDetails(Order order) {
+    private void showOrderDetails(Transaction order) {
         // Create a dialog to show order details
         Dialog dialog = new Dialog();
-        dialog.add("Order ID: " + order.getId());
-        dialog.add("\nOrder Number: " + order.getOrderNumber());
-        dialog.add("\nDate: " + order.getDate());
-        dialog.add("\nStatus: " + order.getStatus());
+        dialog.add("Transaction ID: " + order.getTransactionId());
+        dialog.add("\nStore ID: " + order.getStoreId());
+        dialog.add("\nUser ID: " + order.getUserId());
+        dialog.add("\nDate of Transaction: " + order.getDateOfTransaction());
+        // add table with product to quantity
+        dialog.add("\nProducts: ");
+        for (Map.Entry<Product, Integer> entry : order.getProductToQuantity().entrySet()) {
+            dialog.add(entry.getKey().getProductName() + " - " + entry.getValue());
+        }
+        dialog.add("\nState: " + order.getState());
 
-        Button closeButton = new Button("Close", event -> {
-            dialog.close();
-        });
+        Button closeButton = new Button("Close", _ -> dialog.close());
 
         dialog.add(closeButton);
         dialog.open();
     }
 
-    // Inner class representing an Order
-    public static class Order {
-        private int id;
-        private String orderNumber;
-        private LocalDate date;
-        private String status;
-
-        public Order(int id, String orderNumber, LocalDate date, String status) {
-            this.id = id;
-            this.orderNumber = orderNumber;
-            this.date = date;
-            this.status = status;
-        }
-
-        // Getters and setters
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public String getOrderNumber() {
-            return orderNumber;
-        }
-
-        public void setOrderNumber(String orderNumber) {
-            this.orderNumber = orderNumber;
-        }
-
-        public LocalDate getDate() {
-            return date;
-        }
-
-        public void setDate(LocalDate date) {
-            this.date = date;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        public void setStatus(String status) {
-            this.status = status;
-        }
-    }
 }

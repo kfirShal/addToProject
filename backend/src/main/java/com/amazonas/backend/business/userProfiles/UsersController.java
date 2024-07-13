@@ -340,7 +340,7 @@ public class UsersController {
                 store.getOwners().forEach(ownerId -> {
                     try {
                         notificationController.sendNotification("New transactionId in your store: "+store.getStoreName(),
-                                "Transaction id: "+t.transactionId(),
+                                "Transaction id: "+t.getTransactionId(),
                                 "Amazonas",
                                 ownerId);
                     } catch (NotificationException e) {

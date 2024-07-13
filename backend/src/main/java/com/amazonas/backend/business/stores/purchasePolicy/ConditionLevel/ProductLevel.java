@@ -22,7 +22,7 @@ public class ProductLevel implements ConditionLevel {
     public boolean containsTypeOfPurchase(List<ProductWithQuantitiy> products) {
         int productCounter = 0;
         for (ProductWithQuantitiy productWithQuantitiy : products) {
-            if (productWithQuantitiy.product().productId().equals(productId)) {
+            if (productWithQuantitiy.product().getProductId().equals(productId)) {
                 productCounter += productWithQuantitiy.quantity();
             }
         }

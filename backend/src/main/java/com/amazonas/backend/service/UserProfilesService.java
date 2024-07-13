@@ -119,7 +119,7 @@ public class UserProfilesService {
         Request request = Request.from(json);
         try{
             ShoppingCart cart = proxy.viewCart(request.userId(), request.token());
-            return Response.getOk(cart);
+            return Response.getOk(cart.getSerializableInstance());
         } catch (AuthenticationFailedException | NoPermissionException | UserException e){
             return Response.getError(e);
         }

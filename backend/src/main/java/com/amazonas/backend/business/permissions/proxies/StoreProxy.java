@@ -16,7 +16,7 @@ import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.stores.GlobalSearchRequest;
-import com.amazonas.common.requests.stores.SearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -140,7 +140,13 @@ public class StoreProxy extends ControllerProxy {
         return real.searchProductsGlobally(request);
     }
 
-    public List<Product> searchProductsInStore(String storeId, SearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
+    public List<StoreDetails> searchStoresGlobally(String keyword, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.SEARCH_STORES);
+        return real.searchStoresGlobally(keyword);
+    }
+
+    public List<Product> searchProductsInStore(String storeId, ProductSearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.SEARCH_PRODUCTS);
         return real.searchProductsInStore(storeId, request);

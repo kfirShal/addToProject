@@ -21,7 +21,7 @@ import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.StoreActions;
-import com.amazonas.common.requests.stores.SearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.springframework.lang.Nullable;
@@ -209,7 +209,7 @@ public class Store {
         }
     }
 
-    public List<Product> searchProduct(SearchRequest request) {
+    public List<Product> searchProduct(ProductSearchRequest request) {
         try{
             lock.acquireRead();
             if(!isOpen){
@@ -218,27 +218,31 @@ public class Store {
 
             List<Product> toReturn = new LinkedList<>();
             for (Product product : inventory.getAllAvailableProducts()) {
-                if(product.price() < request.minPrice() || product.price() > request.maxPrice()){
+                if(product.getPrice() < request.minPrice() || product.getPrice() > request.maxPrice()){
                     continue;
                 }
-                if(product.rating().ordinal() < request.productRating().ordinal()){
+                if(product.getRating().ordinal() < request.productRating().ordinal()){
                     continue;
                 }
-                if(!request.productName().isBlank() && product.productName().toLowerCase().contains(request.productName())){
+                if(!request.productName().isBlank() && product.getProductName().toLowerCase().contains(request.productName())){
                     toReturn.add(product);
                     continue;
                 }
-                if(!request.productCategory().isBlank() && product.category().toLowerCase().contains(request.productCategory())){
+                if(!request.productCategory().isBlank() && product.getCategory().toLowerCase().contains(request.productCategory())){
                     toReturn.add(product);
                     continue;
                 }
-                if(!request.productName().isBlank() && product.description().toLowerCase().contains(request.productName())){
+                if(!request.productName().isBlank() && product.getDescription().toLowerCase().contains(request.productName())){
                     toReturn.add(product);
                     continue;
                 }
-                Set<String> keywords = product.keyWords();
-                if(request.keyWords().stream().anyMatch(keywords::contains)){
-                    toReturn.add(product);
+                Set<String> keywords = product.getKeyWords();
+                for (String keyword : request.keyWords()) {
+                    if(keywords.stream().anyMatch(s -> s.contains(keyword))){
+                        if (!toReturn.contains(product)) {
+                            toReturn.add(product);
+                        }
+                    }
                 }
             }
             return toReturn;

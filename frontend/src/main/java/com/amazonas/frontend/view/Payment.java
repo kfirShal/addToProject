@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Product;
 import com.amazonas.frontend.control.AppController;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -53,12 +54,8 @@ public class Payment extends Cart {
         VerticalLayout paymentSummary = new VerticalLayout();
         paymentSummary.add(new Paragraph("Payment Summary"));
 
-        Grid<Item> summaryGrid = new Grid<>(Item.class, false);
-        summaryGrid.addColumn(Item::getName).setHeader("Name");
-        summaryGrid.addColumn(Item::getPrice).setHeader("Price");
-        summaryGrid.addColumn(Item::getQuantity).setHeader("Quantity");
-        summaryGrid.addColumn(item -> item.getPrice() * item.getQuantity()).setHeader("Total Price");
-        summaryGrid.setItems(items);
+        Grid<Product> summaryGrid = new Grid<>(Product.class, false);
+
 
         paymentSummary.add(summaryGrid);
 

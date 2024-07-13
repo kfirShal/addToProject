@@ -25,4 +25,9 @@ public class PermissionsProxy extends ControllerProxy{
         authenticateToken(userId, token);
         return real.getGuestPermissionsProfile();
     }
+
+    public boolean isAdmin(String userId, String token) throws AuthenticationFailedException {
+        authenticateToken(userId, token);
+        return real.isAdmin(userId);
+    }
 }

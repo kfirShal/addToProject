@@ -11,7 +11,7 @@ import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.backend.repository.ProductRepository;
 import com.amazonas.backend.repository.TransactionRepository;
 import com.amazonas.common.dtos.Product;
-import com.amazonas.common.requests.stores.SearchRequestBuilder;
+import com.amazonas.common.requests.stores.ProductSearchRequestBuilder;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,7 +118,7 @@ class StoreTest {
     @Test
     void searchProductByName() {
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -149,7 +149,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndRating() {
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setProductRating(Rating.ONE_STAR);
@@ -185,7 +185,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndRatingBad(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setProductRating(Rating.TWO_STARS);
@@ -211,7 +211,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndPriceGood(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setMinPrice(999);
@@ -252,7 +252,7 @@ class StoreTest {
     @Test
     void searchProductByNameAndPriceBad(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setMinPrice(1000);
@@ -288,7 +288,7 @@ class StoreTest {
     @Test
     void searchProductByKeywords(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setKeyWords(List.of("Dell"));
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -319,7 +319,7 @@ class StoreTest {
     @Test
     void searchProductByCategory() {
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductCategory("Electronics");
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -350,7 +350,7 @@ class StoreTest {
     @Test
     void searchProductsMultipleConditions(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS");
         searchRequest.setProductRating(Rating.ONE_STAR);
@@ -406,7 +406,7 @@ class StoreTest {
     @Test
     void searchProductMultipleResults(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Dell XPS").setKeyWords(List.of("Novel"));
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -432,7 +432,7 @@ class StoreTest {
     @Test
     void searchProductNoResults(){
         when(productInventory.getAllAvailableProducts()).thenReturn(List.of(laptop, book, shirt, blender, toy));
-        var searchRequest = SearchRequestBuilder.create();
+        var searchRequest = ProductSearchRequestBuilder.create();
 
         searchRequest.setProductName("Apple");
         List<Product> actual = store.searchProduct(searchRequest.build());
@@ -458,18 +458,18 @@ class StoreTest {
     @Test
     void reserveProductGood() {
         Map<String,Integer> products = new HashMap<>(){{
-            put(laptop.productId(), 1);
-            put(book.productId(), 1);
-            put(shirt.productId(), 1);
-            put(blender.productId(), 1);
-            put(toy.productId(), 1);
+            put(laptop.getProductId(), 1);
+            put(book.getProductId(), 1);
+            put(shirt.getProductId(), 1);
+            put(blender.getProductId(), 1);
+            put(toy.getProductId(), 1);
         }};
 
-        when(productInventory.getQuantity(laptop.productId())).thenReturn(1);
-        when(productInventory.getQuantity(book.productId())).thenReturn(1);
-        when(productInventory.getQuantity(shirt.productId())).thenReturn(1);
-        when(productInventory.getQuantity(blender.productId())).thenReturn(1);
-        when(productInventory.getQuantity(toy.productId())).thenReturn(1);
+        when(productInventory.getQuantity(laptop.getProductId())).thenReturn(1);
+        when(productInventory.getQuantity(book.getProductId())).thenReturn(1);
+        when(productInventory.getQuantity(shirt.getProductId())).thenReturn(1);
+        when(productInventory.getQuantity(blender.getProductId())).thenReturn(1);
+        when(productInventory.getQuantity(toy.getProductId())).thenReturn(1);
         when(productInventory.isProductDisabled(any())).thenReturn(false);
         when(reservationFactory.get(any(), any(), any(),any())).thenReturn(mock(Reservation.class));
 
@@ -480,19 +480,19 @@ class StoreTest {
     @Test
     void reserveProductBad() {
         Map<String,Integer> products = new HashMap<>(){{
-            put(laptop.productId(), 1);
-            put(book.productId(), 1);
-            put(shirt.productId(), 1);
-            put(blender.productId(), 5);
-            put(toy.productId(), 1);
+            put(laptop.getProductId(), 1);
+            put(book.getProductId(), 1);
+            put(shirt.getProductId(), 1);
+            put(blender.getProductId(), 5);
+            put(toy.getProductId(), 1);
         }};
 
-        when(productInventory.getQuantity(laptop.productId())).thenReturn(2);
-        when(productInventory.getQuantity(book.productId())).thenReturn(3);
-        when(productInventory.getQuantity(shirt.productId())).thenReturn(4);
+        when(productInventory.getQuantity(laptop.getProductId())).thenReturn(2);
+        when(productInventory.getQuantity(book.getProductId())).thenReturn(3);
+        when(productInventory.getQuantity(shirt.getProductId())).thenReturn(4);
         // Only 1 blender in stock, but 5 requested
-        when(productInventory.getQuantity(blender.productId())).thenReturn(1);
-        when(productInventory.getQuantity(toy.productId())).thenReturn(6);
+        when(productInventory.getQuantity(blender.getProductId())).thenReturn(1);
+        when(productInventory.getQuantity(toy.getProductId())).thenReturn(6);
         when(productInventory.isProductDisabled(any())).thenReturn(false);
         when(reservationFactory.get(any(),any(), any(),any())).thenReturn(mock(Reservation.class));
 
@@ -516,18 +516,18 @@ class StoreTest {
     @Test
     void testCancelReservationGood() {
         Reservation reservation = mock(Reservation.class);
-        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.getProductId(), 1));
         when(reservation.isCancelled()).thenReturn(false);
         when(reservation.storeId()).thenReturn(store.getStoreId());
 
         assertTrue(store.cancelReservation(reservation));
-        verify(productInventory, times(1)).setQuantity(eq(laptop.productId()), anyInt());
+        verify(productInventory, times(1)).setQuantity(eq(laptop.getProductId()), anyInt());
     }
 
     @Test
     void testCancelReservationBad() {
         Reservation reservation = mock(Reservation.class);
-        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.productId(), 1));
+        when(reservation.productIdToQuantity()).thenReturn(Map.of(laptop.getProductId(), 1));
         when(reservation.isCancelled()).thenReturn(true);
         assertFalse(store.cancelReservation(reservation));
     }
@@ -551,7 +551,7 @@ class StoreTest {
         AtomicInteger counter = new AtomicInteger(0);
 
         ExecutorService service = Executors.newFixedThreadPool(2);
-        Map<String, Integer> toReserve = Map.of(laptop.productId(), 1);
+        Map<String, Integer> toReserve = Map.of(laptop.getProductId(), 1);
         Runnable test = () -> {
             Reservation r = store.reserveProducts(toReserve, "userId");
             if (r == null) {
@@ -571,7 +571,7 @@ class StoreTest {
 
     @Test
     void testConcurrentCancelReservation(){
-        Reservation reservation = new Reservation("userId","id",store.getStoreId(), Map.of(laptop.productId(), 1), null,null, null);
+        Reservation reservation = new Reservation("userId","id",store.getStoreId(), Map.of(laptop.getProductId(), 1), null,null, null);
         AtomicInteger counter = new AtomicInteger(0);
 
         ExecutorService service = Executors.newFixedThreadPool(2);
