@@ -1,8 +1,17 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
+import com.amazonas.common.requests.stores.GlobalSearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequestBuilder;
+import com.amazonas.common.requests.stores.StoreDetailsRequestBuilder;
+import com.amazonas.common.requests.stores.StoreSearchRequest;
 import com.amazonas.common.utils.Pair;
+import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -11,6 +20,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -35,6 +45,9 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static com.amazonas.common.permissions.actions.MarketActions.ALL;
 import static com.amazonas.frontend.control.AppController.*;
@@ -174,6 +187,8 @@ public abstract class BaseLayout extends AppLayout {
                 //openErrorDialog("Failed to connect to server", AppController::clearSession);
             }
         }
+        // add some products and stores to the page
+
     }
 
     public void returnToMainIfNotLogged(){
@@ -306,7 +321,10 @@ public abstract class BaseLayout extends AppLayout {
 
         content.add(dialog);
         dialog.open();
+
+
     }
+
 
     protected void showNotification(String msg) {
         Notification.show(msg,5000, Notification.Position.TOP_CENTER);
