@@ -207,7 +207,7 @@ public class AppController {
             if (isAdmin) {
                 profile = new AdminPermissionsProfile();
             } else {
-                List<UserPermissionsProfile> fetched4 = postCustom(Endpoints.GET_USER_PERMISSIONS, userId, token, "Bearer " + token, null);
+                List<UserPermissionsProfile> fetched4 = postCustom(Endpoints.GET_USER_PERMISSIONS, userId, token, "Bearer " + token, userId);
                 profile = fetched4.getFirst();
             }
         } catch (ApplicationException e) {

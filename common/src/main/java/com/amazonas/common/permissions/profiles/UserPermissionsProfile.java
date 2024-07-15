@@ -11,7 +11,7 @@ public class UserPermissionsProfile implements PermissionsProfile {
 
     private final String userId;
     private final DefaultPermissionsProfile defaultProfile;
-    private final Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
+    private Map<String,Set<StoreActions>> storeIdToAllowedStoreActions;
     private final Set<UserActions> allowedUserActions;
     private final Set<MarketActions> allowedMarketActions;
     private final ReadWriteLock lock;
@@ -126,6 +126,14 @@ public class UserPermissionsProfile implements PermissionsProfile {
         boolean result = allowedActions != null && allowedActions.contains(action);
         lock.releaseRead();
         return result;
+    }
+
+    @Override
+    public List<StoreActions> getStorePermissions(String storeId){
+        if(storeIdToAllowedStoreActions == null) {
+            storeIdToAllowedStoreActions = new HashMap<>();
+        }
+        return storeIdToAllowedStoreActions.getOrDefault(storeId, Set.of()).stream().toList();
     }
 
     @Override

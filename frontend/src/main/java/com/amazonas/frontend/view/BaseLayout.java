@@ -27,18 +27,22 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.util.List;
 
 import static com.amazonas.common.permissions.actions.MarketActions.ALL;
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
 @Component
-public abstract class BaseLayout extends AppLayout implements BeforeEnterObserver {
+public abstract class BaseLayout extends AppLayout {
 
     protected final VerticalLayout content;
     private final AppController appController;
@@ -46,6 +50,7 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterObserve
     protected SideNav nav1;
     protected SideNav nav2;
     protected String user;
+    PermissionsProfile permissionsProfile;
 
 
     public BaseLayout(AppController appController) {
@@ -57,17 +62,21 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterObserve
         Location activeViewLocation = current.getActiveViewLocation();
         params = activeViewLocation.getQueryParameters();
 
-        PermissionsProfile permissionsProfile = AppController.getPermissionsProfile();
-
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
         }
 
+        // set up guest user if needed
+        if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
+            if (! appController.enterAsGuest()) {
+                appController.enterAsGuest();
+                //openErrorDialog("Failed to connect to server", AppController::clearSession);
+            }
+        }
+        permissionsProfile = getPermissionsProfile();
+
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-//        String path = getPath("store", Pair.of("", store.storeId), Pair.of("", getCurrentUserId()));
-//        nav1.addItem(new SideNavItem("Store Management", path, VaadinIcon.STORAGE.create()));
-        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.STORAGE.create()));
 
         nav2 = new SideNav();
         nav2.setLabel("------------------");
@@ -96,18 +105,18 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterObserve
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         // put in the middle
         searchField.getStyle().set("margin-mid", "auto");
-
-        HorizontalLayout searchLayout = new HorizontalLayout(searchField);
-        searchLayout.setWidthFull();
-        searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-
-        // function to search for products and stores
         searchField.addValueChangeListener(event -> {
             String search = searchField.getValue();
             if (search.isEmpty()) {
                 return;
             }
             UI.getCurrent().navigate("search?search=" + search);
+
+        HorizontalLayout searchLayout = new HorizontalLayout(searchField);
+        searchLayout.setWidthFull();
+        searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+
+        // function to search for products and stores
         });
 
         // set up login/logout button
@@ -138,7 +147,7 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterObserve
             });
             previousOrdersButton.getStyle().set("margin-right", "20px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton, searchLayout);
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
 
@@ -166,14 +175,6 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterObserve
             logoutButton.getStyle().set("margin-left", "10px");
 
             addToNavbar(username, profileButton, logoutButton);
-        }
-
-        // set up guest user if needed
-        if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
-            if (! appController.enterAsGuest()) {
-                appController.enterAsGuest();
-                //openErrorDialog("Failed to connect to server", AppController::clearSession);
-            }
         }
     }
 
@@ -347,35 +348,4 @@ public abstract class BaseLayout extends AppLayout implements BeforeEnterObserve
     protected String getParam(String key) {
         return params.getSingleParameter(key).orElseThrow();
     }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        params = beforeEnterEvent.getLocation().getQueryParameters();
-        UI current = UI.getCurrent();
-        Location activeViewLocation = current.getActiveViewLocation();
-
-        // Check if the current view is StoreView
-        if (activeViewLocation.getPath().equals("store")) {
-            String storeId = params.getParameters().get("storeid").get(0);
-            addStoreManagementSideNav(storeId);
-        } else {
-            removeStoreManagementSideNav();
-        }
-    }
-
-    private void addStoreManagementSideNav(String storeId) {
-        nav1 = new SideNav();
-        nav1.addItem(new SideNavItem("Store Management",
-                getPath("storemanagement", Pair.of("storeid", storeId)),
-                VaadinIcon.STORAGE.create()));
-        addToDrawer(nav1);
-    }
-
-    private void removeStoreManagementSideNav() {
-        if (nav1 != null) {
-            remove(nav1);
-            nav1 = null;
-        }
-    }
-
 }

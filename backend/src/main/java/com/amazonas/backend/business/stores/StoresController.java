@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.stores;
 
+import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
 import com.amazonas.backend.business.stores.discountPolicies.Translator;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
@@ -28,18 +29,21 @@ public class StoresController {
     private final StoreRepository repository;
     private final TransactionRepository transactionRepository;
     private final ProductRepository productRepository;
+    private final PermissionsController permissionsController;
 
-    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository){
+    public StoresController(StoreFactory storeFactory, StoreRepository storeRepository, TransactionRepository transactionRepository, ProductRepository productRepository, PermissionsController permissionsController){
         this.storeFactory = storeFactory;
         this.repository = storeRepository;
         this.transactionRepository = transactionRepository;
         this.productRepository = productRepository;
+        this.permissionsController = permissionsController;
     }
 
-    public String addStore(String ownerID,String name, String description) throws StoreException {
+    public String addStore(String founderId,String name, String description) throws StoreException {
         if(doesNameExists(name))
             throw new StoreException("Store name already exists");
-        Store toAdd = storeFactory.get(ownerID,name,description);
+        Store toAdd = storeFactory.get(founderId,name,description);
+        permissionsController.addPermission(founderId, toAdd.getStoreId(),StoreActions.ALL);
         repository.saveStore(toAdd);
         return toAdd.getStoreId();
     }

@@ -5,24 +5,23 @@ import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 @Route("closeandreopen")
-public class CloseAndReopenStore extends BaseLayout {
+public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
-    private String storeId;
+    private String storeId = getParam("storeid");
 
     public CloseAndReopenStore(AppController appController) {
         super(appController);
         this.appController = appController;
-        storeId = getParam("storeid");
+    }
 
+    private void createView(){
         // Set the window title
         String newTitle = "Close/Reopen Store";
         H2 title = new H2(newTitle);
@@ -93,5 +92,13 @@ public class CloseAndReopenStore extends BaseLayout {
             throw new RuntimeException(e);
         }
         Notification.show("Store is reopened.");
+    }
+
+
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createView();
     }
 }

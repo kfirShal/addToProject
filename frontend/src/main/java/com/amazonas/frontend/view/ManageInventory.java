@@ -18,26 +18,31 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 import java.util.*;
 import java.util.function.Function;
 
 @Route("manageinventory")
-public class ManageInventory extends BaseLayout {
+public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
     private String storeId;
-    private final Grid<Product> grid;
-    private final POJOBinder<Product> binder;
-    private final Map<Boolean, List<Product>> products;
-    private final Dialog editDialog;
-    private final Dialog addDialog;
+    private Grid<Product> grid;
+    private POJOBinder<Product> binder;
+    private Map<Boolean, List<Product>> products;
+    private Dialog editDialog;
+    private Dialog addDialog;
     private Product currentProduct;
 
     public ManageInventory(AppController appController) {
         super(appController);
         this.appController = appController;
-//        storeId = getParam("storeid");
+    }
+
+    private void createView(){
+        storeId = getParam("storeid");
         binder = new POJOBinder<>(Product.class);
         grid = new Grid<>(Product.class);
         Map<Boolean, List<Product>> fetchedProducts = getProducts();
@@ -53,7 +58,6 @@ public class ManageInventory extends BaseLayout {
 
         List<Product> allP = new LinkedList<>();
         if (allP.isEmpty()) {
-            addSampleProducts();
         }
         allP.addAll(products.get(true));
         allP.addAll(products.get(false));
@@ -66,7 +70,7 @@ public class ManageInventory extends BaseLayout {
                 if (quantity.get(0) != null) {
                     idToQuantity.put(p.getProductId(), quantity.get(0));
                 }
-                } catch (ApplicationException e) {
+            } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }
         });
@@ -266,34 +270,22 @@ public class ManageInventory extends BaseLayout {
         return map;
     }
 
-    private Map<Boolean, List<Product>> addSampleProducts() {
-        products.computeIfAbsent(true, _ -> new LinkedList<>());
-        products.computeIfAbsent(false, _ -> new LinkedList<>());
-
-
-        // Sample product 1 with keywords
-        Product product1 = new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS);
-        product1.addKeyWords("fatass");
-        products.get(true).add(product1);
-
-        // Sample product 2 with keywords
-        Product product2 = new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS);
-        product2.addKeyWords("small");
-        products.get(false).add(product2);
-
-        return products;
-    }
-
     private void refreshGrid() {
         Map<Boolean, List<Product>> products = getProducts();
         if (products == null || products.isEmpty()) {
-            products = addSampleProducts();
         }
         List<Product> allP = new LinkedList<>();
         allP.addAll(products.get(true));
         allP.addAll(products.get(false));
         grid.setItems(allP);
     }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createView();
+    }
+
 }
 
 //TODO: connect storeId (present backend on gui)

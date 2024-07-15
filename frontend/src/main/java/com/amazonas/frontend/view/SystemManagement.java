@@ -30,12 +30,6 @@ public class SystemManagement extends BaseLayout {
         title.getStyle().set("align-self", "center");
         content.add(title);
 
-
-
-
-
-
-
         Button shutdownButton = new Button("Shutdown System", click -> {
             try {
                 appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, null);

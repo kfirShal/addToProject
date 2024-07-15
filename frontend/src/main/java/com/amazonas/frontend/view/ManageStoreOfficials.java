@@ -4,6 +4,7 @@ import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.StoreRole;
 import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.permissions.actions.StoreActions;
+import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.requests.stores.StorePermissionRequest;
 import com.amazonas.common.requests.stores.StoreStaffRequest;
 import com.amazonas.frontend.control.AppController;
@@ -18,29 +19,33 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Route("managestoreofficials")
-public class ManageStoreOfficials extends BaseLayout {
+public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
     private String storeId;
     private String userId;
-    private final Dialog addOwnerDialog;
-    private final Dialog addManagerDialog;
+    private Dialog addOwnerDialog;
+    private Dialog addManagerDialog;
     private final Grid<UserInformation> ownersGrid = new Grid<>();
     private final Grid<UserInformation> managersGrid = new Grid<>();
 
-    public ManageStoreOfficials(AppController appController) {
+    public ManageStoreOfficials(AppController appController)  {
         super(appController);
         this.appController = appController;
-        //storeId = getParam("storeid");
-        //userId = getParam("userid");
+    }
 
+    private void createView() {
+        storeId = getParam("storeid");
         // Set the window's title
         String newTitle = "Manage Store Officials";
         H2 title = new H2(newTitle);
@@ -52,26 +57,21 @@ public class ManageStoreOfficials extends BaseLayout {
         ownersTitle.getStyle().set("margin-top", "30px");
         ownersGrid.addColumn(UserInformation::getUserId).setHeader("ID");
         ownersGrid.addColumn(UserInformation::getEmail).setHeader("Email");
-        content.add(ownersTitle, ownersGrid);
 
-        ownersGrid.addComponentColumn(user -> {
-            Button removeButton = new Button("Remove Owner", click -> {
-                try {
-                    StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
-                    appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
-                    refreshGrid();
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
-                }
-            });
-            return removeButton;
-        });
+        ownersGrid.addComponentColumn(user -> new Button("Remove Owner", _ -> {
+            try {
+                StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
+                refreshGrid();
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
+        }));
 
         addOwnerDialog = createUserDialog("Add Owner", this::addOwner);
-        content.add(addOwnerDialog);
+
         Button addOwnerButton = new Button("Add", click -> addOwnerDialog.open());
         HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton);
-        content.add(ownersButtonsLayout);
 
         // Store Managers section
         H3 managersTitle = new H3("Store Managers");
@@ -82,7 +82,12 @@ public class ManageStoreOfficials extends BaseLayout {
         managersGrid.addComponentColumn(user -> {
             MultiSelectComboBox<String> permissionsComboBox = new MultiSelectComboBox<>();
             permissionsComboBox.setItems(fetchAvailablePermissions().stream().map(Enum::name).collect(Collectors.toList()));
-
+            try {
+                List<PermissionsProfile> prmissions = appController.postByEndpoint(Endpoints.GET_USER_PERMISSIONS, user.getUserId());
+                permissionsComboBox.setValue(prmissions.getFirst().getStorePermissions(storeId).stream().map(StoreActions::toString).toList());
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
             permissionsComboBox.addValueChangeListener(event -> {
                 Set<String> addedPermissions = event.getValue();
                 Set<String> removedPermissions = event.getOldValue();
@@ -92,7 +97,6 @@ public class ManageStoreOfficials extends BaseLayout {
                     try {
                         StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "ADD_PERMISSION_TO_MANAGER");
                         appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
-                        refreshGrid();
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
                     }
@@ -112,8 +116,6 @@ public class ManageStoreOfficials extends BaseLayout {
             return permissionsComboBox;
         }).setHeader("Permissions");
 
-        content.add(managersTitle, managersGrid);
-
         managersGrid.addComponentColumn(user  -> {
             Button removeButton = new Button("Remove Manager", click -> {
                 try {
@@ -128,11 +130,16 @@ public class ManageStoreOfficials extends BaseLayout {
         });
 
         addManagerDialog = createUserDialog("Add Manager", this::addManager);
-        content.add(addManagerDialog);
         Button addManagerButton = new Button("Add", click -> addManagerDialog.open());
         HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton);
-        content.add(managersButtonsLayout);
 
+        content.add(ownersTitle, ownersGrid);
+        content.add(addOwnerDialog);
+        content.add(ownersButtonsLayout);
+        content.add(managersTitle, managersGrid);
+        content.add(addManagerDialog);
+        content.add(managersButtonsLayout);
+        refreshGrid();
     }
 
     private Dialog createUserDialog(String dialogTitle, Runnable saveAction) {
@@ -188,7 +195,8 @@ public class ManageStoreOfficials extends BaseLayout {
         try {
             roles = appController.postByEndpoint(Endpoints.GET_STORE_ROLES_INFORMATION, storeId);
         } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+            openErrorDialog(e.getMessage());
+            return;
         }
 
         for (StorePosition idToRole : roles) {
@@ -202,6 +210,7 @@ public class ManageStoreOfficials extends BaseLayout {
                 }
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
+                return;
             }
         }
 
@@ -212,4 +221,11 @@ public class ManageStoreOfficials extends BaseLayout {
     private Set<StoreActions> fetchAvailablePermissions() {
         return Set.of(StoreActions.values());
     }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createView();
+    }
+
 }
