@@ -1,13 +1,16 @@
 package com.amazonas.common.utils;
 
+import com.amazonas.common.dtos.PaymentInfoDto;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.http.HttpHeaders;
+
 
 public class RealPayment {
     private String externalSystemUrl = "https://damp-lynna-wsep-1984852e.koyeb.app/";
@@ -23,6 +26,12 @@ public class RealPayment {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<String> request = new HttpEntity<>("action_type=handshake", headers);
+        //String request = APIFetcher.create()
+          //      .withUri(externalSystemUrl)
+            //    .withHeader("Content-Type", "application/x-www-form-urlencoded")
+              //  .withBody("action_type=handshake")
+                //.withPost()
+                //.fetch();
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(externalSystemUrl, request, String.class);
