@@ -27,9 +27,7 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -40,7 +38,7 @@ import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
 @Component
-public abstract class BaseLayout extends AppLayout {
+public abstract class BaseLayout extends AppLayout implements BeforeEnterObserver {
 
     protected final VerticalLayout content;
     private final AppController appController;
@@ -349,4 +347,35 @@ public abstract class BaseLayout extends AppLayout {
     protected String getParam(String key) {
         return params.getSingleParameter(key).orElseThrow();
     }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        UI current = UI.getCurrent();
+        Location activeViewLocation = current.getActiveViewLocation();
+
+        // Check if the current view is StoreView
+        if (activeViewLocation.getPath().equals("store")) {
+            String storeId = params.getParameters().get("storeid").get(0);
+            addStoreManagementSideNav(storeId);
+        } else {
+            removeStoreManagementSideNav();
+        }
+    }
+
+    private void addStoreManagementSideNav(String storeId) {
+        nav1 = new SideNav();
+        nav1.addItem(new SideNavItem("Store Management",
+                getPath("storemanagement", Pair.of("storeid", storeId)),
+                VaadinIcon.STORAGE.create()));
+        addToDrawer(nav1);
+    }
+
+    private void removeStoreManagementSideNav() {
+        if (nav1 != null) {
+            remove(nav1);
+            nav1 = null;
+        }
+    }
+
 }

@@ -37,17 +37,19 @@ public class ManageInventory extends BaseLayout {
     public ManageInventory(AppController appController) {
         super(appController);
         this.appController = appController;
-        storeId = getParam("storeid");
+//        storeId = getParam("storeid");
         binder = new POJOBinder<>(Product.class);
         grid = new Grid<>(Product.class);
         Map<Boolean, List<Product>> fetchedProducts = getProducts();
         products = fetchedProducts == null ? new HashMap<>() : fetchedProducts;
 
+        grid.removeAllColumns();
+
         // Set the window's title
         String newTitle = "Manage Inventory";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
-        content.add(title); // Use content from BaseLayout
+        content.add(title);
 
         List<Product> allP = new LinkedList<>();
         if (allP.isEmpty()) {
@@ -78,7 +80,6 @@ public class ManageInventory extends BaseLayout {
         grid.addColumn(Product::getCategory).setHeader("Category");
         grid.addColumn(Product::getDescription).setHeader("Description");
         grid.addColumn(Product::getRating).setHeader("Rating");
-        grid.addColumn(p -> idToQuantity.get(p.getProductId())).setHeader("Quantity");
 
         grid.addComponentColumn(product -> {
             MultiSelectComboBox<String> keywordsComboBox = new MultiSelectComboBox<>();
@@ -117,7 +118,7 @@ public class ManageInventory extends BaseLayout {
             Button editButton = new Button("Edit", click -> openEditDialog(product));
             return editButton;
         });
-        editDialog = createProductDialog("Edit Product", this::saveChanges);
+        editDialog = createProductDialog("Edit Product", this::editProduct);
         content.add(editDialog);
 
         grid.addComponentColumn(product -> {
@@ -207,6 +208,10 @@ public class ManageInventory extends BaseLayout {
         });
         formLayout.add(ratingField);
 
+        MultiSelectComboBox<String> keywordsField = new MultiSelectComboBox<>("Keywords");
+        binder.bind(keywordsField, "keyWords");
+        formLayout.add(keywordsField);
+
         Button saveButton = new Button("Save Changes", e -> saveAction.run());
         Button discardButton = new Button("Discard", e -> dialog.close());
         HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
@@ -215,15 +220,12 @@ public class ManageInventory extends BaseLayout {
     }
 
     private void openEditDialog(Product product) {
-        try {
+            currentProduct = product;
             binder.readObject(product);
             editDialog.open();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
-    private void saveChanges() {
+    private void editProduct() {
         binder.writeObject(currentProduct);
         try {
             ProductRequest request = new ProductRequest(storeId, currentProduct.getProductId());
@@ -294,5 +296,5 @@ public class ManageInventory extends BaseLayout {
     }
 }
 
-//TODO: connect storeId (present backend on gui). how should i add/edit keywords? not included in UPDATE_PRODUCT endpoint, openEditDialog doesnt show old products in dialog's fields
+//TODO: connect storeId (present backend on gui)
 

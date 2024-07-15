@@ -38,22 +38,14 @@ public class ManageStoreOfficials extends BaseLayout {
     public ManageStoreOfficials(AppController appController) {
         super(appController);
         this.appController = appController;
-        storeId = getParam("storeid");
-        userId = getParam("userid");
+        //storeId = getParam("storeid");
+        //userId = getParam("userid");
 
         // Set the window's title
         String newTitle = "Manage Store Officials";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
         content.add(title);
-
-
-
-
-
-
-
-
 
         // Store Owners section
         H3 ownersTitle = new H3("Store Owners");
@@ -67,7 +59,7 @@ public class ManageStoreOfficials extends BaseLayout {
                 try {
                     StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
                     appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
-                    //refreshGrid();
+                    refreshGrid();
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
                 }
@@ -80,20 +72,6 @@ public class ManageStoreOfficials extends BaseLayout {
         Button addOwnerButton = new Button("Add", click -> addOwnerDialog.open());
         HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton);
         content.add(ownersButtonsLayout);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         // Store Managers section
         H3 managersTitle = new H3("Store Managers");
@@ -114,7 +92,7 @@ public class ManageStoreOfficials extends BaseLayout {
                     try {
                         StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "ADD_PERMISSION_TO_MANAGER");
                         appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
-                        //refreshGrid();
+                        refreshGrid();
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
                     }
@@ -124,7 +102,7 @@ public class ManageStoreOfficials extends BaseLayout {
                     try {
                         StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "REMOVE_PERMISSION_FROM_MANAGER");
                         appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, permissionRequest);
-                        //refreshGrid();
+                        refreshGrid();
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
                     }
@@ -141,7 +119,7 @@ public class ManageStoreOfficials extends BaseLayout {
                 try {
                     StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
                     appController.postByEndpoint(Endpoints.REMOVE_MANAGER, request);
-                    //refreshGrid();
+                    refreshGrid();
                 } catch (ApplicationException e) {
                     openErrorDialog(e.getMessage());
                 }
@@ -156,16 +134,6 @@ public class ManageStoreOfficials extends BaseLayout {
         content.add(managersButtonsLayout);
 
     }
-
-
-
-
-
-
-
-
-
-
 
     private Dialog createUserDialog(String dialogTitle, Runnable saveAction) {
         Dialog dialog = new Dialog();
@@ -194,7 +162,7 @@ public class ManageStoreOfficials extends BaseLayout {
         StoreStaffRequest request = new StoreStaffRequest(storeId, userId, addedUserId);
         try {
             appController.postByEndpoint(Endpoints.ADD_OWNER, request);
-            //refreshGrid();
+            refreshGrid();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
@@ -206,25 +174,11 @@ public class ManageStoreOfficials extends BaseLayout {
         StoreStaffRequest request = new StoreStaffRequest(storeId, userId, addedUserId);
         try {
             appController.postByEndpoint(Endpoints.ADD_MANAGER, request);
-            //refreshGrid();
+            refreshGrid();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private void refreshGrid() {
         List<UserInformation> owners = new ArrayList<>();
@@ -259,5 +213,3 @@ public class ManageStoreOfficials extends BaseLayout {
         return Set.of(StoreActions.values());
     }
 }
-
-//TODO: refreshGrid crashes localhost

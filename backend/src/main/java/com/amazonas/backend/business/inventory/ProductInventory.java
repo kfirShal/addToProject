@@ -64,6 +64,9 @@ public class ProductInventory {
             product1.setRating(product.getRating());
             product1.setPrice(product.getPrice());
             product1.setDescription(product.getDescription());
+            product1.getKeyWords().clear();
+            product.getKeyWords().forEach(product1::addKeyWords);
+            product.getKeyWords().forEach(product1::addKeyWords);
             return true;
         }
         return false;
