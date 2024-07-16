@@ -83,16 +83,7 @@ public class SystemManagement extends BaseLayout {
 
         VerticalLayout shippingLayout = new VerticalLayout(shippingTitle, shippingGrid, addShippingButton);
         content.add(shippingLayout);
-
-
-
-
-
-
-
-
-
-
+        
         // Payment Companies Grid
         H3 paymentTitle = new H3("Payment Companies");
         paymentTitle.getStyle().set("margin-top", "30px");

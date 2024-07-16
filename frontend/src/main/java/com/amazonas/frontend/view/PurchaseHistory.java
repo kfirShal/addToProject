@@ -7,6 +7,7 @@ import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
@@ -42,8 +43,9 @@ public class PurchaseHistory extends BaseLayout implements BeforeEnterObserver {
         grid.addColumn(transaction -> collectionToString(transaction.getProductToQuantity().keySet())).setHeader("Products");
 
         storeId = getParam("storeid");
-        fetchAndPopulateTransactions();
-        content.add(grid);
+        if(fetchAndPopulateTransactions()){
+            content.add(grid);
+        }
     }
 
     private String collectionToString(Collection<Product> products) {
@@ -55,12 +57,18 @@ public class PurchaseHistory extends BaseLayout implements BeforeEnterObserver {
         return builder.toString();
     }
 
-    private void fetchAndPopulateTransactions() {
+    private boolean fetchAndPopulateTransactions() {
         try {
             transactions = appController.postByEndpoint(Endpoints.GET_STORE_TRANSACTION_HISTORY, storeId);
+            if(transactions == null || transactions.isEmpty()){
+                content.add(new Span("Nothing to show"));
+                return false;
+            }
             grid.setItems(transactions);
+            return true;
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
+            return false;
         }
     }
 

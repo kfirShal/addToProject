@@ -27,13 +27,13 @@ import com.vaadin.flow.router.Route;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Route("managestoreofficials")
 public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
     private String storeId;
-    private String userId;
     private Dialog addOwnerDialog;
     private Dialog addManagerDialog;
     private final Grid<UserInformation> ownersGrid = new Grid<>();
@@ -61,7 +61,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         ownersGrid.addComponentColumn(user -> new Button("Remove Owner", _ -> {
             if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_OWNER)) {
                 try {
-                    StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                    StoreStaffRequest request = new StoreStaffRequest(storeId, AppController.getCurrentUserId(), user.getUserId());
                     appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
                     refreshGrid();
                 } catch (ApplicationException e) {
@@ -137,7 +137,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
             Button removeButton = new Button("Remove Manager", click -> {
                 if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_MANAGER)) {
                     try {
-                        StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                        StoreStaffRequest request = new StoreStaffRequest(storeId, AppController.getCurrentUserId(), user.getUserId());
                         appController.postByEndpoint(Endpoints.REMOVE_MANAGER, request);
                         refreshGrid();
                     } catch (ApplicationException e) {
@@ -169,7 +169,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         refreshGrid();
     }
 
-    private Dialog createUserDialog(String dialogTitle, Runnable saveAction) {
+    private Dialog createUserDialog(String dialogTitle, Consumer<String> saveAction) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
@@ -181,7 +181,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         formLayout.add(userIdField);
 
         Button saveButton = new Button("Save Changes", e -> {
-            saveAction.run();
+            saveAction.accept(userIdField.getValue());
             dialog.close();
         });
         Button discardButton = new Button("Discard", e -> dialog.close());
@@ -190,10 +190,8 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         return dialog;
     }
 
-    private void addOwner() {
-        TextField userIdField = (TextField) addOwnerDialog.getChildren().filter(component -> component instanceof TextField).findFirst().get();
-        String addedUserId = userIdField.getValue();
-        StoreStaffRequest request = new StoreStaffRequest(storeId, userId, addedUserId);
+    private void addOwner(String userId) {
+        StoreStaffRequest request = new StoreStaffRequest(storeId, AppController.getCurrentUserId(), userId);
         try {
             appController.postByEndpoint(Endpoints.ADD_OWNER, request);
             refreshGrid();
@@ -202,10 +200,8 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         }
     }
 
-    private void addManager() {
-        TextField userIdField = (TextField) addOwnerDialog.getChildren().filter(component -> component instanceof TextField).findFirst().get();
-        String addedUserId = userIdField.getValue();
-        StoreStaffRequest request = new StoreStaffRequest(storeId, userId, addedUserId);
+    private void addManager(String userId) {
+        StoreStaffRequest request = new StoreStaffRequest(storeId, AppController.getCurrentUserId(), userId);
         try {
             appController.postByEndpoint(Endpoints.ADD_MANAGER, request);
             refreshGrid();
