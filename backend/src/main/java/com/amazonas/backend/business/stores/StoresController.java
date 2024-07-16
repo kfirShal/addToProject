@@ -188,7 +188,7 @@ public class StoresController {
         return getStore(storeId).getPurchasePolicyDTO();
     }
 
-    public boolean deleteAllPurchasePolicies(String storeId) throws StoreException {
+    public boolean removePurchasePolicy(String storeId) throws StoreException {
         return getStore(storeId).deleteAllPurchasePolicies();
     }
 

@@ -92,6 +92,10 @@ public class AppController {
         if (!response.success()) {
             throw new ApplicationException(response.message());
         }
+
+        if(clazz == Void.class){
+            return null;
+        }
         return response.payload(clazz);
     }
 
@@ -123,6 +127,9 @@ public class AppController {
         }
         if (!response.success()) {
             throw new ApplicationException(response.message());
+        }
+        if(clazz == Void.class){
+            return null;
         }
         return response.payload(clazz);
     }

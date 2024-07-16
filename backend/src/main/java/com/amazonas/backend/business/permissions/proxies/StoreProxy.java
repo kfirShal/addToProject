@@ -213,10 +213,10 @@ public class StoreProxy extends ControllerProxy {
         return real.getPurchasePolicyDTO(storeId);
     }
 
-    public boolean deleteAllPurchasePolicies(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public boolean removePurchasePolicy(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
-        return real.deleteAllPurchasePolicies(storeId);
+        return real.removePurchasePolicy(storeId);
     }
 
     public void changePurchasePolicy(String storeId, PurchaseRuleDTO purchaseRuleDTO, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {

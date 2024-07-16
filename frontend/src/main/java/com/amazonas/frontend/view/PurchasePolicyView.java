@@ -2,7 +2,9 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.PurchaseRuleDTO.*;
 import com.amazonas.common.requests.Request;
+import com.amazonas.common.requests.stores.PurchasePolicyRequest;
 import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,6 +27,7 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
     private final AppController appController;
     private TreeGrid<PurchaseRuleDTO> treeGrid;
     private PurchaseRuleTranslator translator;
+    private String storeId;
 
     public PurchasePolicyView(AppController appController) {
         super(appController);
@@ -35,6 +38,7 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
     private void initializeView() {
         H2 title = new H2("Purchase Policy");
         title.getStyle().set("text-align", "center");
+        storeId = getParam("storeid");
 
         // Button for adding new purchase policy
         Button addButton = new Button("Add New Purchase Policy", new Icon(VaadinIcon.PLUS));
@@ -50,10 +54,14 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
 
 
         treeGrid = new TreeGrid<>(PurchaseRuleDTO.class);
-//        Request r = new Request(userId,)
-//        try{
-//            appController.postByEndpoint(Endpoints.GET_PURCHASE_POLICY,)
-//        }
+
+        List<PurchaseRuleDTO> rules;
+        try{
+            rules = appController.postByEndpoint(Endpoints.GET_PURCHASE_POLICY, storeId);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
         List<PurchaseRuleDTO> exampleData = createExampleData();
         translator = new PurchaseRuleTranslator();
         treeGrid = translator.translateToTreeGrid(exampleData);
@@ -61,7 +69,14 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
 
         // Button for deleting purchase policy
         Button deleteButton = new Button("Delete Purchase Policy", new Icon(VaadinIcon.TRASH));
-        deleteButton.addClickListener(event -> treeGrid= translator.translateToTreeGrid(new ArrayList<>()));
+        deleteButton.addClickListener(event -> {
+            treeGrid = translator.translateToTreeGrid(new ArrayList<>());
+            try{
+                appController.postByEndpoint(Endpoints.REMOVE_PURCHASE_POLICY, storeId);
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
+        });
         // Layout for TreeGrid and Delete Button
         HorizontalLayout footer = new HorizontalLayout(deleteButton);
         footer.setWidthFull();
@@ -85,6 +100,12 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
     }
     public void setRules(List<PurchaseRuleDTO> rules) {
         treeGrid = translator.translateToTreeGrid(rules);
+        PurchasePolicyRequest request = new PurchasePolicyRequest(storeId, rules.getFirst());
+        try{
+            appController.postByEndpoint(Endpoints.ADD_PURCHASE_POLICY, request);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+        }
     }
 
 
