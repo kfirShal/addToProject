@@ -1,101 +1,80 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-@Route("example5")
-public class PurchaseHistory extends BaseLayout {
-    private final Grid<Transaction> grid;
+@Route("purchasehistory")
+public class PurchaseHistory extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
-    private final List<Transaction> transactions;
+    private String storeId;
+    private Grid<Transaction> grid;
+    private List<Transaction> transactions;;
 
     public PurchaseHistory(AppController appController) {
         super(appController);
         this.appController = appController;
+    }
 
-        // Sample transaction data
-        transactions = new ArrayList<>();
-        transactions.add(new Transaction("1", "User1", "2024-06-29", new ArrayList<>())); // Replace with actual data
-        // Add more sample transactions as needed
-
+    private void createView(){
         // Set the window title
         String newTitle = "Purchase History";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
         content.add(title); // Use content from BaseLayout
 
-        // Create and configure the grid
         grid = new Grid<>(Transaction.class);
-        grid.setItems(transactions);
 
-        // Clear default columns
         grid.removeAllColumns();
 
-        // Configure the columns manually
-        grid.addColumn(Transaction::getId).setHeader("ID");
+        grid.addColumn(Transaction::getTransactionId).setHeader("ID");
         grid.addColumn(Transaction::getUserId).setHeader("User ID");
-        grid.addColumn(Transaction::getDate).setHeader("Date");
-        grid.addColumn(Transaction::getProductsList).setHeader("Products");
+        grid.addColumn(Transaction::getDateOfTransaction).setHeader("Date");
+        grid.addColumn(transaction -> collectionToString(transaction.getProductToQuantity().keySet())).setHeader("Products");
 
-        content.add(grid); // Add grid to the content from BaseLayout
+        storeId = getParam("storeid");
+        if(fetchAndPopulateTransactions()){
+            content.add(grid);
+        }
     }
 
-    //TODO:
-    // make components such as add manager visible to only certain people based on their permissions
-    // connect to:
-    // GET_STORE_TRANSACTION_HISTORY
-
-
-    public static class Transaction {
-        private String id;
-        private String userId;
-        private String date;
-        private List<String> productsList;
-
-        public Transaction(String id, String userId, String date, List<String> productsList) {
-            this.id = id;
-            this.userId = userId;
-            this.date = date;
-            this.productsList = productsList;
+    private String collectionToString(Collection<Product> products) {
+        StringBuilder builder = new StringBuilder();
+        for(Product p: products){
+            builder.append(p.getProductName()).append(",");
         }
+        builder.deleteCharAt(builder.length()-1);
+        return builder.toString();
+    }
 
-        public String getId() {
-            return id;
+    private boolean fetchAndPopulateTransactions() {
+        try {
+            transactions = appController.postByEndpoint(Endpoints.GET_STORE_TRANSACTION_HISTORY, storeId);
+            if(transactions == null || transactions.isEmpty()){
+                content.add(new Span("Nothing to show"));
+                return false;
+            }
+            grid.setItems(transactions);
+            return true;
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return false;
         }
+    }
 
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-
-        public List<String> getProductsList() {
-            return productsList;
-        }
-
-        public void setProductsList(List<String> productsList) {
-            this.productsList = productsList;
-        }
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createView();
     }
 }

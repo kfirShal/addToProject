@@ -2,6 +2,7 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -55,17 +56,6 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
 
         FrontendStore store = new FrontendStore(storeDetails.storeName(), storeDetails.storeDescription(), storeDetails.storeRating(), products);
 
-
-//        // Example store details
-//        List<Product> products = List.of(
-//                new Product("1", "Product 1", 19.99, "Category 1", "Description for product 1.", Rating.FOUR_STARS, "store1"),
-//                new Product("2", "Product 2", 29.99, "Category 2", "Description for product 2.", Rating.THREE_STARS, "store1"),
-//                new Product("3", "Product 3", 39.99, "Category 3", "Description for product 3.", Rating.FIVE_STARS, "store1"),
-//                new Product("4", "Product 4", 49.99, "Category 4", "Description for product 4.", Rating.TWO_STARS, "store1"),
-//                new Product("5", "Product 5", 59.99, "Category 5", "Description for product 5.", Rating.ONE_STAR, "store1"),
-//                new Product("6", "Product 6", 69.99, "Category 6", "Description for product 6.", Rating.FOUR_STARS, "store1")
-//        );
-//        Store store = new Store("Sample Store", "This is a sample store description.", Rating.FIVE_STARS, products);
 
         // Store name
         H2 storeName = new H2(store.storeName());
@@ -153,6 +143,16 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
 
         // Add to content
         content.add(layout);
+
+        if(permissionsProfile.getStoreIds().contains(storeId) || permissionsProfile.hasPermission(MarketActions.ALL)){
+            // Manage Store button
+            Button manageStoreButton = new Button("Manage Store");
+            manageStoreButton.addClickListener(event -> {
+                String url = getPath("storemanagement", Pair.of("storeid", storeId));
+                getUI().ifPresent(ui -> ui.navigate(url));
+            });
+            content.add(manageStoreButton);
+        }
     }
 
     @Override

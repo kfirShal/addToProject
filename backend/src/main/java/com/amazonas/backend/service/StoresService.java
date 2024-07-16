@@ -7,7 +7,7 @@ import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.permissions.proxies.StoreProxy;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
@@ -75,8 +75,8 @@ public class StoresService {
         Request request = Request.from(json);
         try {
             StoreCreationRequest toAdd = StoreCreationRequest.from(request.payload());
-            proxy.addStore(toAdd.founderId(), toAdd.storeName(), toAdd.description(), request.userId(), request.token());
-            return Response.getOk();
+            String storeId = proxy.addStore(toAdd.founderId(), toAdd.storeName(), toAdd.description(), request.userId(), request.token());
+            return Response.getOk(storeId);
         } catch (StoreException | NoPermissionException | AuthenticationFailedException  e) {
             return Response.getError(e);
         }
@@ -280,7 +280,7 @@ public class StoresService {
     public String getStoreTransactionHistory(String json){
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
+            String storeId = request.payload();
             List<Transaction> result = proxy.getStoreTransactionHistory(storeId, request.userId(), request.token());
             return Response.getOk(result);
         } catch (NoPermissionException | AuthenticationFailedException e) {

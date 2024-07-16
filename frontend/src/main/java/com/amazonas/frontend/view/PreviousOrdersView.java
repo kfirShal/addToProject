@@ -49,6 +49,7 @@ public class PreviousOrdersView extends BaseLayout{
         }
         catch (Exception e){
             openErrorDialog(e.getMessage());
+            return;
         }
         if (transactions == null || transactions.isEmpty()) {
             VerticalLayout noTransactionsLayout = new VerticalLayout();

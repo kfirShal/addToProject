@@ -29,7 +29,6 @@ public class Profile extends BaseLayout {
         returnToMainIfNotLogged();
 
 
-
         // Header
         String message = "My Profile";
         H2 header = new H2(message);

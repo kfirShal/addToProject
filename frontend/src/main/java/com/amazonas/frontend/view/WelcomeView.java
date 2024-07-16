@@ -47,9 +47,9 @@ public class WelcomeView extends BaseLayout {
         try {
             products = appController.postByEndpoint(Endpoints.SEARCH_PRODUCTS_GLOBALLY, productRequest);
             stores = appController.postByEndpoint(Endpoints.SEARCH_STORES_GLOBALLY, storeRequest);
-
         } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+            openErrorDialog(e.getMessage());
+            return;
         }
 
         H1 storeTitle = new H1("Stores");

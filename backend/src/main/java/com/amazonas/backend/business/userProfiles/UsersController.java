@@ -14,6 +14,7 @@ import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +99,13 @@ public class UsersController {
     // ================================ USER MANAGEMENT ============================== |
     // =============================================================================== |
 
+    public UserInformation getUserInformation(String requestedUserId) throws UserException {
+        RegisteredUser user = (RegisteredUser) userRepository.getUser(requestedUserId);
+        if(user == null){
+            throw new UserException("The user does not exists");
+        }
+        return new UserInformation(user.getUserId(), user.getEmail(), user.getBirthDate());
+    }
 
     public void register(String email, String userId, String password, LocalDate birthDate) throws UserException {
 
