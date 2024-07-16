@@ -35,6 +35,8 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.amazonas.common.permissions.actions.MarketActions.ALL;
@@ -302,7 +304,10 @@ public abstract class BaseLayout extends AppLayout {
 
         content.add(dialog);
         dialog.open();
+
+
     }
+
 
     protected void showNotification(String msg) {
         Notification.show(msg,5000, Notification.Position.TOP_CENTER);

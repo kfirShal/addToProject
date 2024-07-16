@@ -237,6 +237,7 @@ public class Store {
                     continue;
                 }
                 Set<String> keywords = product.getKeyWords();
+                // If no keywords are specified, nothing is added TODO: Check if this is the desired behavior
                 for (String keyword : request.keyWords()) {
                     if(keywords.stream().anyMatch(s -> s.contains(keyword))){
                         if (!toReturn.contains(product)) {

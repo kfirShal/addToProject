@@ -347,9 +347,12 @@ public class UsersController {
                         log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.getStoreName());
                     }
                 });
-
             }
             log.debug("Documented the transactions successfully");
+
+            for (Reservation r : reservations) {
+                reservationRepository.removeReservation(userId, r);
+            }
 
             // give the user a new empty cart
             shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
