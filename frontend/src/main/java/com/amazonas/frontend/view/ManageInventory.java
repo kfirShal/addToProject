@@ -65,17 +65,21 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
         allP.addAll(products.get(false));
 
         Map<String, Integer> idToQuantity = new HashMap<>();
-        allP.forEach(p -> {
-            ProductRequest request = new ProductRequest(storeId, new Product(p.getProductId()));
-            try {
-                List<Integer> quantity = appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, request);
-                if (quantity.get(0) != null) {
-                    idToQuantity.put(p.getProductId(), quantity.get(0));
+        if (permissionsProfile.hasPermission(storeId, StoreActions.GET_PRODUCT_QUANTITY)) {
+            allP.forEach(p -> {
+                ProductRequest request = new ProductRequest(storeId, new Product(p.getProductId()));
+                try {
+                    List<Integer> quantity = appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, request);
+                    if (quantity.get(0) != null) {
+                        idToQuantity.put(p.getProductId(), quantity.get(0));
+                    }
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
                 }
-            } catch (ApplicationException e) {
-                openErrorDialog(e.getMessage());
-            }
-        });
+            });
+        } else {
+            showNoPermissionNotification();
+        }
 
         grid.setItems(allP);
 
