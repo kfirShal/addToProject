@@ -1,4 +1,4 @@
-package com.amazonas.common.dtos;
+package com.amazonas.backend.business.shipping;
 
 public class SupplyInfoDto {
     private String name;
