@@ -16,6 +16,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.textfield.TextField;
@@ -24,7 +25,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,18 +59,28 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         ownersGrid.addColumn(UserInformation::getEmail).setHeader("Email");
 
         ownersGrid.addComponentColumn(user -> new Button("Remove Owner", _ -> {
-            try {
-                StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
-                appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
-                refreshGrid();
-            } catch (ApplicationException e) {
-                openErrorDialog(e.getMessage());
+            if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_OWNER)) {
+                try {
+                    StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                    appController.postByEndpoint(Endpoints.REMOVE_OWNER, request);
+                    refreshGrid();
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
+                }
+            } else {
+                Notification.show("You do not have permission to remove an owner.");
             }
         }));
 
         addOwnerDialog = createUserDialog("Add Owner", this::addOwner);
 
-        Button addOwnerButton = new Button("Add", click -> addOwnerDialog.open());
+        Button addOwnerButton = new Button("Add", click -> {
+            if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_OWNER)) {
+                addOwnerDialog.open();
+            } else {
+                Notification.show("You do not have permission to add an owner.");
+            }
+        });
         HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton);
 
         // Store Managers section
@@ -94,43 +104,60 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
                 removedPermissions.removeAll(addedPermissions);
 
                 addedPermissions.forEach(permission -> {
-                    try {
-                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), StoreActions.ADD_PERMISSION_TO_MANAGER.toString());
-                        appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
-                    } catch (ApplicationException e) {
-                        openErrorDialog(e.getMessage());
+                    if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_PERMISSION_TO_MANAGER)) {
+                        try {
+                            StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), permission);
+                            appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
+                        } catch (ApplicationException e) {
+                            openErrorDialog(e.getMessage());
+                        }
+                    } else {
+                        Notification.show("You do not have permission to add this permission.");
                     }
                 });
 
                 removedPermissions.forEach(permission -> {
+                    if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_PERMISSION_FROM_MANAGER)) {
+                        try {
+                            StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), permission);
+                            appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, permissionRequest);
+                            refreshGrid();
+                        } catch (ApplicationException e) {
+                            openErrorDialog(e.getMessage());
+                        }
+                    } else {
+                        Notification.show("You do not have permission to remove this permission.");
+                    }
+                });
+            });
+            return permissionsComboBox;
+        }).setHeader("Permissions");
+
+        managersGrid.addComponentColumn(user -> {
+            Button removeButton = new Button("Remove Manager", click -> {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_MANAGER)) {
                     try {
-                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), StoreActions.REMOVE_PERMISSION_FROM_MANAGER.toString());
-                        appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, permissionRequest);
+                        StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
+                        appController.postByEndpoint(Endpoints.REMOVE_MANAGER, request);
                         refreshGrid();
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
                     }
-                });
-            });
-
-            return permissionsComboBox;
-        }).setHeader("Permissions");
-
-        managersGrid.addComponentColumn(user  -> {
-            Button removeButton = new Button("Remove Manager", click -> {
-                try {
-                    StoreStaffRequest request = new StoreStaffRequest(storeId, userId, user.getUserId());
-                    appController.postByEndpoint(Endpoints.REMOVE_MANAGER, request);
-                    refreshGrid();
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
+                } else {
+                    Notification.show("You do not have permission to remove a manager.");
                 }
             });
             return removeButton;
         });
 
         addManagerDialog = createUserDialog("Add Manager", this::addManager);
-        Button addManagerButton = new Button("Add", click -> addManagerDialog.open());
+        Button addManagerButton = new Button("Add", click -> {
+            if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_MANAGER)) {
+                addManagerDialog.open();
+            } else {
+                Notification.show("You do not have permission to add a manager.");
+            }
+        });
         HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton);
 
         content.add(ownersTitle, ownersGrid);

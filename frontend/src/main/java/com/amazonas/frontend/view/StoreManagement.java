@@ -2,6 +2,7 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.StoreRole;
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
@@ -72,7 +73,7 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
                 getUI().ifPresent(ui -> ui.navigate(url));
             }
             if (VIEW_PURCHASE_HISTORY.equals(item)) {
-                if (permissionsProfile.hasPermission(storeId, StoreActions.VIEW_STORE_TRANSACTIONS)) {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.VIEW_STORE_TRANSACTIONS) || permissionsProfile.hasPermission(MarketActions.ALL)) {
                     String url = getPath("purchasehistory", Pair.of("storeid", storeId));
                     getUI().ifPresent(ui -> ui.navigate(url));
                 } else {
@@ -81,28 +82,30 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
             }
 
             if (CLOSE_REOPEN_STORE.equals(item)) {
-                List<StorePosition> positions;
-                try {
-                    positions = appController.postByEndpoint(Endpoints.GET_STORE_ROLES_INFORMATION,storeId);
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
-                    return;
-                }
-
-                boolean isFounder = positions.stream()
-                        .filter(p -> p.role() == StoreRole.STORE_FOUNDER)
-                        .toList()
-                        .getFirst()
-                        .userId()
-                        .equalsIgnoreCase(AppController.getCurrentUserId());
-
-
-                if(isFounder){
+//                List<StorePosition> positions;
+//                try {
+//                    positions = appController.postByEndpoint(Endpoints.GET_STORE_ROLES_INFORMATION,storeId);
+//                } catch (ApplicationException e) {
+//                    openErrorDialog(e.getMessage());
+//                    return;
+//                }
+//
+//                boolean isFounder = positions.stream()
+//                        .filter(p -> p.role() == StoreRole.STORE_FOUNDER)
+//                        .toList()
+//                        .getFirst()
+//                        .userId()
+//                        .equalsIgnoreCase(AppController.getCurrentUserId());
+//
+//                boolean isSystemManager = permissionsProfile.hasPermission();
+//
+//
+//                if(isFounder || isSystemManager){
                     String url = getPath("closeandreopen", Pair.of("storeid", storeId));
                     getUI().ifPresent(ui -> ui.navigate(url));
-                } else {
-                    Notification.show("You do not have permissions to close and open the store!!");
-                }
+//                } else {
+//                    Notification.show("You do not have permissions to close and open the store!!");
+//                }
             }
         });
 

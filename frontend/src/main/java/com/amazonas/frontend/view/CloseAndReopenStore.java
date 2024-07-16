@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
@@ -78,7 +79,7 @@ public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserv
     }
 
     private void closeStore() {
-        if (permissionsProfile.hasPermission(storeId, StoreActions.CLOSE_STORE)) {
+        if (permissionsProfile.hasPermission(storeId, StoreActions.CLOSE_STORE) || permissionsProfile.hasPermission(MarketActions.ALL)) {
             try {
                 appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
                 Notification.show("Store is closed.");

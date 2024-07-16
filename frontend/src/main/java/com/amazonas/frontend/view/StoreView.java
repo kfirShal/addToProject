@@ -2,6 +2,7 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -143,7 +144,7 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
         // Add to content
         content.add(layout);
 
-        if(permissionsProfile.getStoreIds().contains(storeId)){
+        if(permissionsProfile.getStoreIds().contains(storeId) || permissionsProfile.hasPermission(MarketActions.ALL)){
             // Manage Store button
             Button manageStoreButton = new Button("Manage Store");
             manageStoreButton.addClickListener(event -> {
