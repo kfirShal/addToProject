@@ -62,7 +62,7 @@ public class OpenStore extends BaseLayout {
             return;
         }
         try {
-            StoreCreationRequest request = new StoreCreationRequest(userId, storeName, description);
+            StoreCreationRequest request = new StoreCreationRequest(storeName, description, userId);
             appController.postByEndpoint(Endpoints.ADD_STORE, request);
 
             Notification.show("Store opened successfully!");

@@ -1,6 +1,7 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.ProductRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
@@ -15,6 +16,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -100,16 +102,20 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
                 quantityField.setValue(quantity.toString());
             }
             quantityField.addValueChangeListener(event -> {
-                String value = event.getValue();
-                try {
-                    int newQuantity = Integer.parseInt(value);
-                    idToQuantity.put(product.getProductId(), newQuantity);
-                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
-                    appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, request);
-                } catch (NumberFormatException e) {
-                    openErrorDialog("Invalid quantity format");
-                } catch (ApplicationException e) {
-                    openErrorDialog("Failed to update quantity: " + e.getMessage());
+                if (permissionsProfile.hasPermission(storeId, StoreActions.SET_PRODUCT_QUANTITY)) {
+                    String value = event.getValue();
+                    try {
+                        int newQuantity = Integer.parseInt(value);
+                        idToQuantity.put(product.getProductId(), newQuantity);
+                        ProductRequest request = new ProductRequest(storeId, product.getProductId());
+                        appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, request);
+                    } catch (NumberFormatException e) {
+                        openErrorDialog("Invalid quantity format");
+                    } catch (ApplicationException e) {
+                        openErrorDialog("Failed to update quantity: " + e.getMessage());
+                    }
+                } else {
+                    showNoPermissionNotification();
                 }
             });
             layout.add(quantityField);
@@ -119,7 +125,13 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
         grid.setItems(allP);
 
         grid.addComponentColumn(product -> {
-            Button editButton = new Button("Edit", click -> openEditDialog(product));
+            Button editButton = new Button("Edit", click -> {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.UPDATE_PRODUCT)) {
+                    openEditDialog(product);
+                } else {
+                    showNoPermissionNotification();
+                }
+            });
             return editButton;
         });
         editDialog = createProductDialog("Edit Product", this::editProduct);
@@ -127,13 +139,18 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
 
         grid.addComponentColumn(product -> {
             Button toggleButton = new Button(products.get(true).contains(product) ? "Disable" : "Enable", click -> {
-                try {
-                    Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
-                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
-                    appController.postByEndpoint(endpoint, request);
-                    refreshGrid();
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
+                StoreActions action = products.get(true).contains(product) ? StoreActions.DISABLE_PRODUCT : StoreActions.ENABLE_PRODUCT;
+                if (permissionsProfile.hasPermission(storeId, action)) {
+                    try {
+                        Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
+                        ProductRequest request = new ProductRequest(storeId, product.getProductId());
+                        appController.postByEndpoint(endpoint, request);
+                        refreshGrid();
+                    } catch (ApplicationException e) {
+                        openErrorDialog(e.getMessage());
+                    }
+                } else {
+                    showNoPermissionNotification();
                 }
             });
             return toggleButton;
@@ -141,20 +158,30 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
 
         grid.addComponentColumn(product -> {
             Button removeButton = new Button("Remove", click -> {
-                try {
-                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
-                    appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, request);
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
+                if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_PRODUCT)) {
+                    try {
+                        ProductRequest request = new ProductRequest(storeId, product.getProductId());
+                        appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, request);
+                        refreshGrid();
+                    } catch (ApplicationException e) {
+                        openErrorDialog(e.getMessage());
+                    }
+                } else {
+                    showNoPermissionNotification();
                 }
-                refreshGrid();
             });
             return removeButton;
         });
 
         content.add(grid);
 
-        Button addButton = new Button("Add", click -> openAddDialog());
+        Button addButton = new Button("Add", click -> {
+            if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_PRODUCT)) {
+                openAddDialog();
+            } else {
+                showNoPermissionNotification();
+            }
+        });
         HorizontalLayout addButtonLayout = new HorizontalLayout(addButton);
         addButtonLayout.getStyle().set("justify-content", "center");
         content.add(addButtonLayout);
@@ -280,13 +307,13 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
         grid.setItems(allP);
     }
 
+    private void showNoPermissionNotification() {
+        Notification.show("You do not have the right permissions to perform this action.");
+    }
+
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         params = beforeEnterEvent.getLocation().getQueryParameters();
         createView();
     }
-
 }
-
-//TODO: connect storeId (present backend on gui)
-

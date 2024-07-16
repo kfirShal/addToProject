@@ -1,9 +1,15 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
@@ -13,6 +19,12 @@ import java.util.List;
 @Route("storemanagement")
 public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
 
+    public static final String MANAGE_INVENTORY = "Manage Inventory";
+    public static final String MANAGE_STORE_OFFICIALS = "Manage Store Officials";
+    public static final String PURCHASE_POLICY = "Purchase Policy";
+    public static final String DISCOUNT_POLICY = "Discount Policy";
+    public static final String VIEW_PURCHASE_HISTORY = "View Purchase History";
+    public static final String CLOSE_REOPEN_STORE = "Close & Reopen Store";
     private final AppController appController;
 
     public StoreManagement(AppController appController) {
@@ -31,7 +43,7 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
 
         // Create a grid with 5 items
         Grid<String> grid = new Grid<>();
-        List<String> items = Arrays.asList("Manage Inventory", "Manage Store Officials", "Purchase & Discount Policy", "View Purchase History", "Close & Reopen Store");
+        List<String> items = Arrays.asList(MANAGE_INVENTORY, MANAGE_STORE_OFFICIALS, PURCHASE_POLICY, DISCOUNT_POLICY, VIEW_PURCHASE_HISTORY, CLOSE_REOPEN_STORE);
 
         grid.setItems(items);
         grid.addColumn(item -> item).setHeader("Operations");
@@ -39,25 +51,58 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
         grid.addItemClickListener(event -> {
             String item = event.getItem();
             // Navigate to a new view based on the item clicked
-            if ("Manage Inventory".equals(item)) {
+            if (MANAGE_INVENTORY.equals(item)) {
                 String url = getPath("manageinventory", Pair.of("storeid", storeId));
                 getUI().ifPresent(ui -> ui.navigate(url));
             }
-            if ("Manage Store Officials".equals(item)) {
-                String url = getPath("managestoreofficials", Pair.of("storeid", storeId));
+            if (MANAGE_STORE_OFFICIALS.equals(item)) {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.VIEW_ROLES_INFORMATION)) {
+                    String url = getPath("managestoreofficials", Pair.of("storeid", storeId));
+                    getUI().ifPresent(ui -> ui.navigate(url));
+                } else {
+                    Notification.show("You do not have permission to view store officials");
+                }
+            }
+            if (PURCHASE_POLICY.equals(item)) {
+                String url = getPath("purchasepolicy", Pair.of("storeid", storeId));
                 getUI().ifPresent(ui -> ui.navigate(url));
             }
-            if ("Purchase & Discount Policy".equals(item)) {
-                String url = getPath("purchaseanddiscout", Pair.of("storeid", storeId));
+            if (DISCOUNT_POLICY.equals(item)) {
+                String url = getPath("discountpolicy", Pair.of("storeid", storeId));
                 getUI().ifPresent(ui -> ui.navigate(url));
             }
-            if ("View Purchase History".equals(item)) {
-                String url = getPath("purchasehistory", Pair.of("storeid", storeId));
-                getUI().ifPresent(ui -> ui.navigate(url));
+            if (VIEW_PURCHASE_HISTORY.equals(item)) {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.VIEW_STORE_TRANSACTIONS)) {
+                    String url = getPath("purchasehistory", Pair.of("storeid", storeId));
+                    getUI().ifPresent(ui -> ui.navigate(url));
+                } else {
+                    Notification.show("You do not have permission to view purchase history.");
+                }
             }
-            if ("Close & Reopen Store".equals(item)) {
-                String url = getPath("closeandreopen", Pair.of("storeid", storeId));
-                getUI().ifPresent(ui -> ui.navigate(url));
+
+            if (CLOSE_REOPEN_STORE.equals(item)) {
+                List<StorePosition> positions;
+                try {
+                    positions = appController.postByEndpoint(Endpoints.GET_STORE_ROLES_INFORMATION,storeId);
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
+                    return;
+                }
+
+                boolean isFounder = positions.stream()
+                        .filter(p -> p.role() == StoreRole.STORE_FOUNDER)
+                        .toList()
+                        .getFirst()
+                        .userId()
+                        .equalsIgnoreCase(AppController.getCurrentUserId());
+
+
+                if(isFounder){
+                    String url = getPath("closeandreopen", Pair.of("storeid", storeId));
+                    getUI().ifPresent(ui -> ui.navigate(url));
+                } else {
+                    Notification.show("You do not have permissions to close and open the store!!");
+                }
             }
         });
 

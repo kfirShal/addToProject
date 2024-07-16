@@ -139,6 +139,8 @@ public class DataGenerator {
         usersController.addProductToCart("user4",store4Id, product8.getProductId(),5);
         usersController.addProductToCart("user5",store5Id, product9.getProductId(),5);
         usersController.addProductToCart("user5",store5Id, product10.getProductId(),5);
+
+        System.out.println("Store1 id: "+store1Id);
     }
 
 

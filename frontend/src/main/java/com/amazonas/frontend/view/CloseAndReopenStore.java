@@ -10,6 +10,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.amazonas.common.permissions.actions.StoreActions;
+
 
 @Route("closeandreopen")
 public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserver {
@@ -26,7 +28,7 @@ public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserv
         String newTitle = "Close/Reopen Store";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
-        content.add(title); // Use content from BaseLayout
+        content.add(title);
 
         // Close store button
         Button closeStoreButton = new Button("Close Store");
@@ -54,7 +56,6 @@ public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserv
     }
 
     private void showCloseStoreConfirmation() {
-        // Create a confirmation dialog
         Dialog confirmationDialog = new Dialog();
         confirmationDialog.setCloseOnEsc(false);
         confirmationDialog.setCloseOnOutsideClick(false);
@@ -77,24 +78,30 @@ public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserv
     }
 
     private void closeStore() {
-        try {
-            appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
-        } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+        if (permissionsProfile.hasPermission(storeId, StoreActions.CLOSE_STORE)) {
+            try {
+                appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
+                Notification.show("Store is closed.");
+            } catch (ApplicationException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            Notification.show("You do not have permission to close the store.");
         }
-        Notification.show("Store is closed.");
     }
 
     private void reopenStore() {
-        try {
-            appController.postByEndpoint(Endpoints.OPEN_STORE, storeId);
-        } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+        if (permissionsProfile.hasPermission(storeId, StoreActions.OPEN_STORE)) {
+            try {
+                appController.postByEndpoint(Endpoints.OPEN_STORE, storeId);
+                Notification.show("Store is reopened.");
+            } catch (ApplicationException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            Notification.show("You do not have permission to reopen the store.");
         }
-        Notification.show("Store is reopened.");
     }
-
-
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {

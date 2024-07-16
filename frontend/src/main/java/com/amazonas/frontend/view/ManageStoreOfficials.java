@@ -95,7 +95,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
 
                 addedPermissions.forEach(permission -> {
                     try {
-                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "ADD_PERMISSION_TO_MANAGER");
+                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), StoreActions.ADD_PERMISSION_TO_MANAGER.toString());
                         appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
                     } catch (ApplicationException e) {
                         openErrorDialog(e.getMessage());
@@ -104,7 +104,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
 
                 removedPermissions.forEach(permission -> {
                     try {
-                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), "REMOVE_PERMISSION_FROM_MANAGER");
+                        StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), StoreActions.REMOVE_PERMISSION_FROM_MANAGER.toString());
                         appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, permissionRequest);
                         refreshGrid();
                     } catch (ApplicationException e) {

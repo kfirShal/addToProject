@@ -49,7 +49,6 @@ public abstract class BaseLayout extends AppLayout {
     protected QueryParameters params;
     protected SideNav nav1;
     protected SideNav nav2;
-    protected String user;
     PermissionsProfile permissionsProfile;
 
 
@@ -218,7 +217,6 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             if (appController.login(username, password)) {
-                this.user = username;
                 showNotification("Login successful");
                 UI.getCurrent().getPage().reload();
             } else {
@@ -238,10 +236,6 @@ public abstract class BaseLayout extends AppLayout {
         content.add(dialog);
         dialog.open();
 
-    }
-
-    public String getName() {
-        return user;
     }
 
     protected void openRegisterDialog(){

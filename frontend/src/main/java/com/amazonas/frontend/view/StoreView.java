@@ -143,14 +143,15 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
         // Add to content
         content.add(layout);
 
-        // Manage Store button
-        Button manageStoreButton = new Button("Manage Store");
-        manageStoreButton.addClickListener(event -> {
-            String url = getPath("storemanagement", Pair.of("storeid", storeId));
-            getUI().ifPresent(ui -> ui.navigate(url));
-        });
-        content.add(manageStoreButton);
-
+        if(permissionsProfile.getStoreIds().contains(storeId)){
+            // Manage Store button
+            Button manageStoreButton = new Button("Manage Store");
+            manageStoreButton.addClickListener(event -> {
+                String url = getPath("storemanagement", Pair.of("storeid", storeId));
+                getUI().ifPresent(ui -> ui.navigate(url));
+            });
+            content.add(manageStoreButton);
+        }
     }
 
     @Override

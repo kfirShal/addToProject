@@ -78,7 +78,7 @@ public class SystemManagement extends BaseLayout {
             return removeButton;
         });
 
-        Button addShippingButton = new Button("Add", click -> {
+        Button addShippingButton = new Button("Add Company", click -> {
         });
 
         VerticalLayout shippingLayout = new VerticalLayout(shippingTitle, shippingGrid, addShippingButton);
@@ -112,7 +112,7 @@ public class SystemManagement extends BaseLayout {
             return removeButton;
         });
 
-        Button addPaymentButton = new Button("Add", click -> {
+        Button addPaymentButton = new Button("Add Company", click -> {
         });
 
         VerticalLayout paymentLayout = new VerticalLayout(paymentTitle, paymentGrid, addPaymentButton);
