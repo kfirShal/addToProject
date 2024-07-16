@@ -11,10 +11,11 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
+import static com.amazonas.frontend.control.AppController.getCurrentUserId;
+
 @Route("openstore")
 public class OpenStore extends BaseLayout {
     private final AppController appController;
-    private final TextField userIdField;
     private final TextField storeNameField;
     private final TextField descriptionField;
 
@@ -30,15 +31,13 @@ public class OpenStore extends BaseLayout {
 
 
         // set form layout
-        userIdField = new TextField("User ID");
-
         storeNameField = new TextField("Store Name");
 
         descriptionField = new TextField("Description");
 
         FormLayout formLayout = new FormLayout();
 
-        formLayout.add(userIdField, storeNameField, descriptionField);
+        formLayout.add(storeNameField, descriptionField);
 
         formLayout.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
@@ -46,35 +45,32 @@ public class OpenStore extends BaseLayout {
 
         formLayout.setColspan(descriptionField, 2);
 
-        Button saveButton = new Button("Open Store", event -> saveStore());
+        Button saveButton = new Button("Create Store", event -> createNewStore());
         formLayout.add(saveButton);
         content.add(formLayout);
 
     }
 
-    private void saveStore() {
-        String userId = userIdField.getValue();
+    private void createNewStore() {
         String storeName = storeNameField.getValue();
         String description = descriptionField.getValue();
 
-        if (userId.isEmpty() || storeName.isEmpty() || description.isEmpty()) {
+        if (storeName.isEmpty() || description.isEmpty()) {
             Notification.show("Please fill in all fields.");
             return;
         }
         try {
-            StoreCreationRequest request = new StoreCreationRequest(storeName, description, userId);
+            StoreCreationRequest request = new StoreCreationRequest(storeName, description, getCurrentUserId());
             appController.postByEndpoint(Endpoints.ADD_STORE, request);
-
-            Notification.show("Store opened successfully!");
+            Notification.show("Store created successfully!");
             clearFields(); // Clear fields after successful submission
         } catch (ApplicationException e) {
-            openErrorDialog("Failed to open store: " + e.getMessage());
+            openErrorDialog("Failed to create store: " + e.getMessage());
         }
     }
 
     private void clearFields() {
-        userIdField.clear();        // Clear userId field
-        storeNameField.clear();     // Clear storeName field
-        descriptionField.clear();   // Clear description field
+        storeNameField.clear();
+        descriptionField.clear();
     }
 }
