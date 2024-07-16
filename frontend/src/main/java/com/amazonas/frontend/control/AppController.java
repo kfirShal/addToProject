@@ -49,6 +49,9 @@ public class AppController {
     public String getNotificationsMessage() {
         return "Notifications";
     }
+    public String getPurchasePolicyMessage() {
+        return "Purchase Policy";
+    }
     public String getPreviousOrdersMessage() {
         return "Previous Orders";
     }
