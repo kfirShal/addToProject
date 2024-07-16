@@ -29,12 +29,22 @@ public class XorCondition implements Condition{
         if (products == null) {
             throw new IllegalArgumentException("products list cannot be null");
         }
+        boolean found = false;
         for (Condition condition : conditions) {
-            if (!condition.decideCondition(products)) {
-                return false;
+            if (condition.decideCondition(products)) {
+                try {
+
+
+                    System.out.println(condition.generateCFG());
+                }
+                catch (StoreException e) {}
+                if (found) {
+                    return false;
+                }
+                found = true;
             }
         }
-        return true;
+        return found;
     }
 
     @Override
