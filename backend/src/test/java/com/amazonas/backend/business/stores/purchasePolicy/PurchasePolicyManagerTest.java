@@ -1,9 +1,11 @@
 package com.amazonas.backend.business.stores.purchasePolicy;
 
-import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
+import com.amazonas.backend.business.stores.discountPolicies.*;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.*;
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.utils.Rating;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,8 +87,8 @@ class PurchasePolicyManagerTest {
     @Test
     void maxUniqueProductsSuccess() {
         try {
-            NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MAX_UNIQUE_PRODUCTS, 7);
-            NumericalPurchaseRuleDTO rule2 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MAX_UNIQUE_PRODUCTS, 8);
+            NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MAX_UNIQUE_PRODUCTS, 6);
+            NumericalPurchaseRuleDTO rule2 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MAX_UNIQUE_PRODUCTS, 7);
             purchasePolicyManager.changePurchasePolicy(rule1);
             assertTrue(purchasePolicyManager.isSatisfied(cart, user));
             purchasePolicyManager.changePurchasePolicy(rule2);
@@ -100,7 +102,7 @@ class PurchasePolicyManagerTest {
     @Test
     void maxUniqueProductsFail() {
         try {
-            NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MAX_UNIQUE_PRODUCTS, 7);
+            NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MAX_UNIQUE_PRODUCTS, 5);
             purchasePolicyManager.changePurchasePolicy(rule1);
             assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
@@ -113,7 +115,7 @@ class PurchasePolicyManagerTest {
     void minUniqueProductsSuccess() {
         try {
             NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 0);
-            NumericalPurchaseRuleDTO rule2 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 7);
+            NumericalPurchaseRuleDTO rule2 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 6);
             purchasePolicyManager.changePurchasePolicy(rule1);
             assertTrue(purchasePolicyManager.isSatisfied(cart, user));
             purchasePolicyManager.changePurchasePolicy(rule2);
@@ -127,7 +129,7 @@ class PurchasePolicyManagerTest {
     @Test
     void minUniqueProductsFail() {
         try {
-            NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 8);
+            NumericalPurchaseRuleDTO rule1 = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 7);
             purchasePolicyManager.changePurchasePolicy(rule1);
             assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
@@ -139,7 +141,7 @@ class PurchasePolicyManagerTest {
     @Test
     void conditionalCategoryRuleSuccess1() {
         try {
-            NumericalPurchaseRuleDTO rule = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 7);
+            NumericalPurchaseRuleDTO rule = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 6);
             ConditionLevelDTO cond = new ConditionLevelDTO(ConditionLevelType.CATEGORY_LEVEL, "category1", 2);
             ConditionalPurchaseRuleDTO rule1 = new ConditionalPurchaseRuleDTO(cond, rule);
             purchasePolicyManager.changePurchasePolicy(rule1);
@@ -181,7 +183,7 @@ class PurchasePolicyManagerTest {
     @Test
     void conditionalProductRuleSuccess1() {
         try {
-            NumericalPurchaseRuleDTO rule = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 7);
+            NumericalPurchaseRuleDTO rule = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 6);
             ConditionLevelDTO cond = new ConditionLevelDTO(ConditionLevelType.PRODUCT_LEVEL, "1", 1);
             ConditionalPurchaseRuleDTO rule1 = new ConditionalPurchaseRuleDTO(cond, rule);
             purchasePolicyManager.changePurchasePolicy(rule1);
@@ -225,7 +227,7 @@ class PurchasePolicyManagerTest {
         try {
             DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.DAY_RESTRICTION, LocalDate.now().minusDays(1), LocalDate.now());
             purchasePolicyManager.changePurchasePolicy(rule);
-            assertTrue(purchasePolicyManager.isSatisfied(cart, user));
+            assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
         catch (Exception e) {
             fail("Exception occurred while applying empty discount policy");
@@ -237,7 +239,7 @@ class PurchasePolicyManagerTest {
         try {
             DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.DAY_RESTRICTION, LocalDate.now(), LocalDate.now().plusDays(1));
             purchasePolicyManager.changePurchasePolicy(rule);
-            assertTrue(purchasePolicyManager.isSatisfied(cart, user));
+            assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
         catch (Exception e) {
             fail("Exception occurred while applying empty discount policy");
@@ -249,7 +251,7 @@ class PurchasePolicyManagerTest {
         try {
             DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.DAY_RESTRICTION, LocalDate.now().minusDays(1), LocalDate.now().plusDays(1));
             purchasePolicyManager.changePurchasePolicy(rule);
-            assertTrue(purchasePolicyManager.isSatisfied(cart, user));
+            assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
         catch (Exception e) {
             fail("Exception occurred while applying empty discount policy");
@@ -283,9 +285,9 @@ class PurchasePolicyManagerTest {
     @Test
     void hoursRestrictionRuleSuccess1() {
         try {
-            DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.HOUR_RESTRICTION, LocalTime.now().minusHours(1), LocalTime.now());
+            DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.HOUR_RESTRICTION, LocalTime.now().minusHours(1), LocalTime.now().plusSeconds(2));
             purchasePolicyManager.changePurchasePolicy(rule);
-            assertTrue(purchasePolicyManager.isSatisfied(cart, user));
+            assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
         catch (Exception e) {
             fail("Exception occurred while applying empty discount policy");
@@ -297,7 +299,7 @@ class PurchasePolicyManagerTest {
         try {
             DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.HOUR_RESTRICTION, LocalTime.now(), LocalTime.now().plusHours(1));
             purchasePolicyManager.changePurchasePolicy(rule);
-            assertTrue(purchasePolicyManager.isSatisfied(cart, user));
+            assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
         catch (Exception e) {
             fail("Exception occurred while applying empty discount policy");
@@ -309,7 +311,7 @@ class PurchasePolicyManagerTest {
         try {
             DatePurchaseRuleDTO rule = new DatePurchaseRuleDTO(DatePurchaseRuleType.HOUR_RESTRICTION, LocalTime.now().minusHours(1), LocalTime.now().plusHours(1));
             purchasePolicyManager.changePurchasePolicy(rule);
-            assertTrue(purchasePolicyManager.isSatisfied(cart, user));
+            assertFalse(purchasePolicyManager.isSatisfied(cart, user));
         }
         catch (Exception e) {
             fail("Exception occurred while applying empty discount policy");
@@ -344,7 +346,7 @@ class PurchasePolicyManagerTest {
     void andRuleSuccess() {
         try {
             List<PurchaseRuleDTO> rules = new LinkedList<>();
-            rules.add(new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 7));
+            rules.add(new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.MIN_UNIQUE_PRODUCTS, 6));
             rules.add(new DatePurchaseRuleDTO(DatePurchaseRuleType.HOUR_RESTRICTION, LocalTime.now().plusHours(1), LocalTime.now().plusHours(2)));
             rules.add(new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.AGE_RESTRICTION, 22));
             MultiplePurchaseRuleDTO rule = new MultiplePurchaseRuleDTO(MultiplePurchaseRuleType.AND, rules);

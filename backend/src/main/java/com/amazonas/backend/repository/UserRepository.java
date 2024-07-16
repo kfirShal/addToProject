@@ -13,6 +13,8 @@ import java.util.Map;
 @Component("userRepository")
 public class UserRepository extends AbstractCachingRepository<User> {
 
+    //TODO: CHANGE USER TO REGISTERED USER
+
     private final Map<String, User> userCache;
     private final ReadWriteLock userLock;
 

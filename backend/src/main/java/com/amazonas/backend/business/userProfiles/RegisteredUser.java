@@ -1,4 +1,7 @@
 package com.amazonas.backend.business.userProfiles;
+import com.amazonas.backend.business.payment.CreditCard;
+import com.amazonas.backend.business.payment.PaymentMethod;
+
 import java.time.LocalDate;
 
 public class RegisteredUser extends User{
@@ -24,5 +27,11 @@ public class RegisteredUser extends User{
     }
 
     public LocalDate getBirthDate() {return birthDate.plusDays(0); }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        // not supported
+        return new CreditCard("","","","","","","");
+    }
 }
 

@@ -3,8 +3,7 @@ package com.amazonas.frontend.utils;
 import com.vaadin.flow.component.HasValue;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class POJOBinder<T> {

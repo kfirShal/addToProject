@@ -19,7 +19,7 @@ public class PermissionsService {
     public String getUserPermissions(String json){
         Request request = Request.from(json);
         try{
-            PermissionsProfile profile = proxy.getUserPermissions(request.userId(), request.token());
+            PermissionsProfile profile = proxy.getUserPermissions(request.userId(), request.token(), request.payload());
             return Response.getOk(profile);
         } catch (IllegalArgumentException | AuthenticationFailedException e){
             return Response.getError(e);

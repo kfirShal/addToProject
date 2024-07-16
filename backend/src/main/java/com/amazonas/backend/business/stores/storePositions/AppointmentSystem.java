@@ -1,5 +1,7 @@
 package com.amazonas.backend.business.stores.storePositions;
 
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
 import com.amazonas.common.utils.ReadWriteLock;
 
 import java.util.HashMap;

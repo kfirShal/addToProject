@@ -61,17 +61,17 @@ public class XorDiscount implements DiscountComponent {
             double totalPrice = 0;
             for (ProductAfterDiscount productAfterDiscount : current) {
                 totalPrice += productAfterDiscount.priceAfterDiscount() * productAfterDiscount.quantity();
-                if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
-                    if (totalPrice < value) {
-                        value = totalPrice;
-                        ret = current;
-                    }
+            }
+            if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
+                if (totalPrice < value) {
+                    value = totalPrice;
+                    ret = current;
                 }
-                else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
-                    if (totalPrice > value) {
-                        value = totalPrice;
-                        ret = current;
-                    }
+            }
+            else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
+                if (totalPrice > value) {
+                    value = totalPrice;
+                    ret = current;
                 }
             }
         }

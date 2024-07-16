@@ -9,7 +9,7 @@ import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.StoresController;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
@@ -32,10 +32,10 @@ public class StoreProxy extends ControllerProxy {
         this.real = storesController;
     }
 
-    public void addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.CREATE_STORE);
-        real.addStore(ownerID, name, description);
+        return real.addStore(ownerID, name, description);
     }
 
     public boolean openStore(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {

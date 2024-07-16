@@ -1,3 +1,3 @@
-package com.amazonas.backend.business.stores.storePositions;
+package com.amazonas.common.dtos;
 
 public record StorePosition(String userId, StoreRole role) { }

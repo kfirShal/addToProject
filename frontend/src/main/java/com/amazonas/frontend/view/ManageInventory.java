@@ -1,6 +1,7 @@
 package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.ProductRequest;
 import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
@@ -8,64 +9,77 @@ import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
 import com.amazonas.frontend.utils.Converter;
 import com.amazonas.frontend.utils.POJOBinder;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 import java.util.*;
 import java.util.function.Function;
 
 @Route("manageinventory")
-public class ManageInventory extends BaseLayout {
-    private final Grid<Product> grid;
-    private final POJOBinder<Product> binder;
+public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
     private final AppController appController;
     private String storeId;
-    private final Dialog editDialog;
-    private final Dialog addDialog;
+    private Grid<Product> grid;
+    private POJOBinder<Product> binder;
+    private Map<Boolean, List<Product>> products;
+    private Dialog editDialog;
+    private Dialog addDialog;
     private Product currentProduct;
-    private final Map<Boolean, List<Product>> products;
 
     public ManageInventory(AppController appController) {
         super(appController);
         this.appController = appController;
+    }
+
+    private void createView(){
+        storeId = getParam("storeid");
         binder = new POJOBinder<>(Product.class);
         grid = new Grid<>(Product.class);
         Map<Boolean, List<Product>> fetchedProducts = getProducts();
         products = fetchedProducts == null ? new HashMap<>() : fetchedProducts;
 
+        grid.removeAllColumns();
+
         // Set the window's title
         String newTitle = "Manage Inventory";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
-        content.add(title); // Use content from BaseLayout
+        content.add(title);
 
         List<Product> allP = new LinkedList<>();
-        // Check if products list is null or empty
-        if (allP.isEmpty()) {
-            addSampleProducts();
-        }
-
         allP.addAll(products.get(true));
         allP.addAll(products.get(false));
 
         Map<String, Integer> idToQuantity = new HashMap<>();
-        allP.forEach(p -> {
-            ProductRequest payload = new ProductRequest(storeId, new Product(p.getProductId()));
-            try {
-                appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, payload);
-            } catch (ApplicationException e) {
-                openErrorDialog(e.getMessage());
-            }
-        });
-
-        grid.setItems(allP);
+        if (permissionsProfile.hasPermission(storeId, StoreActions.GET_PRODUCT_QUANTITY)) {
+            allP.forEach(p -> {
+                ProductRequest request = new ProductRequest(storeId, new Product(p.getProductId()));
+                try {
+                    List<Integer> quantity = appController.postByEndpoint(Endpoints.GET_PRODUCT_QUANTITY, request);
+                    if (quantity.get(0) != null) {
+                        idToQuantity.put(p.getProductId(), quantity.get(0));
+                    }
+                } catch (ApplicationException e) {
+                    openErrorDialog(e.getMessage());
+                }
+            });
+        } else {
+            showNoPermissionNotification();
+            return;
+        }
 
         // Configure the columns
         grid.addColumn(Product::getProductId).setHeader("ID");
@@ -74,23 +88,77 @@ public class ManageInventory extends BaseLayout {
         grid.addColumn(Product::getCategory).setHeader("Category");
         grid.addColumn(Product::getDescription).setHeader("Description");
         grid.addColumn(Product::getRating).setHeader("Rating");
-        grid.addColumn(p -> idToQuantity.get(p.getProductId())).setHeader("Quantity");
 
-        // Add action buttons
+        grid.addColumn((Product product) -> {
+            StringBuilder builder = new StringBuilder();
+            if(product.getKeyWords() == null) {
+                return "";
+            }
+            for(String word: product.getKeyWords()){
+                builder.append(word).append(",");
+            }
+            if(builder.isEmpty()){
+                return "";
+            }
+            builder.deleteCharAt(builder.length()-1);
+            return builder.toString();
+        }).setHeader("Keywords");
+
         grid.addComponentColumn(product -> {
-            Button editButton = new Button("Edit", click -> openEditDialog(product));
+            VerticalLayout layout = new VerticalLayout();
+            TextField quantityField = new TextField("");
+            Integer quantity = idToQuantity.get(product.getProductId());
+            if (quantity != null) {
+                quantityField.setValue(quantity.toString());
+            }
+            quantityField.addValueChangeListener(event -> {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.SET_PRODUCT_QUANTITY)) {
+                    String value = event.getValue();
+                    try {
+                        int newQuantity = Integer.parseInt(value);
+                        idToQuantity.put(product.getProductId(), newQuantity);
+                        ProductRequest request = new ProductRequest(storeId, product.getProductId());
+                        appController.postByEndpoint(Endpoints.SET_PRODUCT_QUANTITY, request);
+                    } catch (NumberFormatException e) {
+                        openErrorDialog("Invalid quantity format");
+                    } catch (ApplicationException e) {
+                        openErrorDialog("Failed to update quantity: " + e.getMessage());
+                    }
+                } else {
+                    showNoPermissionNotification();
+                }
+            });
+            layout.add(quantityField);
+            return layout;
+        }).setHeader("Quantity");
+
+        grid.addComponentColumn(product -> {
+            Button editButton = new Button("Edit", click -> {
+                if (permissionsProfile.hasPermission(storeId, StoreActions.UPDATE_PRODUCT)) {
+                    openEditDialog(product);
+                } else {
+                    showNoPermissionNotification();
+                }
+            });
             return editButton;
         });
+        editDialog = createProductDialog("Edit Product", this::editProduct);
+        content.add(editDialog);
 
         grid.addComponentColumn(product -> {
             Button toggleButton = new Button(products.get(true).contains(product) ? "Disable" : "Enable", click -> {
-                try {
-                    Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
-                    ProductRequest request = new ProductRequest(storeId, product.getProductId());
-                    appController.postByEndpoint(endpoint, request);
-                    refreshGrid();
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
+                StoreActions action = products.get(true).contains(product) ? StoreActions.DISABLE_PRODUCT : StoreActions.ENABLE_PRODUCT;
+                if (permissionsProfile.hasPermission(storeId, action)) {
+                    try {
+                        Endpoints endpoint = getProducts().get(true).contains(product) ? Endpoints.DISABLE_PRODUCT : Endpoints.ENABLE_PRODUCT;
+                        ProductRequest request = new ProductRequest(storeId, product.getProductId());
+                        appController.postByEndpoint(endpoint, request);
+                        refreshGrid();
+                    } catch (ApplicationException e) {
+                        openErrorDialog(e.getMessage());
+                    }
+                } else {
+                    showNoPermissionNotification();
                 }
             });
             return toggleButton;
@@ -98,38 +166,44 @@ public class ManageInventory extends BaseLayout {
 
         grid.addComponentColumn(product -> {
             Button removeButton = new Button("Remove", click -> {
-                try {
-                    appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, storeId);
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
+                if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_PRODUCT)) {
+                    try {
+                        ProductRequest request = new ProductRequest(storeId, product.getProductId());
+                        appController.postByEndpoint(Endpoints.REMOVE_PRODUCT, request);
+                        refreshGrid();
+                    } catch (ApplicationException e) {
+                        openErrorDialog(e.getMessage());
+                    }
+                } else {
+                    showNoPermissionNotification();
                 }
-                refreshGrid();
             });
             return removeButton;
         });
 
+        grid.setItems(allP);
         content.add(grid);
 
-        // Create and configure the edit dialog
-        editDialog = createProductDialog("Edit Product", this::saveChanges);
-        content.add(editDialog);
-
-        // Create and configure the add dialog
-        addDialog = createProductDialog("Add Product", this::addProduct);
-        content.add(addDialog);
-
-        Button addButton = new Button("Add", click -> openAddDialog());
+        Button addButton = new Button("Add", click -> {
+            if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_PRODUCT)) {
+                openAddDialog();
+            } else {
+                showNoPermissionNotification();
+            }
+        });
         HorizontalLayout addButtonLayout = new HorizontalLayout(addButton);
         addButtonLayout.getStyle().set("justify-content", "center");
         content.add(addButtonLayout);
 
+        addDialog = createProductDialog("Add Product", this::addProduct);
+
+        content.add(addDialog);
     }
 
     private Dialog createProductDialog(String dialogTitle, Runnable saveAction) {
         Dialog dialog = new Dialog();
         dialog.setWidth("400px");
 
-        // Add title to the dialog
         H2 title = new H2(dialogTitle);
         dialog.add(title);
 
@@ -175,6 +249,38 @@ public class ManageInventory extends BaseLayout {
         });
         formLayout.add(ratingField);
 
+        TextField keywordsField = new TextField("Keywords");
+        binder.bind(keywordsField, "keyWords").withConverter(new Converter<Set<String>, String>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Class<Set<String>> fromType() {
+                return (Class<Set<String>>)((Class<?>)Set.class);
+            }
+
+            @Override
+            public Class<String> toType() {
+                return String.class;
+            }
+
+            @Override
+            public Function<Set<String>, String> to() {
+                return (Set<String> set)->{
+                  StringBuilder sb = new StringBuilder();
+                    set.forEach(w-> sb.append(w).append(" "));
+                    if(sb.isEmpty()){
+                        sb.deleteCharAt(sb.length()-1);
+                    }
+                    return sb.toString();
+                };
+            }
+
+            @Override
+            public Function<String, Set<String>> from() {
+                return (String s) -> new HashSet<>(Arrays.asList(s.split(" ")));
+            }
+        });
+        formLayout.add(keywordsField);
+
         Button saveButton = new Button("Save Changes", e -> saveAction.run());
         Button discardButton = new Button("Discard", e -> dialog.close());
         HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, discardButton);
@@ -183,15 +289,16 @@ public class ManageInventory extends BaseLayout {
     }
 
     private void openEditDialog(Product product) {
-        currentProduct = product;
-        binder.readObject(product);
-        editDialog.open();
+            currentProduct = product;
+            binder.readObject(product);
+            editDialog.open();
     }
 
-    private void saveChanges() {
+    private void editProduct() {
         binder.writeObject(currentProduct);
         try {
-            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, currentProduct);
+            ProductRequest request = new ProductRequest(storeId, currentProduct.getProductId());
+            appController.postByEndpoint(Endpoints.UPDATE_PRODUCT, request);
             refreshGrid();
             editDialog.close();
         } catch (ApplicationException e) {
@@ -208,9 +315,9 @@ public class ManageInventory extends BaseLayout {
     private void addProduct() {
         binder.writeObject(currentProduct);
         try {
-            appController.postByEndpoint(Endpoints.ADD_PRODUCT, currentProduct);
-            refreshGrid();
-            addDialog.close();
+            ProductRequest request = new ProductRequest(storeId, currentProduct);
+            appController.postByEndpoint(Endpoints.ADD_PRODUCT, request);
+            UI.getCurrent().getPage().reload();
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
@@ -227,23 +334,23 @@ public class ManageInventory extends BaseLayout {
         return map;
     }
 
-    private Map<Boolean, List<Product>> addSampleProducts() {
-        products.computeIfAbsent(true, _ -> new LinkedList<>());
-        products.computeIfAbsent(false, _ -> new LinkedList<>());
-
-        products.get(true).add(new Product("1", "Product 1", 100.0, "Category 1", "Description 1", Rating.FIVE_STARS));
-        products.get(false).add(new Product("2", "Product 2", 150.0, "Category 2", "Description 2", Rating.FOUR_STARS));
-        return products;
-    }
-
     private void refreshGrid() {
         Map<Boolean, List<Product>> products = getProducts();
         if (products == null || products.isEmpty()) {
-            products = addSampleProducts();
         }
         List<Product> allP = new LinkedList<>();
         allP.addAll(products.get(true));
         allP.addAll(products.get(false));
         grid.setItems(allP);
+    }
+
+    private void showNoPermissionNotification() {
+        showNotification("You do not have the right permissions to perform this action.");
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        params = beforeEnterEvent.getLocation().getQueryParameters();
+        createView();
     }
 }
