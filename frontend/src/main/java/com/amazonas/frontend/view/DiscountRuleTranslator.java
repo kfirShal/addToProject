@@ -43,8 +43,10 @@ public class DiscountRuleTranslator {
         } else if (node instanceof UnaryConditionDTO) {
             UnaryConditionDTO unaryCondition = (UnaryConditionDTO) node;
             String conditionDescription = switch (unaryCondition.unaryConditionType()) {
-                case AT_LEAST_NUMBER_OF_ITEMS_FROM_CATEGORY -> "At least " + unaryCondition.number() + " items from category: " + unaryCondition.text();
-                case AT_LEAST_NUMBER_OF_SOME_PRODUCT -> "At least " + unaryCondition.number() + " items of product: " + unaryCondition.text();
+                case AT_LEAST_NUMBER_OF_ITEMS_FROM_CATEGORY ->
+                        "At least " + unaryCondition.number() + " items from category: " + unaryCondition.text();
+                case AT_LEAST_NUMBER_OF_SOME_PRODUCT ->
+                        "At least " + unaryCondition.number() + " items of product: " + unaryCondition.text();
                 case AT_LEAST_SOME_PRICE -> "Minimum total price: " + unaryCondition.number();
             };
             return "Condition: " + conditionDescription;
