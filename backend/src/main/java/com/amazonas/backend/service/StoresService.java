@@ -75,8 +75,8 @@ public class StoresService {
         Request request = Request.from(json);
         try {
             StoreCreationRequest toAdd = StoreCreationRequest.from(request.payload());
-            proxy.addStore(toAdd.founderId(), toAdd.storeName(), toAdd.description(), request.userId(), request.token());
-            return Response.getOk();
+            String storeId = proxy.addStore(toAdd.founderId(), toAdd.storeName(), toAdd.description(), request.userId(), request.token());
+            return Response.getOk(storeId);
         } catch (StoreException | NoPermissionException | AuthenticationFailedException  e) {
             return Response.getError(e);
         }

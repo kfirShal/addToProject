@@ -33,7 +33,7 @@ public class SystemManagement extends BaseLayout {
         Button shutdownButton = new Button("Shutdown System", click -> {
             try {
                 appController.postByEndpoint(Endpoints.SHUTDOWN_MARKET, null);
-                Notification.show("System shutdown initiated.");
+                showNotification("System shutdown initiated.");
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }
@@ -42,7 +42,7 @@ public class SystemManagement extends BaseLayout {
         Button startButton = new Button("Start System", click -> {
             try {
                 appController.postByEndpoint(Endpoints.START_MARKET, null);
-                Notification.show("System started successfully.");
+                showNotification("System started successfully.");
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }

@@ -47,6 +47,7 @@ public class ProductInventory {
         product.setProductId(UUID.randomUUID().toString());
         log.debug("Adding product {} with id {} to inventory", product.getProductName(), product.getProductId());
         idToProduct.put(product.getProductId(),product);
+        idToQuantity.put(product.getProductId(),0);
         productRepository.saveProduct(product);
         return product.getProductId();
     }

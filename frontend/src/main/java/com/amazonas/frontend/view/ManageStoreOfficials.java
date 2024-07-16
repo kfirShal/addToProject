@@ -68,7 +68,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
                     openErrorDialog(e.getMessage());
                 }
             } else {
-                Notification.show("You do not have permission to remove an owner.");
+                showNotification("You do not have permission to remove an owner.");
             }
         }));
 
@@ -78,7 +78,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
             if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_OWNER)) {
                 addOwnerDialog.open();
             } else {
-                Notification.show("You do not have permission to add an owner.");
+                showNotification("You do not have permission to add an owner.");
             }
         });
         HorizontalLayout ownersButtonsLayout = new HorizontalLayout(addOwnerButton);
@@ -112,7 +112,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
                             openErrorDialog(e.getMessage());
                         }
                     } else {
-                        Notification.show("You do not have permission to add this permission.");
+                        showNotification("You do not have permission to add this permission.");
                     }
                 });
 
@@ -126,7 +126,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
                             openErrorDialog(e.getMessage());
                         }
                     } else {
-                        Notification.show("You do not have permission to remove this permission.");
+                        showNotification("You do not have permission to remove this permission.");
                     }
                 });
             });
@@ -144,7 +144,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
                         openErrorDialog(e.getMessage());
                     }
                 } else {
-                    Notification.show("You do not have permission to remove a manager.");
+                    showNotification("You do not have permission to remove a manager.");
                 }
             });
             return removeButton;
@@ -155,7 +155,7 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
             if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_MANAGER)) {
                 addManagerDialog.open();
             } else {
-                Notification.show("You do not have permission to add a manager.");
+                showNotification("You do not have permission to add a manager.");
             }
         });
         HorizontalLayout managersButtonsLayout = new HorizontalLayout(addManagerButton);

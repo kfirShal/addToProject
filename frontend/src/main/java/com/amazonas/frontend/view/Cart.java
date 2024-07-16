@@ -164,7 +164,8 @@ public class Cart extends Profile {
             StoreDetails store = (StoreDetails) appController.postByEndpoint(Endpoints.GET_STORE_DETAILS, storeID).getFirst();
             return store.getStoreName();
         } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+            openErrorDialog(e.getMessage());
+            return "";
         }
     }
 

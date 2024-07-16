@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.requests.stores.StoreCreationRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -11,20 +12,22 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
+import java.util.List;
+
 import static com.amazonas.frontend.control.AppController.getCurrentUserId;
 
-@Route("openstore")
-public class OpenStore extends BaseLayout {
+@Route("createstore")
+public class CreateStore extends BaseLayout {
     private final AppController appController;
     private final TextField storeNameField;
     private final TextField descriptionField;
 
-    public OpenStore(AppController appController) {
+    public CreateStore(AppController appController) {
         super(appController);
         this.appController = appController;
 
         // Set the window's title
-        String newTitle = "Open Store";
+        String newTitle = "Create Store";
         H2 title = new H2(newTitle);
         title.getStyle().set("align-self", "center");
         content.add(title);
@@ -56,14 +59,15 @@ public class OpenStore extends BaseLayout {
         String description = descriptionField.getValue();
 
         if (storeName.isEmpty() || description.isEmpty()) {
-            Notification.show("Please fill in all fields.");
+            showNotification("Please fill in all fields.");
             return;
         }
         try {
             StoreCreationRequest request = new StoreCreationRequest(storeName, description, getCurrentUserId());
-            appController.postByEndpoint(Endpoints.ADD_STORE, request);
-            Notification.show("Store created successfully!");
+            List<String> storeId = appController.postByEndpoint(Endpoints.ADD_STORE, request);
+            showNotification("Store created successfully!");
             clearFields(); // Clear fields after successful submission
+            permissionsProfile.addStorePermission(storeId.getFirst(), StoreActions.ALL);
         } catch (ApplicationException e) {
             openErrorDialog("Failed to create store: " + e.getMessage());
         }

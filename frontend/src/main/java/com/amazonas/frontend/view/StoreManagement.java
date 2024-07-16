@@ -61,7 +61,7 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
                     String url = getPath("managestoreofficials", Pair.of("storeid", storeId));
                     getUI().ifPresent(ui -> ui.navigate(url));
                 } else {
-                    Notification.show("You do not have permission to view store officials");
+                    showNotification("You do not have permission to view store officials");
                 }
             }
             if (PURCHASE_POLICY.equals(item)) {
@@ -77,7 +77,7 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
                     String url = getPath("purchasehistory", Pair.of("storeid", storeId));
                     getUI().ifPresent(ui -> ui.navigate(url));
                 } else {
-                    Notification.show("You do not have permission to view purchase history.");
+                    showNotification("You do not have permission to view purchase history.");
                 }
             }
 
@@ -104,7 +104,7 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
                     String url = getPath("closeandreopen", Pair.of("storeid", storeId));
                     getUI().ifPresent(ui -> ui.navigate(url));
 //                } else {
-//                    Notification.show("You do not have permissions to close and open the store!!");
+//                    showNotification("You do not have permissions to close and open the store!!");
 //                }
             }
         });

@@ -32,10 +32,10 @@ public class StoreProxy extends ControllerProxy {
         this.real = storesController;
     }
 
-    public void addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.CREATE_STORE);
-        real.addStore(ownerID, name, description);
+        return real.addStore(ownerID, name, description);
     }
 
     public boolean openStore(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {

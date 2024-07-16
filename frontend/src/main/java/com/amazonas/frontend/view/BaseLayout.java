@@ -30,16 +30,11 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static com.amazonas.common.permissions.actions.MarketActions.ALL;
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
@@ -112,13 +107,12 @@ public abstract class BaseLayout extends AppLayout {
                 return;
             }
             UI.getCurrent().navigate("search?search=" + search);
-
+        // function to search for products and stores
+        });
         HorizontalLayout searchLayout = new HorizontalLayout(searchField);
         searchLayout.setWidthFull();
         searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-
-        // function to search for products and stores
-        });
+        addToNavbar(searchLayout);
 
         // set up login/logout button
         if (! isUserLoggedIn()) {
@@ -132,7 +126,7 @@ public abstract class BaseLayout extends AppLayout {
             if(permissionsProfile.hasPermission(MarketActions.ALL)){
                 nav1.addItem(new SideNavItem("System Management", SystemManagement.class, VaadinIcon.NEWSPAPER.create()));
             }
-            nav1.addItem(new SideNavItem("Open Store", OpenStore.class, VaadinIcon.STAR.create()));
+            nav1.addItem(new SideNavItem("Create Store", CreateStore.class, VaadinIcon.STAR.create()));
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
             username.getStyle().set("margin-left", "25%");
 

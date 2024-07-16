@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.addAll;
+
 @Component("storesController")
 public class StoresController {
     private final StoreFactory storeFactory;
@@ -121,12 +123,16 @@ public class StoresController {
         return repository.getStore(storeId);
     }
 
-    public List<StoreDetails> searchStoresGlobally(String keyword) {
+    public List<StoreDetails> searchStoresGlobally(String query) {
         List<StoreDetails> ret = new LinkedList<>();
-        List<String> split = List.of(keyword.split(" "));
+        List<String> split = List.of(query.split(" "));
         for (Store store : repository.getAllStores()){
             for (String key : split){
-                if (store.getDetails().getStoreName().contains(key)){
+                if (store.getStoreName().contains(key)){
+                    ret.add(store.getDetails());
+                    break;
+                }
+                if(store.getStoreDescription().contains(key)){
                     ret.add(store.getDetails());
                     break;
                 }
@@ -139,7 +145,11 @@ public class StoresController {
         List<Product> ret = new LinkedList<>();
         for (Store store : repository.getAllStores()) {
             if (store.getStoreRating().ordinal() >= request.storeRating().ordinal()) {
-                ret.addAll(store.searchProduct(request.productSearchRequest()));
+                List<Product> products = store.searchProduct(request.productSearchRequest());
+                if(products == null || products.isEmpty()){
+                    continue;
+                }
+                ret.addAll(products);
             }
         }
         return ret;

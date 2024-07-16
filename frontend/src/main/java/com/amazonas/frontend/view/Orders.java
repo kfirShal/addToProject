@@ -45,7 +45,8 @@ public class Orders extends Profile implements BeforeEnterObserver {
         try {
             orderList = appController.postByEndpoint(Endpoints.GET_USER_TRANSACTION_HISTORY, userID);
         } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+            openErrorDialog(e.getMessage());
+            return;
         }
     }
 

@@ -82,12 +82,13 @@ public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserv
         if (permissionsProfile.hasPermission(storeId, StoreActions.CLOSE_STORE) || permissionsProfile.hasPermission(MarketActions.ALL)) {
             try {
                 appController.postByEndpoint(Endpoints.CLOSE_STORE, storeId);
-                Notification.show("Store is closed.");
+                showNotification("Store is closed.");
             } catch (ApplicationException e) {
-                throw new RuntimeException(e);
+                openErrorDialog(e.getMessage());
+                return;
             }
         } else {
-            Notification.show("You do not have permission to close the store.");
+            showNotification("You do not have permission to close the store.");
         }
     }
 
@@ -95,12 +96,13 @@ public class CloseAndReopenStore extends BaseLayout implements BeforeEnterObserv
         if (permissionsProfile.hasPermission(storeId, StoreActions.OPEN_STORE)) {
             try {
                 appController.postByEndpoint(Endpoints.OPEN_STORE, storeId);
-                Notification.show("Store is reopened.");
+                showNotification("Store is reopened.");
             } catch (ApplicationException e) {
-                throw new RuntimeException(e);
+                openErrorDialog(e.getMessage());
+                return;
             }
         } else {
-            Notification.show("You do not have permission to reopen the store.");
+            showNotification("You do not have permission to reopen the store.");
         }
     }
 

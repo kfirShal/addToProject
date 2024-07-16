@@ -64,7 +64,7 @@ public enum Endpoints {
     SEARCH_PRODUCTS_GLOBALLY("stores/searchproductsglobally", Product.class),
     SEARCH_PRODUCTS_IN_STORE("stores/searchproductsinstore", Void.class),
     SEARCH_STORES_GLOBALLY("stores/searchstoresglobally", StoreDetails.class),
-    ADD_STORE("stores/addstore", Void.class),
+    ADD_STORE("stores/addstore", String.class),
     OPEN_STORE("stores/openstore", Boolean.class),
     CLOSE_STORE("stores/closestore", Boolean.class),
     ADD_PRODUCT("stores/addproduct", Void.class),
