@@ -60,11 +60,13 @@ public class InitialRunFileExecutor {
         String currentDirectory = System.getProperty("user.dir");
         String initialRunCode;
         try {
+            //String fileName = ConfigurationValues.getProperty("INITIAL_RUN_FILE_NAME");
+            //File file = new File(getClass().getResource(fileName).getFile());
             File file = new File(getClass().getResource("InitialRunFile.txt").getFile());
             initialRunCode = FileUtils.readFileToString(file, "UTF-8");
         }
         catch (Exception e) {
-            System.out.println("Cannot find initialRnFile.txt");
+            System.out.println("Cannot find the initial run file");
             return;
         }
         try{
