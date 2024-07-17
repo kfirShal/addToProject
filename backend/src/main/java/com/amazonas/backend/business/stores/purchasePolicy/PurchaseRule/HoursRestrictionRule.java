@@ -38,4 +38,25 @@ public class HoursRestrictionRule implements PurchaseRule {
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
         return (LocalTime.now().isAfter(endRestrictionTime) || LocalTime.now().isBefore(startRestrictionTime));
     }
+
+    @Override
+    public String generateCFG() {
+        String startHour = "" + startRestrictionTime.getHour();
+        if (startHour.length() == 1) {
+            startHour = "0" + startHour;
+        }
+        String endHour = "" + endRestrictionTime.getHour();
+        if (endHour.length() == 1) {
+            endHour = "0" + endHour;
+        }
+        String startMinute = "" + startRestrictionTime.getMinute();
+        if (startMinute.length() == 1) {
+            startMinute = "0" + startMinute;
+        }
+        String endMinute = "" + endRestrictionTime.getMinute();
+        if (endMinute.length() == 1) {
+            endMinute = "0" + endMinute;
+        }
+        return "( hour-restriction " + startHour + startMinute + " " + endHour + endMinute + " )";
+    }
 }
