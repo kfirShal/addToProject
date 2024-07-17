@@ -15,6 +15,7 @@ public class ShippingService {
     private static final Logger log = LoggerFactory.getLogger(ShippingService.class);
     private final String serviceId;
     private final String externalSystemUrl = "https://damp-lynna-wsep-1984852e.koyeb.app/";
+    //private final String externalSystemUrl = ConfigurationValues.getProperty("SHIPPING_SERVICE_URL");
     private final RestTemplate restTemplate;
 
     public ShippingService() {

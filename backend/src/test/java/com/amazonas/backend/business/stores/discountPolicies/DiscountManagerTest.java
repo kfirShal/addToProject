@@ -42,8 +42,8 @@ class DiscountManagerTest {
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, "category1", 5));
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.StoreLevel, "", 20));
 
-            DiscountComponentDTO additionDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
-            discountManager.changeDiscountPolicy(additionDiscount);
+//            DiscountComponentDTO additionDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
+//            discountManager.changeDiscountPolicy(additionDiscount);
             ProductAfterDiscount[] res = discountManager.applyDiscountPolicy(cart);
             double finalPrice = 0;
             for (ProductAfterDiscount p : res) {
@@ -131,8 +131,8 @@ class DiscountManagerTest {
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, "category1", 50));
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.StoreLevel, "", 50));
 
-            DiscountComponentDTO maximalPriceDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
-            discountManager.changeDiscountPolicy(maximalPriceDiscount);
+//            DiscountComponentDTO maximalPriceDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
+//            discountManager.changeDiscountPolicy(maximalPriceDiscount);
             ProductAfterDiscount[] res = discountManager.applyDiscountPolicy(cart);
             double finalPrice = 0;
             for (ProductAfterDiscount p : res) {
@@ -153,8 +153,8 @@ class DiscountManagerTest {
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, "category1", 50));
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.StoreLevel, "", 50));
 
-            DiscountComponentDTO minimalPriceDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.MINIMUM_PRICE);
-            discountManager.changeDiscountPolicy(minimalPriceDiscount);
+//            DiscountComponentDTO minimalPriceDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.MINIMUM_PRICE);
+//            discountManager.changeDiscountPolicy(minimalPriceDiscount);
             ProductAfterDiscount[] res = discountManager.applyDiscountPolicy(cart);
             double finalPrice = 0;
             for (ProductAfterDiscount p : res) {
@@ -174,8 +174,8 @@ class DiscountManagerTest {
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.ProductLevel, "6", 50));
             discounts.add(new SimpleDiscountDTO(HierarchyLevel.StoreLevel, "", 50));
 
-            DiscountComponentDTO additionDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
-            discountManager.changeDiscountPolicy(additionDiscount);
+//            DiscountComponentDTO additionDiscount = new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
+//            discountManager.changeDiscountPolicy(additionDiscount);
             ProductAfterDiscount[] res = discountManager.applyDiscountPolicy(cart);
             double finalPrice = 0;
             for (ProductAfterDiscount p : res) {

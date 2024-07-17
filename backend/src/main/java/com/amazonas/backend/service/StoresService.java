@@ -1,6 +1,6 @@
 package com.amazonas.backend.service;
 
-import com.amazonas.backend.exceptions.DiscountPolicyException;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 
@@ -14,7 +14,6 @@ import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.requests.Request;
 import com.amazonas.common.requests.stores.*;
-import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
 import org.springframework.stereotype.Component;
 
@@ -269,8 +268,7 @@ public class StoresService {
     public String getStoreRolesInformation(String json){
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
-            List<StorePosition> result = proxy.getStoreRolesInformation(storeId, request.userId(), request.token());
+            List<StorePosition> result = proxy.getStoreRolesInformation(request.payload(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
@@ -280,8 +278,7 @@ public class StoresService {
     public String getStoreTransactionHistory(String json){
         Request request = Request.from(json);
         try {
-            String storeId = request.payload();
-            List<Transaction> result = proxy.getStoreTransactionHistory(storeId, request.userId(), request.token());
+            List<Transaction> result = proxy.getStoreTransactionHistory(request.payload(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
@@ -291,7 +288,7 @@ public class StoresService {
     public String addDiscountRuleByCFG(String json) {
         Request request = Request.from(json);
         try {
-            DiscountCFGRequest discountCFGRequest = JsonUtils.deserialize(request.payload(), DiscountCFGRequest.class);
+            DiscountCFGRequest discountCFGRequest = DiscountCFGRequest.from(request.payload());
             String result = proxy.addDiscountRuleByCFG(discountCFGRequest.StoreID(), discountCFGRequest.cfg(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | DiscountPolicyException | StoreException | NoPermissionException e) {
@@ -302,8 +299,7 @@ public class StoresService {
     public String getDiscountRuleCFG(String json) {
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
-            String result = proxy.getDiscountRuleCFG(storeId, request.userId(), request.token());
+            String result = proxy.getDiscountRuleCFG(request.payload(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
@@ -315,7 +311,7 @@ public class StoresService {
     public String addDiscountRuleByDTO(String json) {
         Request request = Request.from(json);
         try {
-            DiscountDTORequest discountDTORequest = JsonUtils.deserialize(request.payload(), DiscountDTORequest.class);
+            DiscountDTORequest discountDTORequest = DiscountDTORequest.from(request.payload());
             String result = proxy.addDiscountRuleByDTO(discountDTORequest.StoreID(), discountDTORequest.discountComponentDTO(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | DiscountPolicyException | StoreException | NoPermissionException e) {
@@ -326,8 +322,7 @@ public class StoresService {
     public String getDiscountRuleDTO(String json) {
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
-            DiscountComponentDTO result = proxy.getDiscountRuleDTO(storeId, request.userId(), request.token());
+            DiscountComponentDTO result = proxy.getDiscountRuleDTO(request.payload(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException e) {
             return Response.getError(e);
@@ -339,7 +334,7 @@ public class StoresService {
     public String deleteAllDiscounts(String json) {
         Request request = Request.from(json);
         try {
-            DiscountCFGRequest discountCFGRequest = JsonUtils.deserialize(request.payload(), DiscountCFGRequest.class);
+            DiscountCFGRequest discountCFGRequest = DiscountCFGRequest.from(request.payload());
             boolean result = proxy.deleteAllDiscounts(discountCFGRequest.StoreID(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
@@ -350,7 +345,7 @@ public class StoresService {
     public String changePurchasePolicy(String json) {
         Request request = Request.from(json);
         try {
-            PurchasePolicyRequest purchasePolicyRequest = JsonUtils.deserialize(request.payload(), PurchasePolicyRequest.class);
+            PurchasePolicyRequest purchasePolicyRequest = PurchasePolicyRequest.from(request.payload());
             proxy.changePurchasePolicy(purchasePolicyRequest.StoreID(), purchasePolicyRequest.purchaseRule(), request.userId(), request.token());
             return Response.getOk();
         } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
@@ -361,19 +356,17 @@ public class StoresService {
     public String getPurchasePolicyDTO(String json) {
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
-            PurchaseRuleDTO result = proxy.getPurchasePolicyDTO(storeId, request.userId(), request.token());
+            PurchaseRuleDTO result = proxy.getPurchasePolicyDTO(request.payload(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
             return Response.getError(e);
         }
     }
 
-    public String deleteAllPurchasePolicies(String json) {
+    public String removePurchasePolicy(String json) {
         Request request = Request.from(json);
         try {
-            String storeId = JsonUtils.deserialize(request.payload(), String.class);
-            boolean result = proxy.deleteAllPurchasePolicies(storeId, request.userId(), request.token());
+            boolean result = proxy.removePurchasePolicy(request.payload(), request.userId(), request.token());
             return Response.getOk(result);
         } catch (AuthenticationFailedException | StoreException | NoPermissionException e) {
             return Response.getError(e);

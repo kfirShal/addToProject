@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.stores.discountPolicies.Translator;
-import com.amazonas.backend.exceptions.DiscountPolicyException;
+import com.amazonas.common.DiscountDTOs.Translator;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.backend.repository.ProductRepository;
@@ -22,8 +22,6 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Collections.addAll;
 
 @Component("storesController")
 public class StoresController {
@@ -202,7 +200,7 @@ public class StoresController {
         return getStore(storeId).getPurchasePolicyDTO();
     }
 
-    public boolean deleteAllPurchasePolicies(String storeId) throws StoreException {
+    public boolean removePurchasePolicy(String storeId) throws StoreException {
         return getStore(storeId).deleteAllPurchasePolicies();
     }
 

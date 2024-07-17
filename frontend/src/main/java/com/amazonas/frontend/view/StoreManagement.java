@@ -65,11 +65,11 @@ public class StoreManagement extends BaseLayout implements BeforeEnterObserver {
                 }
             }
             if (PURCHASE_POLICY.equals(item)) {
-                String url = getPath("purchasepolicy", Pair.of("storeid", storeId));
+                String url = getPath("purchase-policy", Pair.of("storeid", storeId));
                 getUI().ifPresent(ui -> ui.navigate(url));
             }
             if (DISCOUNT_POLICY.equals(item)) {
-                String url = getPath("discountpolicy", Pair.of("storeid", storeId));
+                String url = getPath("discount-policy", Pair.of("storeid", storeId));
                 getUI().ifPresent(ui -> ui.navigate(url));
             }
             if (VIEW_PURCHASE_HISTORY.equals(item)) {

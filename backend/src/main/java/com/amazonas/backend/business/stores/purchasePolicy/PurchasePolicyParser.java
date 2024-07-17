@@ -1,7 +1,7 @@
 package com.amazonas.backend.business.stores.purchasePolicy;
 
 import com.amazonas.backend.exceptions.PurchasePolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Node;
+import com.amazonas.common.DiscountDTOs.Node;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
