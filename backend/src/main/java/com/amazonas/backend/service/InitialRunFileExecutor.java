@@ -26,10 +26,14 @@ import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.Response;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.LinkedList;
@@ -49,6 +53,25 @@ public class InitialRunFileExecutor {
     private final StoresService storesService;
     private final UserProfilesService userProfilesService;
     private final PermissionsService permissionsService;
+
+    @EventListener
+    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
+        String currentDirectory = System.getProperty("user.dir");
+        String initialRunCode;
+        try {
+            initialRunCode = Files.readString(Paths.get(currentDirectory+"InitialRunFile.txt"));
+        }
+        catch (Exception e) {
+            System.out.println("Cannot find initialRnFile.txt");
+            return;
+        }
+        try{
+            runCode(initialRunCode);
+        } catch(Exception e) {
+            System.out.println("Error in initialRunFile.txt: " + e.getMessage());
+            System.exit(1);
+        }
+    }
 
     public InitialRunFileExecutor(AuthenticationService authenticationService,
                                   ExternalServicesService externalServicesService,

@@ -14,13 +14,10 @@ import com.amazonas.backend.service.InitialRunFileExecutor;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.utils.Rating;
-import com.amazonas.common.utils.Response;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 
 @Component
@@ -33,7 +30,6 @@ public class DataGenerator {
     private final StoresController storesController;
     private final ShippingServiceController shippingServiceController;
     private final PaymentServiceController paymentServiceController;
-    private final InitialRunFileExecutor initialRunFileExecutor;
 
     public DataGenerator(UsersController usersController, AuthenticationController authenticationController, NotificationController notificationController, PermissionsController permissionsController, StoresController storesController, ShippingServiceController shippingServiceController, PaymentServiceController paymentServiceController, InitialRunFileExecutor initialRunFileExecutor) {
         this.usersController = usersController;
@@ -43,19 +39,6 @@ public class DataGenerator {
         this.storesController = storesController;
         this.shippingServiceController = shippingServiceController;
         this.paymentServiceController = paymentServiceController;
-        this.initialRunFileExecutor = initialRunFileExecutor;
-    }
-
-    public Response generateDataByInitialFile() {
-        String currentDirectory = System.getProperty("user.dir");
-        String initialRunCode;
-        try {
-            initialRunCode = Files.readString(Paths.get(currentDirectory+"InitialRunFile.txt"));
-        }
-        catch (Exception e) {
-            return new Response("Cannot find initialRnFile.txt",false, "");
-        }
-        return initialRunFileExecutor.runCode(initialRunCode);
     }
 
     public void generateData() throws Exception {
