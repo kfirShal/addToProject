@@ -1,0 +1,21 @@
+register(u2@u2.com, u2, U2pass!1, 08082000);
+register(u3@u3.com, u3, U3pass!1, 08082000);
+register(u4@u2.com, u4, U2pass!1, 08082000);
+register(u5@u2.com, u5, U2pass!1, 08082000);
+register(u6@u2.com, u6, U2pass!1, 08082000);
+
+login(u2, U2pass!1);
+
+addStore(u2, s1, description);
+
+addProduct(s1, bambaId, Bamba, 30.0, hatif, description, 5);
+setProductQuantity(s1, bambaId, 20);
+
+addManager(s1, u3);
+
+addPermissionToManager(s1, u3, SET_PRODUCT_QUANTITY);
+
+addOwner(s1, u4);
+addOwner(s1, u5);
+
+logout();
