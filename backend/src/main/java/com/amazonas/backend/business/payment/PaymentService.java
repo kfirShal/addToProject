@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.payment;
 
+import com.amazonas.backend.ConfigurationValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -13,6 +14,7 @@ public class PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
     private final String externalSystemUrl = "https://damp-lynna-wsep-1984852e.koyeb.app/";
+    //private final String externalSystemUrl = ConfigurationValues.getProperty("PAYMENT_SERVICE_URL");
     private final RestTemplate restTemplate;
 
     public PaymentService() {
