@@ -2,7 +2,7 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.exceptions.DiscountPolicyException;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.StoreDetails;

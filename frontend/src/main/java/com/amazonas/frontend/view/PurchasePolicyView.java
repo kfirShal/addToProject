@@ -55,13 +55,13 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
 
         treeGrid = new TreeGrid<>(PurchaseRuleDTO.class);
 
-        List<MultiplePurchaseRuleDTO> rules;
-        try{
-            rules = appController.postByEndpoint(Endpoints.GET_PURCHASE_POLICY, storeId);
-        } catch (ApplicationException e) {
-            openErrorDialog(e.getMessage());
-            return;
-        }
+//        List<PurchaseRuleDTO> rules;
+//        try{
+//            rules = appController.postByEndpoint(Endpoints.GET_PURCHASE_POLICY, storeId);
+//        } catch (ApplicationException e) {
+//            openErrorDialog(e.getMessage());
+//            return;
+//        }
         List<PurchaseRuleDTO> exampleData = createExampleData();
         translator = new PurchaseRuleTranslator();
         treeGrid = translator.translateToTreeGrid(exampleData);
@@ -71,11 +71,11 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
         Button deleteButton = new Button("Delete Purchase Policy", new Icon(VaadinIcon.TRASH));
         deleteButton.addClickListener(event -> {
             treeGrid = translator.translateToTreeGrid(new ArrayList<>());
-            try{
-                appController.postByEndpoint(Endpoints.REMOVE_PURCHASE_POLICY, storeId);
-            } catch (ApplicationException e) {
-                openErrorDialog(e.getMessage());
-            }
+//            try{
+//                appController.postByEndpoint(Endpoints.REMOVE_PURCHASE_POLICY, storeId);
+//            } catch (ApplicationException e) {
+//                openErrorDialog(e.getMessage());
+//            }
         });
         // Layout for TreeGrid and Delete Button
         HorizontalLayout footer = new HorizontalLayout(deleteButton);
@@ -101,11 +101,11 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
     public void setRules(List<PurchaseRuleDTO> rules) {
         treeGrid = translator.translateToTreeGrid(rules);
         PurchasePolicyRequest request = new PurchasePolicyRequest(storeId, rules.getFirst());
-        try{
-            appController.postByEndpoint(Endpoints.ADD_PURCHASE_POLICY, request);
-        } catch (ApplicationException e) {
-            openErrorDialog(e.getMessage());
-        }
+//        try{
+//            appController.postByEndpoint(Endpoints.ADD_PURCHASE_POLICY, request);
+//        } catch (ApplicationException e) {
+//            openErrorDialog(e.getMessage());
+//        }
     }
 
 

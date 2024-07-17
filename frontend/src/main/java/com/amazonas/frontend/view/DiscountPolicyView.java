@@ -2,6 +2,8 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.DiscountDTOs.*;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
+import com.amazonas.common.exceptions.DiscountPolicyException;
+import com.amazonas.common.requests.stores.DiscountCFGRequest;
 import com.amazonas.common.requests.stores.DiscountDTORequest;
 import com.amazonas.common.requests.stores.PurchasePolicyRequest;
 import com.amazonas.frontend.control.AppController;
@@ -53,30 +55,32 @@ public class DiscountPolicyView extends BaseLayout implements BeforeEnterObserve
         header.setSpacing(true);
 
         treeGrid = new TreeGrid<>(Object.class);
-
-
-        List<DiscountComponentDTO> rules;
-        try{
-            rules = appController.postByEndpoint(Endpoints.GET_DISCOUNT_RULE_DTO, storeId);
-        } catch (ApplicationException e) {
-            openErrorDialog(e.getMessage());
-            return;
-        }
+//
+//        List<String> rulesCFG;
+//        List<DiscountComponentDTO> rules = new ArrayList<>();
+//        try{
+//
+//            rulesCFG = appController.postByEndpoint(Endpoints.GET_DISCOUNT_RULE_CFG, storeId);
+//            rules.add(Translator.translator(rulesCFG.getFirst()));//rules = appController.postByEndpoint(Endpoints.GET_DISCOUNT_RULE_DTO, storeId);
+//        } catch (ApplicationException | DiscountPolicyException e) {
+//            openErrorDialog(e.getMessage());
+//            return;
+//        }
         List<DiscountComponentDTO> exampleData = createExampleData();
         translator = new DiscountRuleTranslator();
-        //treeGrid = translator.translateToTreeGrid(exampleData);
-        treeGrid = translator.translateToTreeGrid(rules);
+        treeGrid = translator.translateToTreeGrid(exampleData);
+        //treeGrid = translator.translateToTreeGrid(rules);
 
         // Button for deleting discount policy
         Button deleteButton = new Button("Delete Discount Policy", new Icon(VaadinIcon.TRASH));
         deleteButton.addClickListener(event ->
             {
                 treeGrid = translator.translateToTreeGrid(new ArrayList<>());
-                try{
-                    appController.postByEndpoint(Endpoints.REMOVE_DISCOUNT_RULE, storeId);
-                } catch (ApplicationException e) {
-                    openErrorDialog(e.getMessage());
-                }
+//                try{
+//                    appController.postByEndpoint(Endpoints.REMOVE_DISCOUNT_RULE, storeId);
+//                } catch (ApplicationException e) {
+//                    openErrorDialog(e.getMessage());
+//                }
             }
         );
 
@@ -103,12 +107,12 @@ public class DiscountPolicyView extends BaseLayout implements BeforeEnterObserve
 
     public void setRules(List<DiscountComponentDTO> rules) {
         treeGrid = translator.translateToTreeGrid(rules);
-        DiscountDTORequest request = new DiscountDTORequest(storeId, rules.getFirst());
-        try{
-            appController.postByEndpoint(Endpoints.ADD_PURCHASE_POLICY, request);
-        } catch (ApplicationException e) {
-            openErrorDialog(e.getMessage());
-        }
+//        DiscountDTORequest request = new DiscountDTORequest(storeId, rules.getFirst());
+//        try{
+//            appController.postByEndpoint(Endpoints.ADD_PURCHASE_POLICY, request);
+//        } catch (ApplicationException e) {
+//            openErrorDialog(e.getMessage());
+//        }
     }
 
     private List<DiscountComponentDTO> createExampleData() {
@@ -133,10 +137,8 @@ public class DiscountPolicyView extends BaseLayout implements BeforeEnterObserve
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        if(!beforeEnterEvent.getNavigationTarget().equals(DiscountPolicyView.class)){
-            return;
-        }
-        storeId = beforeEnterEvent.getLocation().getQueryParameters().getParameters().get("storeid").getFirst();
+
+        params = beforeEnterEvent.getLocation().getQueryParameters();
         initializeView();
     }
 }

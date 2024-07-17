@@ -157,7 +157,8 @@ public class DataGenerator {
         multipleDiscounts.add(complexDiscount);
         multipleDiscounts.add(simpleDiscount2);
         MultipleDiscountDTO andDiscount = new MultipleDiscountDTO(MultipleDiscountType.MAXIMUM_PRICE,multipleDiscounts);
-        storesController.addDiscountRuleByDTO(store1Id,andDiscount);
+        //storesController.addDiscountRuleByDTO(store1Id,andDiscount);
+
 
         // add purchase policy
         // Example rule data creation
@@ -171,7 +172,7 @@ public class DataGenerator {
         multipleRules.add(conditionalPurchaseRule);
         MultiplePurchaseRuleDTO andRule = new MultiplePurchaseRuleDTO(MultiplePurchaseRuleType.AND, multipleRules);
 
-        storesController.changePurchasePolicy(store1Id,andRule);
+        //storesController.changePurchasePolicy(store1Id,andRule);
 
         System.out.println("Store1 id: "+store1Id);
     }

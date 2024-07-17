@@ -1,18 +1,12 @@
 package com.amazonas.backend.business.stores.purchasePolicy;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountComponent.*;
-import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.CategoryLevel;
-import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
-import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.business.stores.purchasePolicy.PurchaseRule.*;
-import com.amazonas.backend.exceptions.DiscountPolicyException;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 import com.amazonas.backend.exceptions.PurchasePolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Node;
-import com.amazonas.backend.business.stores.discountPolicies.Parser;
+import com.amazonas.common.DiscountDTOs.Node;
+import com.amazonas.common.DiscountDTOs.Parser;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.common.DiscountDTOs.*;
 import com.amazonas.common.PurchaseRuleDTO.*;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;

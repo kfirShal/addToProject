@@ -1,6 +1,6 @@
 package com.amazonas.backend.service;
 
-import com.amazonas.backend.exceptions.DiscountPolicyException;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 
