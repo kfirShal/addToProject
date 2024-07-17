@@ -30,9 +30,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.Base64;
@@ -56,14 +54,12 @@ public class InitialRunFileExecutor {
 
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
-        /*
-        String currentDirectory = System.getProperty("user.dir");
         String initialRunCode;
         try {
-            //String fileName = ConfigurationValues.getProperty("INITIAL_RUN_FILE_NAME");
-            //File file = new File(getClass().getResource(fileName).getFile());
-            File file = new File(getClass().getResource("InitialRunFile.txt").getFile());
-            initialRunCode = FileUtils.readFileToString(file, "UTF-8");
+            File file = new File("C:\\Users\\yuval\\git\\sadna\\backend\\src\\main\\resources\\InitialRunFile.txt");
+            try(BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file))){
+                initialRunCode = new String(stream.readAllBytes());
+            }
         }
         catch (Exception e) {
             System.out.println("Cannot find the initial run file");
@@ -75,8 +71,6 @@ public class InitialRunFileExecutor {
             System.out.println("Error in initialRunFile.txt: " + e.getMessage());
             System.exit(1);
         }
-
-         */
     }
 
     private InputStream getFileAsIOStream(final String fileName)
