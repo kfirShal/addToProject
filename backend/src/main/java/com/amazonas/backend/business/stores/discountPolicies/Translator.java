@@ -31,10 +31,10 @@ public class Translator {
                         }
                         return switch (node.children[0].content) {
                             case "minimal-price" ->
-                                    new MultipleDiscountDTO(discounts, MultipleDiscountType.MINIMUM_PRICE);
+                                    new MultipleDiscountDTO(MultipleDiscountType.MINIMUM_PRICE, discounts);
                             case "maximal-discount" ->
-                                    new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
-                            case "add" -> new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
+                                    new MultipleDiscountDTO(MultipleDiscountType.MAXIMUM_PRICE, discounts);
+                            case "add" -> new MultipleDiscountDTO(MultipleDiscountType.ADDITION, discounts);
                             default -> throw new DiscountPolicyException("Unexpected error14", 0, 0);
                         };
                     }

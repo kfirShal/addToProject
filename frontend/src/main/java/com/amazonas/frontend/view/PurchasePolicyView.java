@@ -55,7 +55,7 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
 
         treeGrid = new TreeGrid<>(PurchaseRuleDTO.class);
 
-        List<PurchaseRuleDTO> rules;
+        List<MultiplePurchaseRuleDTO> rules;
         try{
             rules = appController.postByEndpoint(Endpoints.GET_PURCHASE_POLICY, storeId);
         } catch (ApplicationException e) {
@@ -130,7 +130,7 @@ public class PurchasePolicyView extends BaseLayout implements BeforeEnterObserve
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        params = beforeEnterEvent.getLocation().getQueryParameters();
+        storeId = beforeEnterEvent.getRouteParameters().get("storeid").orElse(null);
         initializeView();
     }
 }

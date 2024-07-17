@@ -130,7 +130,7 @@ public class AppController {
         if (!response.success()) {
             throw new ApplicationException(response.message());
         }
-        
+
         if(clazz == Void.class){
             return null;
         }
