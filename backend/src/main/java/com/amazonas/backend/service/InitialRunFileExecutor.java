@@ -53,6 +53,7 @@ public class InitialRunFileExecutor {
     private final UserProfilesService userProfilesService;
     private final PermissionsService permissionsService;
     private final AppController appController;
+    private final Map<String, String> productsIDs;
 
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
@@ -103,6 +104,7 @@ public class InitialRunFileExecutor {
         this.userProfilesService = userProfilesService;
         this.permissionsService = permissionsService;
         this.appController = new AppController();
+        this.productsIDs = new ConcurrentHashMap<>();
     }
 
     public Response runCode(String code){
@@ -314,7 +316,7 @@ public class InitialRunFileExecutor {
                 numOfArgumentsChecker(operation, 7);
                 double price = getDouble("addProduct", operation[4], 4);
                 Rating rating = getRating("addProduct", operation[7], 7);
-                return storesService.addProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
+                String response = storesService.addProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
                         appController.getToken(),
                                                                                 JsonUtils.serialize(new ProductRequest(operation[1],
                                                                                                                        new Product(operation[2],
@@ -323,6 +325,8 @@ public class InitialRunFileExecutor {
                                                                                                                                    operation[5],
                                                                                                                                    operation[6],
                                                                                                                                    rating))))));
+                productsIDs.put(operation[2], ((Response) (JsonUtils.deserialize(response, Response.class))).message());
+                return response;
             }
             case "updateProduct" -> {
                 numOfArgumentsChecker(operation, 7);
@@ -365,7 +369,7 @@ public class InitialRunFileExecutor {
                 return storesService.setProductQuantity(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
                         appController.getToken(),
                                                                                 JsonUtils.serialize(new ProductRequest(operation[1],
-                                                                                                                       new Product(operation[2]),
+                                                                                                                       new Product(productsIDs.get(operation[2])),
                                                                                                                        quantity)))));
             }
             case "addOwner" -> {
