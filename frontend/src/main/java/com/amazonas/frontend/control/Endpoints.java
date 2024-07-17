@@ -62,12 +62,14 @@ public enum Endpoints {
     DELETE_NOTIFICATION("notifications/deletenotification", Void.class),
 
     // Stores Endpoints
+
     SEARCH_PRODUCTS_GLOBALLY("stores/searchproductsglobally", Product.class),
-    SEARCH_PRODUCTS_IN_STORE("stores/searchproductsinstore", Void.class),
+    SEARCH_PRODUCTS_IN_STORE("stores/searchproductsinstore", Product.class),
     SEARCH_STORES_GLOBALLY("stores/searchstoresglobally", StoreDetails.class),
     ADD_STORE("stores/addstore", String.class),
     OPEN_STORE("stores/openstore", Boolean.class),
     CLOSE_STORE("stores/closestore", Boolean.class),
+
     ADD_PRODUCT("stores/addproduct", Void.class),
     UPDATE_PRODUCT("stores/updateproduct", Void.class),
     REMOVE_PRODUCT("stores/removeproduct", Void.class),
