@@ -27,4 +27,9 @@ public class MaxUniqueProductsRule implements PurchaseRule {
         }
         return products.size() <= limit;
     }
+
+    @Override
+    public String generateCFG() {
+        return "( max-unique-products " + limit + " )";
+    }
 }

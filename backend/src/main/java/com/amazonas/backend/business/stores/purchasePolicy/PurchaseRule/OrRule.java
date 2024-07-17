@@ -31,4 +31,13 @@ public class OrRule implements PurchaseRule {
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
         return rules.stream().anyMatch(rule -> rule.isSatisfied(products, user));
     }
+
+    @Override
+    public String generateCFG() {
+        StringBuilder ret = new StringBuilder("( or");
+        for (PurchaseRule child : rules) {
+            ret.append(" ").append(child.generateCFG());
+        }
+        return ret + ") ";
+    }
 }

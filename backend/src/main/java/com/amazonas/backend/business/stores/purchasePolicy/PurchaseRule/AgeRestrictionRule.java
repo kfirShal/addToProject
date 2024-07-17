@@ -24,4 +24,9 @@ public class AgeRestrictionRule implements PurchaseRule {
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
         return user.getBirthDate().isBefore(LocalDate.now().minusYears(minAge).plusDays(1));
     }
+
+    @Override
+    public String generateCFG() {
+        return "( age-restriction " + minAge + " )";
+    }
 }
