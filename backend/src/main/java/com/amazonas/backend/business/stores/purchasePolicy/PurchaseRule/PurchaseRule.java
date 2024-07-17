@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface PurchaseRule {
     boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user);
+    String generateCFG();
 }
