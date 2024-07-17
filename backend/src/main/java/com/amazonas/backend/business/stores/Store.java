@@ -12,8 +12,8 @@ import com.amazonas.backend.business.stores.reservations.PendingReservationMonit
 import com.amazonas.backend.business.stores.reservations.Reservation;
 import com.amazonas.backend.business.stores.reservations.ReservationFactory;
 import com.amazonas.backend.business.stores.storePositions.AppointmentSystem;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
-import com.amazonas.backend.business.stores.storePositions.StoreRole;
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.StoreException;

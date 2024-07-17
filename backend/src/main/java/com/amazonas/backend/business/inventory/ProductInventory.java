@@ -47,6 +47,7 @@ public class ProductInventory {
         product.setProductId(UUID.randomUUID().toString());
         log.debug("Adding product {} with id {} to inventory", product.getProductName(), product.getProductId());
         idToProduct.put(product.getProductId(),product);
+        idToQuantity.put(product.getProductId(),0);
         productRepository.saveProduct(product);
         return product.getProductId();
     }
@@ -64,6 +65,9 @@ public class ProductInventory {
             product1.setRating(product.getRating());
             product1.setPrice(product.getPrice());
             product1.setDescription(product.getDescription());
+            product1.getKeyWords().clear();
+            product.getKeyWords().forEach(product1::addKeyWords);
+            product.getKeyWords().forEach(product1::addKeyWords);
             return true;
         }
         return false;

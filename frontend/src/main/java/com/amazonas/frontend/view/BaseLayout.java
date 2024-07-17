@@ -1,17 +1,9 @@
 package com.amazonas.frontend.view;
 
-import com.amazonas.common.dtos.Product;
-import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
-import com.amazonas.common.requests.stores.GlobalSearchRequest;
-import com.amazonas.common.requests.stores.ProductSearchRequestBuilder;
-import com.amazonas.common.requests.stores.StoreDetailsRequestBuilder;
-import com.amazonas.common.requests.stores.StoreSearchRequest;
 import com.amazonas.common.utils.Pair;
-import com.amazonas.common.utils.Rating;
 import com.amazonas.frontend.control.AppController;
-import com.amazonas.frontend.control.Endpoints;
-import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -20,7 +12,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -36,8 +27,6 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
@@ -45,11 +34,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static com.amazonas.common.permissions.actions.MarketActions.ALL;
 import static com.amazonas.frontend.control.AppController.*;
 
 @PageTitle("Amazonas")
@@ -61,7 +46,7 @@ public abstract class BaseLayout extends AppLayout {
     protected QueryParameters params;
     protected SideNav nav1;
     protected SideNav nav2;
-    protected String user;
+    PermissionsProfile permissionsProfile;
 
 
     public BaseLayout(AppController appController) {
@@ -73,11 +58,18 @@ public abstract class BaseLayout extends AppLayout {
         Location activeViewLocation = current.getActiveViewLocation();
         params = activeViewLocation.getQueryParameters();
 
-        PermissionsProfile permissionsProfile = AppController.getPermissionsProfile();
-
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
         }
+
+        // set up guest user if needed
+        if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
+            if (! appController.enterAsGuest()) {
+                appController.enterAsGuest();
+                //openErrorDialog("Failed to connect to server", AppController::clearSession);
+            }
+        }
+        permissionsProfile = getPermissionsProfile();
 
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
@@ -109,19 +101,18 @@ public abstract class BaseLayout extends AppLayout {
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         // put in the middle
         searchField.getStyle().set("margin-mid", "auto");
-
-        HorizontalLayout searchLayout = new HorizontalLayout(searchField);
-        searchLayout.setWidthFull();
-        searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-
-        // function to search for products and stores
         searchField.addValueChangeListener(event -> {
             String search = searchField.getValue();
             if (search.isEmpty()) {
                 return;
             }
             UI.getCurrent().navigate("search?search=" + search);
+        // function to search for products and stores
         });
+        HorizontalLayout searchLayout = new HorizontalLayout(searchField);
+        searchLayout.setWidthFull();
+        searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        addToNavbar(searchLayout);
 
         // set up login/logout button
         if (! isUserLoggedIn()) {
@@ -132,9 +123,10 @@ public abstract class BaseLayout extends AppLayout {
             registerButton.getStyle().set("margin-right", "10px");
             addToNavbar(loginButton, registerButton);
         } else {
-            if(permissionsProfile.hasPermission(ALL)){
-                nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
+            if(permissionsProfile.hasPermission(MarketActions.ALL)){
+                nav1.addItem(new SideNavItem("System Management", SystemManagement.class, VaadinIcon.NEWSPAPER.create()));
             }
+            nav1.addItem(new SideNavItem("Create Store", CreateStore.class, VaadinIcon.STAR.create()));
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
             username.getStyle().set("margin-left", "25%");
 
@@ -150,7 +142,7 @@ public abstract class BaseLayout extends AppLayout {
             });
             previousOrdersButton.getStyle().set("margin-right", "20px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton, searchLayout);
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
 
@@ -179,16 +171,6 @@ public abstract class BaseLayout extends AppLayout {
 
             addToNavbar(username, profileButton, logoutButton);
         }
-
-        // set up guest user if needed
-        if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
-            if (! appController.enterAsGuest()) {
-                appController.enterAsGuest();
-                //openErrorDialog("Failed to connect to server", AppController::clearSession);
-            }
-        }
-        // add some products and stores to the page
-
     }
 
     public void returnToMainIfNotLogged(){
@@ -231,7 +213,6 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             if (appController.login(username, password)) {
-                this.user = username;
                 showNotification("Login successful");
                 UI.getCurrent().getPage().reload();
             } else {
@@ -251,10 +232,6 @@ public abstract class BaseLayout extends AppLayout {
         content.add(dialog);
         dialog.open();
 
-    }
-
-    public String getName() {
-        return user;
     }
 
     protected void openRegisterDialog(){

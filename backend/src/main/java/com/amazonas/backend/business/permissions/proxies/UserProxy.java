@@ -1,7 +1,9 @@
 package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
+import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
@@ -95,5 +97,10 @@ public class UserProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.VIEW_USER_TRANSACTIONS);
         return real.getUserTransactionHistory(userId);
+    }
+
+    public UserInformation getUserInformation(String userId, String token, String requestedUserId) throws AuthenticationFailedException, UserException {
+        authenticateToken(userId, token);
+        return real.getUserInformation(requestedUserId);
     }
 }

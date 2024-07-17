@@ -88,6 +88,7 @@ public class API {
             case "payforpurchase" -> userProfilesService.payForPurchase(body);
             case "cancelpurchase" -> userProfilesService.cancelPurchase(body);
             case "getusertransactionhistory" -> userProfilesService.getUserTransactionHistory(body);
+            case "getuserinformation" -> userProfilesService.getUserInformation(body);
             default -> "Invalid endpoint";
         };
     }

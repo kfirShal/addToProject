@@ -67,6 +67,7 @@ public class PermissionsBeans {
         profile.addUserActionPermission(UserActions.PAY_FOR_PURCHASE);
         profile.addUserActionPermission(UserActions.VIEW_USER_TRANSACTIONS);
         // market actions
+        profile.addMarketActionPermission(MarketActions.CREATE_STORE);
         profile.addMarketActionPermission(MarketActions.SEARCH_PRODUCTS);
         profile.addMarketActionPermission(MarketActions.VIEW_STORES);
         profile.addMarketActionPermission(MarketActions.VIEW_PRODUCTS);
