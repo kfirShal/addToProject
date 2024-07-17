@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.discountPolicies;
+package com.amazonas.common.exceptions;
 
 public class DiscountPolicyException extends Exception {
     public int startIndex;

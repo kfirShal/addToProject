@@ -39,7 +39,7 @@ public class ActionsOfAStoreManager {
     public void setUp() {
         PermissionsController permissionsController = new PermissionsController(defaultRegisteredUserPermissionsProfile, guestPermissionsProfile,adminPermissionsProfile, permissionsProfileRepository);
         AuthenticationController authenticationController = new AuthenticationController(userCredentialsRepository);
-        StoresController storesController = new StoresController(storeFactory, storeRepository, transactionRepository, productRepository);
+        StoresController storesController = new StoresController(storeFactory, storeRepository, transactionRepository, productRepository, permissionsController);
         storeProxy = new StoreProxy(storesController, permissionsController, authenticationController);
     }
 

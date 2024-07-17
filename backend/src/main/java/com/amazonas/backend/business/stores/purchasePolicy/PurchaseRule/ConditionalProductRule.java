@@ -51,4 +51,9 @@ public class ConditionalProductRule implements PurchaseRule {
         }
         return true;
     }
+
+    @Override
+    public String generateCFG() {
+        return "( if-check ( product-quantity-more-than " + productID + " " + quantity + " ) " + purchaseRule.generateCFG() + " )";
+    }
 }

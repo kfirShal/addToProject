@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.stores.purchasePolicy.PurchaseRule;
 
+import com.amazonas.backend.business.stores.discountPolicies.DiscountComponent.DiscountComponent;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.business.userProfiles.RegisteredUser;
 import com.amazonas.backend.exceptions.StoreException;
@@ -30,5 +31,14 @@ public class AndRule implements PurchaseRule {
     @Override
     public boolean isSatisfied(List<ProductWithQuantitiy> products, RegisteredUser user) {
         return rules.stream().allMatch(rule -> rule.isSatisfied(products, user));
+    }
+
+    @Override
+    public String generateCFG() {
+        StringBuilder ret = new StringBuilder("( and");
+        for (PurchaseRule child : rules) {
+            ret.append(" ").append(child.generateCFG());
+        }
+        return ret + ") ";
     }
 }

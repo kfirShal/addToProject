@@ -1,6 +1,8 @@
-package com.amazonas.backend.business.stores.discountPolicies;
+package com.amazonas.common.DiscountDTOs;
+
 
 import com.amazonas.common.DiscountDTOs.*;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,14 +15,14 @@ public class Translator {
 
     private static DiscountComponentDTO translateNode(Node node) throws DiscountPolicyException {
         if (node == null) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error11", 0, 0);
         }
         else if (node.isString) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error12", 0, 0);
         }
         else {
             if (node.children == null || node.children.length == 0) {
-                throw new DiscountPolicyException("Unexpected error", 0, 0);
+                throw new DiscountPolicyException("Unexpected error13", 0, 0);
             }
             if (node.children[0].isString) {
                 switch (node.children[0].content) {
@@ -31,11 +33,11 @@ public class Translator {
                         }
                         return switch (node.children[0].content) {
                             case "minimal-price" ->
-                                    new MultipleDiscountDTO(discounts, MultipleDiscountType.MINIMUM_PRICE);
+                                    new MultipleDiscountDTO(MultipleDiscountType.MINIMUM_PRICE, discounts);
                             case "maximal-discount" ->
-                                    new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
-                            case "add" -> new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
-                            default -> throw new DiscountPolicyException("Unexpected error", 0, 0);
+                                    new MultipleDiscountDTO(MultipleDiscountType.MAXIMUM_PRICE, discounts);
+                            case "add" -> new MultipleDiscountDTO(MultipleDiscountType.ADDITION, discounts);
+                            default -> throw new DiscountPolicyException("Unexpected error14", 0, 0);
                         };
                     }
                     case "global-discount" -> {
@@ -45,30 +47,30 @@ public class Translator {
                         return new SimpleDiscountDTO(HierarchyLevel.ProductLevel, node.children[1].content, Integer.parseInt(node.children[2].content));
                     }
                     case "category-discount" -> {
-                        return new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, node.children[1].content, Integer.parseInt(node.children[1].content));
+                        return new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, node.children[1].content, Integer.parseInt(node.children[2].content));
                     }
                     case "if-then" -> {
                         return new ComplexDiscountDTO(nodeToCondition(node.children[1]), translateNode(node.children[2]));
                     }
-                    default -> throw new DiscountPolicyException("Unexpected error", 0, 0);
+                    default -> throw new DiscountPolicyException("Unexpected error15", 0, 0);
                 }
             }
             else {
-                throw  new DiscountPolicyException("Unexpected error", 0, 0);
+                throw  new DiscountPolicyException("Unexpected error16", 0, 0);
             }
         }
     }
 
     private static DiscountConditionDTO nodeToCondition(Node node) throws DiscountPolicyException {
         if (node == null) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error17", 0, 0);
         }
         else if (node.isString) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error18", 0, 0);
         }
         else {
             if (node.children == null || node.children.length == 0) {
-                throw new DiscountPolicyException("Unexpected error", 0, 0);
+                throw new DiscountPolicyException("Unexpected error19", 0, 0);
             }
             if (node.children[0].isString) {
                 switch (node.children[0].content) {
@@ -90,14 +92,32 @@ public class Translator {
                             case "&" -> new MultipleConditionDTO(MultipleConditionType.AND, conds);
                             case "|" -> new MultipleConditionDTO(MultipleConditionType.OR, conds);
                             case "^" -> new MultipleConditionDTO(MultipleConditionType.XOR, conds);
-                            default -> throw new DiscountPolicyException("Unexpected error", 0, 0);
+                            default -> throw new DiscountPolicyException("Unexpected error20", 0, 0);
                         };
                     }
-                    default -> throw new DiscountPolicyException("Unexpected error", 0, 0);
+                    default -> throw new DiscountPolicyException("Unexpected error21", 0, 0);
                 }
             }
             else {
-                throw  new DiscountPolicyException("Unexpected error", 0, 0);
+                throw  new DiscountPolicyException("Unexpected error22", 0, 0);
+            }
+        }
+    }
+
+    //for debugging
+    private static void printNode(Node node, int tabs) throws DiscountPolicyException {
+        for (int i = 0; i < tabs; i++) {
+            System.out.print("\t");
+        }
+        if (node == null) {
+            System.out.println("null");
+        }
+        else if (node.isString) {
+            System.out.println (node.content);
+        }
+        else {
+            for (int i = 0; i < node.children.length; i++) {
+                printNode(node.children[i], tabs + 1);
             }
         }
     }
