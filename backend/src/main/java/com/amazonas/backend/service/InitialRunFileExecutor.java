@@ -56,6 +56,7 @@ public class InitialRunFileExecutor {
 
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
+        /*
         String currentDirectory = System.getProperty("user.dir");
         String initialRunCode;
         try {
@@ -72,6 +73,8 @@ public class InitialRunFileExecutor {
             System.out.println("Error in initialRunFile.txt: " + e.getMessage());
             System.exit(1);
         }
+
+         */
     }
 
     private InputStream getFileAsIOStream(final String fileName)
@@ -130,7 +133,7 @@ public class InitialRunFileExecutor {
         return new Response(true);
     }
 
-    private String executeOperation(String[] operation) {
+    public String executeOperation(String[] operation) {
         if (operation == null || operation.length == 0) {
             throw new IllegalArgumentException("Operation is empty");
         }
@@ -469,7 +472,7 @@ public class InitialRunFileExecutor {
         }
     }
 
-    private static List<String[]> parser(String file) {
+    public static List<String[]> parser(String file) {
         String[] operations = (file+" ").split(";");
         List<String[]> ret = new LinkedList<>();
         if (!removeWhiteSpaces(operations[operations.length - 1]).isEmpty()) {
@@ -509,9 +512,15 @@ public class InitialRunFileExecutor {
             String[] arguments = argumentsWord[0].split(",");
             String[] operation = new String[arguments.length + 1];
             operation[0] = operator[0];
-            for(int i = 1; i <= arguments.length; i++) {
-                operation[i] = removeWhiteSpaces(arguments[i-1]);
+            if (arguments.length == 1 && removeWhiteSpaces(arguments[0]).isEmpty()) {
+                operation = new String[1];
+                operation[0] = operator[0];
+            }
+            else {
+                for (int i = 1; i <= arguments.length; i++) {
+                    operation[i] = removeWhiteSpaces(arguments[i - 1]);
 
+                }
             }
             ret.add(operation);
         }
