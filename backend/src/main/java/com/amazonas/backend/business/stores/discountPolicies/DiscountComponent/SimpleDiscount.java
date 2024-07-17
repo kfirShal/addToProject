@@ -52,7 +52,7 @@ public class SimpleDiscount implements DiscountComponent{
                                             productWithQuantitiy.product().getProductId(),
                                             productWithQuantitiy.quantity(),
                                             productWithQuantitiy.product().getPrice(),
-                                            productWithQuantitiy.product().getPrice() * (1 - percent)
+                                            productWithQuantitiy.product().getPrice() * ((100 - percent)/100.0)
                                             );
             }
             else {

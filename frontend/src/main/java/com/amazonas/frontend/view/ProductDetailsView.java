@@ -33,59 +33,6 @@ public class ProductDetailsView extends BaseLayout implements BeforeEnterObserve
 
     }
 
-//    @Override
-//    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-//        QueryParameters queryParameters = beforeEnterEvent.getLocation().getQueryParameters();
-//        Map<String, List<String>> parameters = queryParameters.getParameters();
-//
-//
-//        // Check if all parameters are present
-//        boolean hasAllParams = parameters.containsKey("productId") && parameters.containsKey("productName")
-//                && parameters.containsKey("productPrice") && parameters.containsKey("productCategory")
-//                && parameters.containsKey("productDescription") && parameters.containsKey("productRating")
-//                && parameters.containsKey("storeId");
-//
-//        Product product;
-//        HorizontalLayout productLayout = new HorizontalLayout();
-//        if (hasAllParams) {
-//            String productId = parameters.get("productId").getFirst();
-//            String productName = parameters.get("productName").getFirst();
-//            double productPrice = Double.parseDouble(parameters.get("productPrice").getFirst());
-//            String productCategory = parameters.get("productCategory").getFirst();
-//            String productDescription = parameters.get("productDescription").getFirst();
-//            Rating productRating = Rating.valueOf(parameters.get("productRating").getFirst().toUpperCase());
-//            String storeId = parameters.get("storeId").getFirst();
-//            product = new Product(productId, productName, productPrice, productCategory, productDescription, productRating, storeId);
-//            // Create content layout
-//            productLayout = createProductLayout(product,true);
-//
-//        } else {
-//            // Handle the case when only productId is passed
-//            // Get product id from the URL
-//            String productId = getParam("productId");
-//            try {
-//                List<Product> fetched = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
-//                product = fetched.getFirst();
-//            } catch (ApplicationException e) {
-//                openErrorDialog(e.getMessage());
-//                return;
-//            }
-//            // Create content layout
-//            productLayout = createProductLayout(product,false);
-//        }
-//        content.add(productLayout);
-//
-////        String productId = parameters.getOrDefault("productId", List.of("1")).getFirst();
-////        String productName = parameters.getOrDefault("productName", List.of("Old Computer")).getFirst();
-////        double productPrice = Double.parseDouble(parameters.getOrDefault("productPrice", List.of("49.99")).getFirst());
-////        String productCategory = parameters.getOrDefault("productCategory", List.of("Electronics")).getFirst();
-////        String productDescription = parameters.getOrDefault("productDescription", List.of("This is an old computer.")).getFirst();
-////        Rating productRating = Rating.valueOf(parameters.getOrDefault("productRating", List.of("ONE_STAR")).getFirst().toUpperCase());
-////        String storeId = parameters.getOrDefault("storeId", List.of("")).getFirst();
-//
-//
-//
-//    }
     
     private void createProductLayout() {
         // Get product id from the URL

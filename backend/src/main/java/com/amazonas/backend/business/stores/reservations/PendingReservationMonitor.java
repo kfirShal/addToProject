@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.stores.reservations;
 
+import com.amazonas.backend.repository.ReservationRepository;
 import com.amazonas.common.utils.Pair;
 import org.springframework.stereotype.Component;
 
@@ -14,13 +15,15 @@ public class PendingReservationMonitor {
     private final Object waitObject;
 
     private final ConcurrentLinkedDeque<Pair<Reservation, LocalDateTime>> reservations;
+    private final ReservationRepository reservationRepository;
 
-    public PendingReservationMonitor() {
+    public PendingReservationMonitor(ReservationRepository reservationRepository) {
         reservations = new ConcurrentLinkedDeque<>();
         waitObject = new Object();
 
         Thread reserveTimeoutThread = new Thread(this::reservationThreadMain);
         reserveTimeoutThread.start();
+        this.reservationRepository = reservationRepository;
     }
 
     public void addReservation(Reservation reservation){
@@ -71,6 +74,7 @@ public class PendingReservationMonitor {
                 case PENDING -> {
                     if(r.isExpired()){
                         r.cancelReservation();
+                        reservationRepository.removeReservation(r.userId(),r);
                         reservations.removeFirst();
                     }
                 }

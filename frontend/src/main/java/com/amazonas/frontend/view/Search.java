@@ -99,7 +99,8 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
         try {
             performSearch(searchKey);
         } catch (ApplicationException e) {
-            throw new RuntimeException(e);
+            openErrorDialog(e.getMessage());
+            return;
         }
     }
 
@@ -113,31 +114,33 @@ public class Search extends BaseLayout implements BeforeEnterObserver{
         for (String keyword : keywords) {
             searchKeywords.addAll(Arrays.asList(keyword.split("\\s+|\\+")));
         }
-        GlobalSearchRequest productRequest = new GlobalSearchRequest(Rating.ONE_STAR, ProductSearchRequestBuilder.create().setKeyWords(searchKeywords).build());
+        GlobalSearchRequest productRequest = new GlobalSearchRequest(Rating.NOT_RATED, ProductSearchRequestBuilder.create().setKeyWords(searchKeywords).build());
         List<Product> products = appController.postByEndpoint(Endpoints.SEARCH_PRODUCTS_GLOBALLY, productRequest);
         StoreSearchRequest storeRequest = StoreDetailsRequestBuilder.create().setStoreName(String.join(" ", searchKeywords)).build();
         List<StoreDetails> stores = appController.postByEndpoint(Endpoints.SEARCH_STORES_GLOBALLY, storeRequest);
         // navigate to the search page with the search parameter
         // if no results, display a message
+        boolean noProducts = false, noStores = false;
         if (products == null || products.isEmpty()) {
-            productGrid.setVisible(false);
-            storeGrid.setVisible(false);
-            storeGrid.setVisible(false);
+            noProducts = true;
+        } else {
+            productGrid.setItems(products);
+        }
+
+        if (stores == null || stores.isEmpty()) {
+            noStores = true;
+        } else {
+            storeGrid.setItems(stores);
+        }
+
+        if(noProducts && noStores){
             noResults.setText("No results found");
             return;
         }
 
         // Display results
         noResults.setText("");
-        productGrid.setItems(products);
-        productGrid.setVisible(true);
-
-        if (stores == null || stores.isEmpty()) {
-            storeGrid.setVisible(false);
-            return;
-        }
-        storeGrid.setItems(stores);
-        storeGrid.setVisible(true);
-
+        productGrid.setVisible(!noProducts);
+        storeGrid.setVisible(!noStores);
     }
 }

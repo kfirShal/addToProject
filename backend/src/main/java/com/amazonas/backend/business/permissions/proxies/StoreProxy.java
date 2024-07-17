@@ -2,14 +2,14 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
+import com.amazonas.common.exceptions.DiscountPolicyException;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.StoresController;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
@@ -32,10 +32,10 @@ public class StoreProxy extends ControllerProxy {
         this.real = storesController;
     }
 
-    public void addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.CREATE_STORE);
-        real.addStore(ownerID, name, description);
+        return real.addStore(ownerID, name, description);
     }
 
     public boolean openStore(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
@@ -213,10 +213,10 @@ public class StoreProxy extends ControllerProxy {
         return real.getPurchasePolicyDTO(storeId);
     }
 
-    public boolean deleteAllPurchasePolicies(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public boolean removePurchasePolicy(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
-        return real.deleteAllPurchasePolicies(storeId);
+        return real.removePurchasePolicy(storeId);
     }
 
     public void changePurchasePolicy(String storeId, PurchaseRuleDTO purchaseRuleDTO, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
