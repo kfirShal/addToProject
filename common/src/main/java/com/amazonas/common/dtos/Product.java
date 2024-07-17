@@ -60,31 +60,31 @@ public class Product implements Cloneable {
         this.productId = productId;
     }
 
-    public String productId() {
+    public String getProductId() {
         return productId;
     }
 
-    public String storeId() {
+    public String getStoreId() {
         return storeId;
     }
 
-    public String productName() {
+    public String getProductName() {
         return productName;
     }
 
-    public Double price() {
+    public Double getPrice() {
         return price;
     }
 
-    public String category() {
+    public String getCategory() {
         return category;
     }
 
-    public Rating rating() {
+    public Rating getRating() {
         return rating;
     }
 
-    public String description() {
+    public String getDescription() {
         return description;
     }
 
@@ -116,7 +116,7 @@ public class Product implements Cloneable {
         this.storeId = storeId;
     }
 
-    public Set<String> keyWords() {
+    public Set<String> getKeyWords() {
         return keyWords;
     }
 

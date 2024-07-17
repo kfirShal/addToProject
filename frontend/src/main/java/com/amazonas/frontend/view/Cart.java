@@ -1,152 +1,179 @@
 package com.amazonas.frontend.view;
 
-import com.amazonas.common.utils.Rating;
+import com.amazonas.common.dtos.ShoppingCart;
+import com.amazonas.common.dtos.StoreBasket;
+import com.amazonas.common.dtos.StoreDetails;
+import com.amazonas.common.requests.users.CartRequest;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.amazonas.common.dtos.Product;
 
-import java.util.*;
 import java.util.List;
+import java.util.Map;
 
+import static com.amazonas.frontend.control.AppController.isUserLoggedIn;
 
-@Route("Cart")
+@Route("cart")
 public class Cart extends Profile {
-    protected List<Item> items;
-    protected Grid<Item> grid;
-
+    protected ShoppingCart cart;
+    protected Grid<ShoppingCart> grid;
+    private final AppController appController;
 
     public Cart(AppController appController) {
         super(appController);
+        this.appController = appController;
 
         // check if user logged in, if not return to home page
-        returnToMainIfNotLogged();
+        if (!isUserLoggedIn()) {
+            UI.getCurrent().navigate("");
+            return;
+        }
 
-        items = new ArrayList<>();
-        grid = new Grid<>(Item.class, false);
+        //grid = new Grid<>(ShoppingCart.class, false);
         configureGrid();
 
-        Button addButton = new Button("Generate Random Item", _ -> generateRandomItem());
+
         // add in the bottom right button for proceed to checkout
-        Button checkoutButton = new Button("Checkout", _ -> UI.getCurrent().navigate("Payment"));
+        Button checkoutButton = new Button("Checkout", _ -> {
+            UI.getCurrent().navigate("Payment");
+        });
         checkoutButton.setIcon(VaadinIcon.CHECK.create());
         checkoutButton.getStyle().set("margin-left", "auto");
-        content.add(addButton, grid, checkoutButton);
+        content.add(checkoutButton);
     }
 
     private void configureGrid() {
-        grid.addColumn(Item::getName).setHeader("Name");
-        grid.addColumn(Item::getPrice).setHeader("Price");
-        grid.addColumn(Item::getQuantity).setHeader("Quantity");
-        grid.addColumn(item -> item.getPrice() * item.getQuantity()).setHeader("Total Price");
-        grid.getColumns().get(1).setWidth("10px");
-        grid.getColumns().get(2).setWidth("10px");
+        List<ShoppingCart> fetched;
+        try {
+            fetched = appController.postByEndpoint(Endpoints.VIEW_CART, null);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
+        this.cart = fetched.getFirst();
+        Map<String, StoreBasket> baskets = cart.getBaskets(); // storeId -> StoreBasket
+        if (fetched.isEmpty()) {
+            // Display message for empty cart
+            content.add(new Paragraph("Your cart is empty."));
+            return; // Exit the method early
+        }
 
-        grid.addColumn(new ComponentRenderer<>(item -> {
-            HorizontalLayout layout = new HorizontalLayout();
-            Button addButton = new Button("+", _ -> {
-                item.setQuantity(item.getQuantity() + 1);
+        for (Map.Entry<String, StoreBasket> entry : baskets.entrySet()) {
+            String storeId = entry.getKey();
+            StoreBasket storeBasket = entry.getValue();
 
-                grid.getDataProvider().refreshItem(item);
+            // Check if the storeBasket is empty, if so, skip this iteration
+            if (storeBasket.getProducts().isEmpty()) {
+                continue; // Skip this store as it has no products in the cart
+            }
+
+            // Create a sub-grid for each store's basket
+            Grid<Map.Entry<String, Integer>> productGrid = new Grid<>((Class<Map.Entry<String, Integer>>)(Class<?>)Map.Entry.class, false);
+            // show product name using getProduct
+            productGrid.addColumn(entry1 -> {
+                try {
+                    Product product = getProduct(entry1.getKey());
+                    return product.getProductName();
+                } catch (ApplicationException e) {
+                    return "Product not found";
+                }
+            }).setHeader("Product Name");
+            productGrid.addColumn(Map.Entry::getValue).setHeader("Quantity");
+
+
+
+            // Add change quantity button + and -
+            productGrid.addColumn(new ComponentRenderer<>(entry1 -> {
+                Button incrementButton = new Button("+", _ -> changeProductQuantity(storeId, entry1.getKey(), entry1.getValue() + 1));
+                Button decrementButton = new Button("-", _ -> {
+                    // if 1 then remove
+                    if (entry1.getValue() == 1) {
+                        removeProductFromCart(storeId, entry1.getKey());
+                        return;
+                    }
+                    changeProductQuantity(storeId, entry1.getKey(), entry1.getValue() - 1);
+                });
+                return new Paragraph(incrementButton, decrementButton);
+            })).setHeader("Change Quantity");
+
+
+            // show price * quantity from quantity column
+            productGrid.addColumn(entry1 -> {
+                try {
+                    Product product = getProduct(entry1.getKey());
+                    return product.getPrice() * entry1.getValue();
+                } catch (ApplicationException e) {
+                    return "Product not found";
+                }
+            }).setHeader("Price");
+
+
+
+            // Add remove product button
+            productGrid.addColumn(new ComponentRenderer<>(entry1 -> new Button("Remove", _ -> removeProductFromCart(storeId, entry1.getKey())))).setHeader("Remove");
+
+            productGrid.setItems(storeBasket.getProducts().entrySet());
+
+            // Add the store name as a header
+            String storeName = getStoreName(storeId);
+            Paragraph storeHeader = new Paragraph("Store: " + storeName);
+            // when click go to store page - store?storeid= + storeId
+            storeHeader.addClickListener(_ -> UI.getCurrent().navigate("store?storeid=" + storeId));
+            content.add(storeHeader, productGrid);
+
+            productGrid.addItemClickListener(event -> {
+                try {
+                    Product product = getProduct(event.getItem().getKey());
+                    UI.getCurrent().navigate("product-details?productId=" + product.getProductId());
+                } catch (ApplicationException _) {
+                }
             });
-            Button removeButton = new Button("-", _ -> {
-                item.setQuantity(item.getQuantity() > 1 ? item.getQuantity() - 1 : 1);
-                grid.getDataProvider().refreshItem(item);
-            });
-            Button deleteButton = new Button("Remove", _ -> {
-                items.remove(item);
-                grid.setItems(items);
-            });
-
-            layout.add(addButton, removeButton, deleteButton);
-            return layout;
-        })).setHeader("Actions");
-
-        grid.addItemClickListener(event -> {
-            // when click on item, open pop up with full deatils
-            Dialog dialog = new Dialog();
-            dialog.add(new Paragraph("Product ID: " + event.getItem().getProductId()));
-            dialog.add(new Paragraph("Category: " + event.getItem().getCategory()));
-            dialog.add(new Paragraph("Description: " + event.getItem().getDescription()));
-            dialog.add(new Paragraph("Rating: " + event.getItem().getRating()));
-            dialog.open();
-
-        });
-
-        grid.setItems(items);
+        }
     }
 
-    private void generateRandomItem() {
-        Random random = new Random();
-        String[] itemNames = {"Banana", "Apple", "Ceral", "Milk", "Bread", "Eggs", "Butter"};
-        int price = random.nextInt(3,28);
-        String name = itemNames[random.nextInt(itemNames.length)];
-        String id = UUID.randomUUID().toString();
-
-        Product product = new Product(id, name, (double) price, "Grocery", "This is a random item", Rating.FIVE_STARS);
-        Item newItem = new Item(product);
-        items.add(newItem);
-        grid.setItems(items);
+    private void changeProductQuantity(String storeId, String productId, int quantity) {
+        try {
+            CartRequest request = new CartRequest(storeId, productId, quantity);
+            appController.postByEndpoint(Endpoints.CHANGE_PRODUCT_QUANTITY, request);
+            UI.getCurrent().getPage().reload();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+        }
     }
 
-
-    protected static class Item {
-        private final String productId;
-        private final String productName;
-        private final double price;
-        private final String category;
-        private final String description;
-        private final Rating rating;
-        private int quantity;
-
-
-        public Item(Product product) {
-            this.productId = product.productId();
-            this.productName = product.productName();
-            this.price = product.price();
-            this.category = product.category();
-            this.description = product.description();
-            this.rating = product.rating();
-            this.quantity = 1;
+    private void removeProductFromCart(String storeId, String productId) {
+        try {
+            CartRequest request = new CartRequest(storeId, productId, 0);
+            appController.postByEndpoint(Endpoints.REMOVE_PRODUCT_FROM_CART, request);
+            UI.getCurrent().getPage().reload();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
         }
+    }
 
-        public String getName() {
-            return productName;
+    private String getStoreName(String storeID) {
+        try {
+            StoreDetails store = (StoreDetails) appController.postByEndpoint(Endpoints.GET_STORE_DETAILS, storeID).getFirst();
+            return store.getStoreName();
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return "";
         }
+    }
 
-        public double getPrice() {
-            return price;
+    private Product getProduct(String productId) throws ApplicationException {
+        List<Product> products = appController.postByEndpoint(Endpoints.GET_PRODUCT, productId);
+        if (products.isEmpty()) {
+            throw new ApplicationException("Product not found");
         }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public void setQuantity(int quantity) {
-            this.quantity = quantity;
-        }
-
-        public String getProductId() {
-            return productId;
-        }
-
-        public String getCategory() {
-            return category;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public Rating getRating() {
-            return rating;
-        }
+        return products.getFirst();
     }
 }

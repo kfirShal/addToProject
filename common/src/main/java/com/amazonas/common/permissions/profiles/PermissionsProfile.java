@@ -5,6 +5,7 @@ import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.common.permissions.actions.UserActions;
 
 import java.util.List;
+import java.util.Set;
 
 public interface PermissionsProfile {
 
@@ -25,6 +26,10 @@ public interface PermissionsProfile {
     boolean hasPermission(MarketActions action);
 
     boolean hasPermission(String storeId, StoreActions action);
+
+    default List<StoreActions> getStorePermissions(String storeId){
+        return List.of();
+    }
 
     List<String> getStoreIds();
 

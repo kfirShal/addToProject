@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountCondition;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleConditionType;
+import com.amazonas.common.DiscountDTOs.DiscountConditionDTO;
+import com.amazonas.common.DiscountDTOs.MultipleConditionDTO;
+import com.amazonas.common.DiscountDTOs.MultipleConditionType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
 
@@ -29,12 +29,22 @@ public class XorCondition implements Condition{
         if (products == null) {
             throw new IllegalArgumentException("products list cannot be null");
         }
+        boolean found = false;
         for (Condition condition : conditions) {
-            if (!condition.decideCondition(products)) {
-                return false;
+            if (condition.decideCondition(products)) {
+                try {
+
+
+                    System.out.println(condition.generateCFG());
+                }
+                catch (StoreException e) {}
+                if (found) {
+                    return false;
+                }
+                found = true;
             }
         }
-        return true;
+        return found;
     }
 
     @Override

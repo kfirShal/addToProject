@@ -54,10 +54,10 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     public void addNewTransaction(Transaction transaction){
         try {
             lock.acquireWrite();
-            log.debug("Documenting transactionId for user {} in store {}", transaction.userId(), transaction.storeId());
-            userIdToTransactions.computeIfAbsent(transaction.userId(), _ -> new LinkedList<>()).add(transaction);
-            storeIdToTransactions.computeIfAbsent(transaction.storeId(), _ -> new LinkedList<>()).add(transaction);
-            transactionIdToTransaction.put(transaction.transactionId(), transaction);
+            log.debug("Documenting transactionId for user {} in store {}", transaction.getUserId(), transaction.getStoreId());
+            userIdToTransactions.computeIfAbsent(transaction.getUserId(), _ -> new LinkedList<>()).add(transaction);
+            storeIdToTransactions.computeIfAbsent(transaction.getStoreId(), _ -> new LinkedList<>()).add(transaction);
+            transactionIdToTransaction.put(transaction.getTransactionId(), transaction);
         } finally {
             lock.releaseWrite();
         }
@@ -95,7 +95,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     public void updateTransaction(Transaction transaction) {
         transactionLock.acquireWrite();
         try {
-            transactionIdToTransaction.put(transaction.transactionId(), transaction);
+            transactionIdToTransaction.put(transaction.getTransactionId(), transaction);
         } finally {
             transactionLock.releaseWrite();
         }
@@ -104,7 +104,7 @@ public class TransactionRepository extends AbstractCachingRepository<Transaction
     public void saveAllTransactions(Collection<Transaction> transactions) {
         transactionLock.acquireWrite();
         try {
-            transactions.forEach(transaction -> this.transactionIdToTransaction.put(transaction.transactionId(), transaction));
+            transactions.forEach(transaction -> this.transactionIdToTransaction.put(transaction.getTransactionId(), transaction));
         } finally {
             transactionLock.releaseWrite();
         }

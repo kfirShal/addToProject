@@ -2,25 +2,25 @@ package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
-import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.common.exceptions.DiscountPolicyException;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.StoreDetails;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
 import com.amazonas.backend.business.stores.StoresController;
-import com.amazonas.backend.business.stores.storePositions.StorePosition;
+import com.amazonas.common.dtos.StorePosition;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.requests.stores.GlobalSearchRequest;
-import com.amazonas.common.requests.stores.SearchRequest;
+import com.amazonas.common.requests.stores.ProductSearchRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Component("storeProxy")
 public class StoreProxy extends ControllerProxy {
@@ -32,10 +32,10 @@ public class StoreProxy extends ControllerProxy {
         this.real = storesController;
     }
 
-    public void addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String addStore(String ownerID, String name, String description, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId, MarketActions.CREATE_STORE);
-        real.addStore(ownerID, name, description);
+        return real.addStore(ownerID, name, description);
     }
 
     public boolean openStore(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
@@ -140,7 +140,13 @@ public class StoreProxy extends ControllerProxy {
         return real.searchProductsGlobally(request);
     }
 
-    public List<Product> searchProductsInStore(String storeId, SearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
+    public List<StoreDetails> searchStoresGlobally(String keyword, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId, MarketActions.SEARCH_STORES);
+        return real.searchStoresGlobally(keyword);
+    }
+
+    public List<Product> searchProductsInStore(String storeId, ProductSearchRequest request, String userId, String token) throws StoreException,AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.SEARCH_PRODUCTS);
         return real.searchProductsInStore(storeId, request);
@@ -170,24 +176,53 @@ public class StoreProxy extends ControllerProxy {
         return real.getProduct(productId);
     }
 
-    public String addDiscountRule(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
+    public String addDiscountRuleByCFG(String storeId,String cfg, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
-        return real.getStore(storeId).changeDiscountPolicy(Translator.translator(cfg));
+        return real.addDiscountRuleByCFG(storeId, cfg);
 
     }
 
-    public String getDiscountRule(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+    public String getDiscountRuleCFG(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,MarketActions.VIEW_STORES);
-        return real.getStore(storeId).getDiscountPolicyCFG();
+        return real.getDiscountRuleCFG(storeId);
+    }
+
+    public String addDiscountRuleByDTO(String storeId,DiscountComponentDTO dto, String userId, String token) throws StoreException, DiscountPolicyException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
+        return real.addDiscountRuleByDTO(storeId, dto);
+    }
+
+    public DiscountComponentDTO getDiscountRuleDTO(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
+        return real.getDiscountRuleDTO(storeId);
     }
 
     public boolean deleteAllDiscounts(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
         authenticateToken(userId, token);
         checkPermission(userId,storeId, StoreActions.EDIT_DISCOUNT);
-        return real.getStore(storeId).deleteAllDiscounts();
+        return real.deleteAllDiscounts(storeId);
     }
 
+    public PurchaseRuleDTO getPurchasePolicyDTO(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,MarketActions.VIEW_STORES);
+        return real.getPurchasePolicyDTO(storeId);
+    }
+
+    public boolean removePurchasePolicy(String storeId, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
+        return real.removePurchasePolicy(storeId);
+    }
+
+    public void changePurchasePolicy(String storeId, PurchaseRuleDTO purchaseRuleDTO, String userId, String token) throws StoreException, AuthenticationFailedException, NoPermissionException {
+        authenticateToken(userId, token);
+        checkPermission(userId,storeId, StoreActions.EDIT_POLICY);
+        real.changePurchasePolicy(storeId, purchaseRuleDTO);
+    }
 
 }

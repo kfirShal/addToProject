@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountCondition;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.UnaryConditionDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.UnaryConditionType;
+import com.amazonas.common.DiscountDTOs.DiscountConditionDTO;
+import com.amazonas.common.DiscountDTOs.UnaryConditionDTO;
+import com.amazonas.common.DiscountDTOs.UnaryConditionType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
 
@@ -26,7 +26,7 @@ public class AtLeastPriceCondition implements Condition{
         }
         double count = 0;
         for (ProductWithQuantitiy productWithQuantitiy : products) {
-            count += productWithQuantitiy.product().price() * productWithQuantitiy.quantity();
+            count += productWithQuantitiy.product().getPrice() * productWithQuantitiy.quantity();
         }
         return count >= limit;
     }

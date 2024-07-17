@@ -35,7 +35,7 @@ public class ProductRepository extends AbstractCachingRepository<Product> {
     public void saveProduct(Product product) {
         productLock.acquireWrite();
         try {
-            productCache.put(product.productId(), product);
+            productCache.put(product.getProductId(), product);
         } finally {
             productLock.releaseWrite();
         }
@@ -44,7 +44,7 @@ public class ProductRepository extends AbstractCachingRepository<Product> {
     public void saveAllProducts(Collection<Product> products) {
         productLock.acquireWrite();
         try {
-            products.forEach(product -> productCache.put(product.productId(), product));
+            products.forEach(product -> productCache.put(product.getProductId(), product));
         } finally {
             productLock.releaseWrite();
         }

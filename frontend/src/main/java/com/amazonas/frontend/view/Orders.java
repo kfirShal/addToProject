@@ -1,130 +1,119 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.Transaction;
 import com.amazonas.frontend.control.AppController;
+import com.amazonas.frontend.control.Endpoints;
+import com.amazonas.frontend.exceptions.ApplicationException;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static com.amazonas.frontend.control.AppController.isUserLoggedIn;
 
 @Route("Orders")
-public class Orders extends Profile {
-    private AppController appController;
-    private List<Order> orderList;
-    private Grid<Order> orderGrid;
+public class Orders extends Profile implements BeforeEnterObserver {
+    private final AppController appController;
+    private List<Transaction> orderList;
 
     public Orders(AppController appController) {
         super(appController);
         this.appController = appController;
-        returnToMainIfNotLogged();
-        initializeOrderList();
+        if (!isUserLoggedIn()) {
+            UI.getCurrent().navigate("");
+            return;
+        }
+        InitialOrders();
         createOrdersLayout();
     }
 
-    private void initializeOrderList() {
+    private void InitialOrders() {
         orderList = new ArrayList<>();
-        // Example orders
-        orderList.add(new Order(1, "Order001", LocalDate.now(), "Completed"));
-        orderList.add(new Order(2, "Order002", LocalDate.now().minusDays(1), "Shipped"));
+        // get user transaction history
+        String userID = AppController.getCurrentUserId();
+        try {
+            orderList = appController.postByEndpoint(Endpoints.GET_USER_TRANSACTION_HISTORY, userID);
+        } catch (ApplicationException e) {
+            openErrorDialog(e.getMessage());
+            return;
+        }
     }
 
     private void createOrdersLayout() {
         VerticalLayout ordersLayout = new VerticalLayout();
 
         // Grid to display orders
-        orderGrid = new Grid<>(Order.class);
+        Grid<Transaction> orderGrid = new Grid<>(Transaction.class);
         orderGrid.setItems(orderList);
-        orderGrid.setColumns("id", "orderNumber", "date", "status");
+        orderGrid.setColumns("transactionId", "storeId", "userId", "dateOfTransaction", "productToQuantity", "state");
 
-        // Add button to add new order for demonstration
-        Button addOrderButton = new Button("Add Order", event -> {
-            addOrder();
-        });
+        // Add click listener to navigate to the order URL
+        orderGrid.addItemClickListener(event -> UI.getCurrent().navigate("orders?orderId=" + event.getItem().getTransactionId()));
 
-        // Add click listener to show order details in a popup
-        orderGrid.addItemClickListener(event -> {
-            showOrderDetails(event.getItem());
-        });
-
-        ordersLayout.add(orderGrid, addOrderButton);
+        ordersLayout.add(orderGrid);
         content.add(ordersLayout);
     }
 
-    private void addOrder() {
-        // Example method to add a new order
-        int newOrderId = orderList.size() + 1;
-        Order newOrder = new Order(newOrderId, "Order00" + newOrderId, LocalDate.now(), "Pending");
-        orderList.add(newOrder);
-        orderGrid.getDataProvider().refreshAll();
-        Notification.show("New order added");
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        QueryParameters queryParameters = event.getLocation().getQueryParameters();
+        List<String> orderIds = queryParameters.getParameters().getOrDefault("orderId", List.of());
+
+        if (!orderIds.isEmpty()) {
+            String orderId = orderIds.getFirst();
+            Transaction order = findOrderById(orderId);
+            if (order != null) {
+                showOrderDetails(order);
+            }
+        }
     }
 
-    private void showOrderDetails(Order order) {
+    private Transaction findOrderById(String orderId) {
+        return orderList.stream()
+                .filter(order -> order.getTransactionId().equals(orderId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void showOrderDetails(Transaction order) {
         // Create a dialog to show order details
         Dialog dialog = new Dialog();
-        dialog.add("Order ID: " + order.getId());
-        dialog.add("\nOrder Number: " + order.getOrderNumber());
-        dialog.add("\nDate: " + order.getDate());
-        dialog.add("\nStatus: " + order.getStatus());
+        VerticalLayout layout = new VerticalLayout();
 
-        Button closeButton = new Button("Close", event -> {
-            dialog.close();
-        });
+        // Add components to the layout for each piece of information
+        layout.add(new Span("Order Details:"));
+        layout.add(new Span("Transaction ID: " + order.getTransactionId()));
+        layout.add(new Span("Store ID: " + order.getStoreId()));
+        layout.add(new Span("User ID: " + order.getUserId()));
+        layout.add(new Span("Date of Transaction: " + order.getDateOfTransaction()));
+
+        // Add a component for products
+        VerticalLayout productsLayout = new VerticalLayout();
+        productsLayout.add(new Span("Products: "));
+        for (Map.Entry<Product, Integer> entry : order.getProductToQuantity().entrySet()) {
+            productsLayout.add(new Span(entry.getKey().getProductName() + " - " + entry.getValue()));
+        }
+        layout.add(productsLayout);
+
+        layout.add(new Span("State: " + order.getState()));
+
+        // Add the layout to the dialog
+        dialog.add(layout);
+
+        Button closeButton = new Button("Close", _ -> dialog.close());
 
         dialog.add(closeButton);
         dialog.open();
-    }
-
-    // Inner class representing an Order
-    public static class Order {
-        private int id;
-        private String orderNumber;
-        private LocalDate date;
-        private String status;
-
-        public Order(int id, String orderNumber, LocalDate date, String status) {
-            this.id = id;
-            this.orderNumber = orderNumber;
-            this.date = date;
-            this.status = status;
-        }
-
-        // Getters and setters
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public String getOrderNumber() {
-            return orderNumber;
-        }
-
-        public void setOrderNumber(String orderNumber) {
-            this.orderNumber = orderNumber;
-        }
-
-        public LocalDate getDate() {
-            return date;
-        }
-
-        public void setDate(LocalDate date) {
-            this.date = date;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        public void setStatus(String status) {
-            this.status = status;
-        }
     }
 }

@@ -16,13 +16,18 @@ public class PermissionsProxy extends ControllerProxy{
         this.real = permissionsController;
     }
 
-    public PermissionsProfile getUserPermissions(String userId, String token) throws AuthenticationFailedException, IllegalArgumentException {
+    public PermissionsProfile getUserPermissions(String userId, String token, String subject) throws AuthenticationFailedException, IllegalArgumentException {
         authenticateToken(userId, token);
-        return real.getPermissionsProfile(userId);
+        return real.getPermissionsProfile(subject);
     }
 
     public PermissionsProfile getGuestPermissions(String userId, String token) throws IllegalArgumentException, AuthenticationFailedException {
         authenticateToken(userId, token);
         return real.getGuestPermissionsProfile();
+    }
+
+    public boolean isAdmin(String userId, String token) throws AuthenticationFailedException {
+        authenticateToken(userId, token);
+        return real.isAdmin(userId);
     }
 }

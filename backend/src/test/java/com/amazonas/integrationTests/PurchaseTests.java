@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,7 +89,7 @@ public class PurchaseTests {
 
             @Override
             public Transaction getTransactionById(String transactionId) {
-                if(transaction.transactionId().equals(transactionId)){
+                if(transaction.getTransactionId().equals(transactionId)){
                     return transaction;
                 }
                 return null;
@@ -144,7 +145,7 @@ public class PurchaseTests {
         // ============= Entities setup ============= |
         shoppingCart = new ShoppingCart(storeBasketFactory, USER_ID);
         product = new Product(PRODUCT_ID, "productName", 10.0, "category", "description", Rating.FIVE_STARS, "store1");
-        user = new RegisteredUser(USER_ID, "email@email.com");
+        user = new RegisteredUser(USER_ID, "email@email.com", LocalDate.now().minusYears(22));
 
         // ============== Mocks configuration ============== |
         when(storeRepository.getStore(STORE_ID)).thenReturn(store);
@@ -253,7 +254,7 @@ public class PurchaseTests {
         verify(shoppingCartRepository,times(1)).saveCart(any());
 
         // ================== Test execution ================== |
-        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.transactionId(),SHIPPING_SERVICE_ID)));
+        assertFalse(assertDoesNotThrow(()->shippingServiceController.sendShipment(transaction.getTransactionId(),SHIPPING_SERVICE_ID)));
 
         // ================== Test verification ================== |
         // check that the shipping was attempted

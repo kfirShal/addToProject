@@ -51,6 +51,7 @@ public class PermissionsBeans {
         profile.addMarketActionPermission(MarketActions.SEARCH_PRODUCTS);
         profile.addMarketActionPermission(MarketActions.VIEW_STORES);
         profile.addMarketActionPermission(MarketActions.VIEW_PRODUCTS);
+        profile.addMarketActionPermission(MarketActions.SEARCH_STORES);
     }
 
     private void buildDefaultRegisteredUserProfile() {
@@ -66,13 +67,16 @@ public class PermissionsBeans {
         profile.addUserActionPermission(UserActions.PAY_FOR_PURCHASE);
         profile.addUserActionPermission(UserActions.VIEW_USER_TRANSACTIONS);
         // market actions
+        profile.addMarketActionPermission(MarketActions.CREATE_STORE);
         profile.addMarketActionPermission(MarketActions.SEARCH_PRODUCTS);
         profile.addMarketActionPermission(MarketActions.VIEW_STORES);
         profile.addMarketActionPermission(MarketActions.VIEW_PRODUCTS);
+        profile.addMarketActionPermission(MarketActions.SEARCH_STORES);
         // notifications
         profile.addUserActionPermission(UserActions.READ_NOTIFICATIONS);
         profile.addUserActionPermission(UserActions.SEND_NOTIFICATION);
         profile.addUserActionPermission(UserActions.DELETE_NOTIFICATION);
         profile.addUserActionPermission(UserActions.SET_NOTIFICATION_READ);
+
     }
 }

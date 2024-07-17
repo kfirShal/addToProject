@@ -56,23 +56,27 @@ public final class Transaction {
         this.state = TransactionState.CANCELED;
     }
 
-    public String transactionId() {
+    public TransactionState getState() {
+        return state;
+    }
+
+    public String getTransactionId() {
         return transactionId;
     }
 
-    public String storeId() {
+    public String getStoreId() {
         return storeId;
     }
 
-    public String userId() {
+    public String getUserId() {
         return userId;
     }
 
-    public LocalDateTime dateOfTransaction() {
+    public LocalDateTime getDateOfTransaction() {
         return dateOfTransaction;
     }
 
-    public Map<Product, Integer> productToQuantity() {
+    public Map<Product, Integer> getProductToQuantity() {
         return productToQuantity;
     }
 

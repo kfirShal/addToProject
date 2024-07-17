@@ -1,13 +1,11 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.Condition;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.ComplexDiscountDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
-import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.DiscountHierarchyLevel;
+import com.amazonas.common.DiscountDTOs.ComplexDiscountDTO;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
-import com.amazonas.common.dtos.Product;
 
 import java.util.List;
 
@@ -52,10 +50,10 @@ public class ComplexDiscount implements DiscountComponent {
                     throw new IllegalArgumentException("Product cannot be null");
                 }
                 ret[index++] = new ProductAfterDiscount(
-                                                        product.product().productId(),
+                                                        product.product().getProductId(),
                                                         product.quantity(),
-                                                        product.product().price(),
-                                                        product.product().price()
+                                                        product.product().getPrice(),
+                                                        product.product().getPrice()
                                                         );
             }
             return ret;

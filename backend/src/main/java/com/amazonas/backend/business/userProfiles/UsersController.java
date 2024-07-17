@@ -14,6 +14,7 @@ import com.amazonas.backend.exceptions.ShoppingCartException;
 import com.amazonas.backend.exceptions.UserException;
 import com.amazonas.backend.repository.*;
 import com.amazonas.common.dtos.Product;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -85,7 +87,7 @@ public class UsersController {
             String adminEmail = "admin@amazonas.com";
             String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
-            register(adminEmail, adminId, adminPassword);
+            register(adminEmail, adminId, adminPassword, LocalDate.now().minusYears(22));
             permissionsController.registerAdmin(adminId);
         } catch (UserException e) {
             log.error("Failed to generate admin user");
@@ -97,8 +99,15 @@ public class UsersController {
     // ================================ USER MANAGEMENT ============================== |
     // =============================================================================== |
 
+    public UserInformation getUserInformation(String requestedUserId) throws UserException {
+        RegisteredUser user = (RegisteredUser) userRepository.getUser(requestedUserId);
+        if(user == null){
+            throw new UserException("The user does not exists");
+        }
+        return new UserInformation(user.getUserId(), user.getEmail(), user.getBirthDate());
+    }
 
-    public void register(String email, String userId, String password) throws UserException {
+    public void register(String email, String userId, String password, LocalDate birthDate) throws UserException {
 
         userId = userId.toLowerCase();
         email = email.toLowerCase();
@@ -118,7 +127,12 @@ public class UsersController {
             throw new UserException("Invalid email address.");
         }
 
-        RegisteredUser newRegisteredUser = new RegisteredUser(userId,email);
+        if (!isValidBirthDate(birthDate)) {
+            log.debug("Invalid birth date");
+            throw new UserException("Invalid birth date.");
+        }
+
+        RegisteredUser newRegisteredUser = new RegisteredUser(userId,email, birthDate);
         userRepository.saveUser(newRegisteredUser);
         shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
         authenticationController.createUser(new UserCredentials(userId, password));
@@ -326,16 +340,19 @@ public class UsersController {
                 store.getOwners().forEach(ownerId -> {
                     try {
                         notificationController.sendNotification("New transactionId in your store: "+store.getStoreName(),
-                                "Transaction id: "+t.transactionId(),
+                                "Transaction id: "+t.getTransactionId(),
                                 "Amazonas",
                                 ownerId);
                     } catch (NotificationException e) {
                         log.error("Failed to send transactionId notification to owner with id: {} in store {}", ownerId, store.getStoreName());
                     }
                 });
-
             }
             log.debug("Documented the transactions successfully");
+
+            for (Reservation r : reservations) {
+                reservationRepository.removeReservation(userId, r);
+            }
 
             // give the user a new empty cart
             shoppingCartRepository.saveCart(shoppingCartFactory.get(userId));
@@ -413,6 +430,13 @@ public class UsersController {
         Pattern emailPattern = Pattern.compile(emailRegex);
         Matcher matcher = emailPattern.matcher(email);
         return matcher.matches();
+    }
+
+    private boolean isValidBirthDate(LocalDate birthDate) {
+        if (birthDate == null) {
+            return false;
+        }
+        return birthDate.isBefore(LocalDate.now().minusYears(12));
     }
 
     // =============================================================================== |

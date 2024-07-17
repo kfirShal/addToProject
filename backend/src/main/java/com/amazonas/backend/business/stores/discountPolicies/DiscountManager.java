@@ -2,11 +2,11 @@ package com.amazonas.backend.business.stores.discountPolicies;
 
 import com.amazonas.backend.business.stores.discountPolicies.DiscountComponent.*;
 import com.amazonas.backend.business.stores.discountPolicies.DiscountCondition.*;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.*;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.CategoryLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.ProductLevel;
 import com.amazonas.backend.business.stores.discountPolicies.HierarchyLevel.StoreLevel;
 import com.amazonas.backend.exceptions.StoreException;
+import com.amazonas.common.DiscountDTOs.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,10 +47,10 @@ public class DiscountManager {
             ProductAfterDiscount[] productsAfterDiscounts = new ProductAfterDiscount[products.size()];
             int index = 0;
             for (ProductWithQuantitiy product : products) {
-                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().productId(),
+                productsAfterDiscounts[index++] = new ProductAfterDiscount(product.product().getProductId(),
                                                                            product.quantity(),
-                                                                           product.product().price(),
-                                                                           product.product().price());
+                                                                           product.product().getPrice(),
+                                                                           product.product().getPrice());
             }
             return productsAfterDiscounts;
         }

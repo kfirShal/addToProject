@@ -1,5 +1,6 @@
 package com.amazonas.frontend.view;
 
+import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.profiles.PermissionsProfile;
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
@@ -8,6 +9,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
@@ -25,14 +27,13 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import java.time.LocalDate;
 
 import static com.amazonas.frontend.control.AppController.*;
 
@@ -45,7 +46,7 @@ public abstract class BaseLayout extends AppLayout {
     protected QueryParameters params;
     protected SideNav nav1;
     protected SideNav nav2;
-    protected String user;
+    PermissionsProfile permissionsProfile;
 
 
     public BaseLayout(AppController appController) {
@@ -57,18 +58,21 @@ public abstract class BaseLayout extends AppLayout {
         Location activeViewLocation = current.getActiveViewLocation();
         params = activeViewLocation.getQueryParameters();
 
-        PermissionsProfile permissionsProfile = AppController.getPermissionsProfile();
-
         if(getSessionAttribute("sessionRegistered") == null){
             appController.addSession();
         }
 
+        // set up guest user if needed
+        if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
+            if (! appController.enterAsGuest()) {
+                appController.enterAsGuest();
+                //openErrorDialog("Failed to connect to server", AppController::clearSession);
+            }
+        }
+        permissionsProfile = getPermissionsProfile();
+
         nav1 = new SideNav();
         nav1.addItem(new SideNavItem("Welcome", WelcomeView.class, VaadinIcon.HOME.create()));
-        nav1.addItem(new SideNavItem("Store Management", StoreManagement.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("System Management", SystemManagementView.class, VaadinIcon.NEWSPAPER.create()));
-        nav1.addItem(new SideNavItem("Products", ProductsView.class, VaadinIcon.CART.create()));
-        nav1.addItem(new SideNavItem("Categories", CategoriesView.class, VaadinIcon.TAGS.create()));
 
         nav2 = new SideNav();
         nav2.setLabel("------------------");
@@ -83,27 +87,48 @@ public abstract class BaseLayout extends AppLayout {
         H1 title = new H1("Amazonas");
         title.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
+        title.addClickListener(event -> UI.getCurrent().navigate(""));
+        title.getStyle().set("cursor", "pointer");
 
         Scroller scroller = new Scroller(sideNav);
         scroller.setClassName(LumoUtility.Padding.SMALL);
 
         addToDrawer(scroller);
         addToNavbar(toggle, title);
+        // add search bar to search products and store
+        TextField searchField = new TextField();
+        searchField.setPlaceholder("Search");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        // put in the middle
+        searchField.getStyle().set("margin-mid", "auto");
+        searchField.addValueChangeListener(event -> {
+            String search = searchField.getValue();
+            if (search.isEmpty()) {
+                return;
+            }
+            UI.getCurrent().navigate("search?search=" + search);
+        // function to search for products and stores
+        });
+        HorizontalLayout searchLayout = new HorizontalLayout(searchField);
+        searchLayout.setWidthFull();
+        searchLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        addToNavbar(searchLayout);
 
         // set up login/logout button
         if (! isUserLoggedIn()) {
             Button loginButton = new Button("Login", event -> openLoginDialog());
             Button registerButton = new Button("Register", event -> openRegisterDialog());
-//            loginButton.getStyle().setMarginLeft("75%");
             loginButton.getStyle().setMarginLeft("auto"); // Pushes buttons to the right
             registerButton.getStyle().set("margin-left", "10px");
             registerButton.getStyle().set("margin-right", "10px");
             addToNavbar(loginButton, registerButton);
         } else {
+            if(permissionsProfile.hasPermission(MarketActions.ALL)){
+                nav1.addItem(new SideNavItem("System Management", SystemManagement.class, VaadinIcon.NEWSPAPER.create()));
+            }
+            nav1.addItem(new SideNavItem("Create Store", CreateStore.class, VaadinIcon.STAR.create()));
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-            username.getStyle().set("margin-left", "65%");
-//            H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-//            username.getStyle().set("margin-right", "10px");
+            username.getStyle().set("margin-left", "25%");
 
             Button notificationsButton = new Button(new Icon(VaadinIcon.ENVELOPE));
             notificationsButton.addClickListener(event -> {
@@ -120,9 +145,6 @@ public abstract class BaseLayout extends AppLayout {
             HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
-//            addToNavbar(username, notificationsButton);
-
-
 
             // Profile button with an icon and text "Profile", click on it should open the page with user profile
             Button profileButton = new Button("Profile", new Icon(VaadinIcon.USER), event -> {
@@ -139,10 +161,7 @@ public abstract class BaseLayout extends AppLayout {
                     showNotification("Logout failed");
                 }
             });
-//            logoutButton.getStyle().set("margin-left", "50px");
-//            addToNavbar(username, logoutButton);
-//            addToNavbar(logoutButton);
-            userActions.getStyle().set("margin-left", "auto"); // Pushes userActions to the right
+            userActions.getStyle().set("margin-left", "25%"); // Pushes userActions to the right
             logoutButton.getStyle().set("margin-right", "10px");
             addToNavbar(userActions, logoutButton);
 
@@ -152,21 +171,12 @@ public abstract class BaseLayout extends AppLayout {
 
             addToNavbar(username, profileButton, logoutButton);
         }
-
-        // set up guest user if needed
-        if(! isGuestLoggedIn() && ! isUserLoggedIn()) {
-            if (! appController.enterAsGuest()) {
-                appController.enterAsGuest();
-                //openErrorDialog("Failed to connect to server", AppController::clearSession);
-            }
-        }
     }
 
     public void returnToMainIfNotLogged(){
-//        if (!isUserLoggedIn()) {
-//            UI.getCurrent().navigate("");
-//            return;
-//        }
+        if (!isUserLoggedIn()) {
+            UI.getCurrent().navigate("");
+        }
     }
 
     /**
@@ -203,7 +213,6 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             if (appController.login(username, password)) {
-                this.user = username;
                 showNotification("Login successful");
                 UI.getCurrent().getPage().reload();
             } else {
@@ -225,10 +234,6 @@ public abstract class BaseLayout extends AppLayout {
 
     }
 
-    public String getName() {
-        return user;
-    }
-
     protected void openRegisterDialog(){
         Dialog dialog = new Dialog();
         VerticalLayout layout = new VerticalLayout();
@@ -241,6 +246,11 @@ public abstract class BaseLayout extends AppLayout {
         passwordField.setPlaceholder("Password");
         PasswordField confirmPasswordField = new PasswordField("Confirm Password");
         confirmPasswordField.setPlaceholder("Confirm Password");
+        DatePicker datePicker = new DatePicker("Date of birth");
+        LocalDate now = LocalDate.now();
+        datePicker.setMin(now.minusYears(150));
+        datePicker.setMax(now.minusYears(12));
+        datePicker.setPlaceholder("Date of birth");
         Icon confirmErrorIcon = VaadinIcon.EXCLAMATION_CIRCLE_O.create();
         confirmErrorIcon.getStyle().setMarginLeft("50px");
         confirmErrorIcon.setVisible(false);
@@ -259,12 +269,13 @@ public abstract class BaseLayout extends AppLayout {
             String username = usernameField.getValue();
             String password = passwordField.getValue();
             String confirmPassword = confirmPasswordField.getValue();
+            LocalDate birthDate = datePicker.getValue();
             if(!password.equals(confirmPassword)){
                 showNotification("Passwords do not match");
                 confirmErrorIcon.setVisible(true);
                 return;
             }
-            if (appController.register(email, username, password, confirmPassword)) {
+            if (appController.register(email, username, password, confirmPassword, birthDate)) {
                 if(appController.login(username, password)){
                     showNotification("Registration successful");
                     UI.getCurrent().getPage().reload();
@@ -287,7 +298,10 @@ public abstract class BaseLayout extends AppLayout {
 
         content.add(dialog);
         dialog.open();
+
+
     }
+
 
     protected void showNotification(String msg) {
         Notification.show(msg,5000, Notification.Position.TOP_CENTER);

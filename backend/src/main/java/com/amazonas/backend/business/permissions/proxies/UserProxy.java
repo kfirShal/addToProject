@@ -1,7 +1,9 @@
 package com.amazonas.backend.business.permissions.proxies;
 
 import com.amazonas.backend.business.authentication.AuthenticationController;
+import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.permissions.PermissionsController;
+import com.amazonas.common.dtos.UserInformation;
 import com.amazonas.common.permissions.actions.UserActions;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.backend.business.userProfiles.ShoppingCart;
@@ -9,6 +11,7 @@ import com.amazonas.backend.business.userProfiles.UsersController;
 import com.amazonas.backend.exceptions.*;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component("userProxy")
@@ -21,12 +24,12 @@ public class UserProxy extends ControllerProxy {
         this.real = usersController;
     }
 
-    public void register(String email, String userName, String password, String guestId, String token) throws UserException, AuthenticationFailedException {
+    public void register(String email, String userName, String password, LocalDate birthDate, String guestId, String token) throws UserException, AuthenticationFailedException {
         if(userName.equals("admin")) {
             throw new UserException();
         }
         authenticateToken(guestId, token);
-        real.register(email, userName, password);
+        real.register(email, userName, password, birthDate);
     }
 
     public String enterAsGuest() {
@@ -94,5 +97,10 @@ public class UserProxy extends ControllerProxy {
         authenticateToken(userId, token);
         checkPermission(userId, UserActions.VIEW_USER_TRANSACTIONS);
         return real.getUserTransactionHistory(userId);
+    }
+
+    public UserInformation getUserInformation(String userId, String token, String requestedUserId) throws AuthenticationFailedException, UserException {
+        authenticateToken(userId, token);
+        return real.getUserInformation(requestedUserId);
     }
 }

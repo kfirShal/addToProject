@@ -1,11 +1,16 @@
 package com.amazonas.backend.api;
 
 import com.amazonas.backend.service.*;
+import com.amazonas.common.utils.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 @SuppressWarnings("SpellCheckingInspection")
 @RestController
 public class API {
+
+    private static final Logger log = LoggerFactory.getLogger(API.class);
 
     private final AuthenticationService authenticationService;
     private final ExternalServicesService externalServicesService;
@@ -41,22 +46,29 @@ public class API {
                               @RequestBody String body) {
         service=service.toLowerCase();
         endpoint=endpoint.toLowerCase();
-        return switch(service){
-            case "auth" -> forwardAuth(endpoint, body);
-            case "external" -> forwardExternal(endpoint,body);
-            case "market" -> forwardMarket(endpoint,body);
-            case "notifications" -> forwardNotifications(endpoint,body);
-            case "stores" -> forwardStores(endpoint,body);
-            case "userprofiles" -> forwardUserProfiles(endpoint,body);
-            case "permissions" -> forwardPermissions(endpoint,body);
-            default -> "Invalid service";
-        };
+
+        try{
+            return switch(service){
+                case "auth" -> forwardAuth(endpoint, body);
+                case "external" -> forwardExternal(endpoint,body);
+                case "market" -> forwardMarket(endpoint,body);
+                case "notifications" -> forwardNotifications(endpoint,body);
+                case "stores" -> forwardStores(endpoint,body);
+                case "userprofiles" -> forwardUserProfiles(endpoint,body);
+                case "permissions" -> forwardPermissions(endpoint,body);
+                default -> "Invalid service";
+            };
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+            return Response.getError(e.getMessage());
+        }
     }
 
     private String forwardPermissions(String endpoint, String body) {
         return switch (endpoint) {
             case "getuserpermissions" -> permissionsService.getUserPermissions(body);
             case "getguestpermissions" -> permissionsService.getGuestPermissions(body);
+            case "isadmin" -> permissionsService.isAdmin(body);
             default -> "Invalid endpoint";
         };
     }
@@ -76,6 +88,7 @@ public class API {
             case "payforpurchase" -> userProfilesService.payForPurchase(body);
             case "cancelpurchase" -> userProfilesService.cancelPurchase(body);
             case "getusertransactionhistory" -> userProfilesService.getUserTransactionHistory(body);
+            case "getuserinformation" -> userProfilesService.getUserInformation(body);
             default -> "Invalid endpoint";
         };
     }
@@ -83,6 +96,7 @@ public class API {
     private String forwardStores(String endpoint, String body) {
         return switch(endpoint) {
             case "searchproductsglobally" -> storesService.searchProductsGlobally(body);
+            case "searchstoresglobally" -> storesService.searchStoresGlobally(body);
             case "searchproductsinstore" -> storesService.searchProductsInStore(body);
             case "addstore" -> storesService.addStore(body);
             case "openstore" -> storesService.openStore(body);
@@ -105,9 +119,14 @@ public class API {
             case "setproductquantity" -> storesService.setProductQuantity(body);
             case "getproductquantity" -> storesService.getProductQuantity(body);
             case "getstoredetails" -> storesService.getStoreDetails(body);
-            case "adddiscountrule" -> storesService.addDiscountRule(body);
-            case "getdiscountrule" -> storesService.getDiscountRule(body);
+            case "adddiscountrulebycfg" -> storesService.addDiscountRuleByCFG(body);
+            case "getcfgdiscountrule" -> storesService.getDiscountRuleCFG(body);
+            case "adddiscountrulebydto" -> storesService.addDiscountRuleByDTO(body);
+            case "getdtodiscountrule" -> storesService.getDiscountRuleDTO(body);
             case "removediscountrule" -> storesService.deleteAllDiscounts(body);
+            case "addpuchasepolicy" -> storesService.changePurchasePolicy(body);
+            case "removepuchasepolicy" -> storesService.removePurchasePolicy(body);
+            case "getpurchasepolicy" -> storesService.getPurchasePolicyDTO(body);
             default -> "Invalid endpoint";
         };
     }

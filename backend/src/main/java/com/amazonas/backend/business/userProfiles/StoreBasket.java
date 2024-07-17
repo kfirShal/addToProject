@@ -11,9 +11,9 @@ import java.util.function.Function;
 
 public class StoreBasket {
     private static final Logger log = LoggerFactory.getLogger(StoreBasket.class);
-    private final Map<String, Integer> products; // productId --> quantity
     private final Function<Map<String,Integer>, Reservation> makeReservation;
     private final Function<Map<String, Integer>, Double> calculatePrice;
+    private Map<String, Integer> products; // productId --> quantity
     private boolean reserved;
 
     public StoreBasket (Function<Map<String,Integer>,
@@ -95,5 +95,12 @@ public class StoreBasket {
 
     public void unReserve() {
         reserved = false;
+    }
+
+    public StoreBasket getSerializableInstance() {
+        StoreBasket serializable = new StoreBasket(null, null);
+        serializable.products = this.products;
+        serializable.reserved = this.reserved;
+        return serializable;
     }
 }

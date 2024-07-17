@@ -1,5 +1,8 @@
 package com.amazonas.backend.business.stores.storePositions;
 
+import com.amazonas.common.dtos.StorePosition;
+import com.amazonas.common.dtos.StoreRole;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 

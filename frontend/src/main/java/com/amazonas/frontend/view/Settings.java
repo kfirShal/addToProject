@@ -48,32 +48,32 @@ public class Settings extends Profile {
         content.add(settingsLayout);
     }
 
-    private static FormLayout getNotificationPreferencesForm() {
+    private FormLayout getNotificationPreferencesForm() {
         FormLayout notificationPreferencesForm = new FormLayout();
         // Example: Add fields for managing notification preferences here
         Checkbox emailNotifications = new Checkbox("Email Notifications");
         Button updateNotificationPreferencesButton = new Button("Update Notification Preferences", _ -> {
              // Add logic to update notification preferences
-             Notification.show("Notification preferences updated");
+             showNotification("Notification preferences updated");
         });
         notificationPreferencesForm.add(emailNotifications, updateNotificationPreferencesButton);
         return notificationPreferencesForm;
     }
 
-    private static FormLayout getPersonalInfoForm() {
+    private FormLayout getPersonalInfoForm() {
         FormLayout personalInfoForm = new FormLayout();
         TextField firstName = new TextField("First Name");
         TextField lastName = new TextField("Last Name");
         EmailField email = new EmailField("Email");
         Button updatePersonalInfoButton = new Button("Update Personal Information", _ -> {
             // Add logic to update personal information
-            Notification.show("Personal information updated");
+            showNotification("Personal information updated");
         });
         personalInfoForm.add(firstName, lastName, email, updatePersonalInfoButton);
         return personalInfoForm;
     }
 
-    private static FormLayout getPasswordChangeForm() {
+    private FormLayout getPasswordChangeForm() {
         FormLayout passwordChangeForm = new FormLayout();
         PasswordField currentPassword = new PasswordField("Current Password");
         PasswordField newPassword = new PasswordField("New Password");
@@ -81,16 +81,16 @@ public class Settings extends Profile {
         Button changePasswordButton = new Button("Change Password", _ -> {
             // Add logic to change password
             if (newPassword.getValue().equals(confirmNewPassword.getValue())) {
-                Notification.show("Password changed successfully");
+                showNotification("Password changed successfully");
             } else {
-                Notification.show("Passwords do not match");
+                showNotification("Passwords do not match");
             }
         });
         passwordChangeForm.add(currentPassword, newPassword, confirmNewPassword, changePasswordButton);
         return passwordChangeForm;
     }
 
-    private static FormLayout getAddressForm() {
+    private FormLayout getAddressForm() {
         FormLayout addressForm = new FormLayout();
         TextField addressLine1 = new TextField("Address Line 1");
         TextField addressLine2 = new TextField("Address Line 2");
@@ -99,7 +99,7 @@ public class Settings extends Profile {
         TextField zipCode = new TextField("Zip Code");
         Button updateAddressButton = new Button("Update Address", _ -> {
             // Add logic to update address
-            Notification.show("Address updated");
+            showNotification("Address updated");
         });
         addressForm.add(addressLine1, addressLine2, city, state, zipCode, updateAddressButton);
         return addressForm;

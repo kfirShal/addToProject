@@ -2,10 +2,14 @@ package com.amazonas.frontend.view;
 
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.StoreDetails;
+
 import com.amazonas.common.requests.notifications.NotificationRequest;
 import com.amazonas.common.requests.stores.SearchInStoreRequest;
 import com.amazonas.common.requests.stores.SearchRequest;
 import com.amazonas.common.requests.stores.SearchRequestBuilder;
+
+import com.amazonas.common.permissions.actions.MarketActions;
+
 import com.amazonas.common.utils.Pair;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -73,6 +77,7 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
         allProducts.addAll(products);
         filteredProducts.addAll(products);
 
+
         FrontendStore store = new FrontendStore(storeDetails.storeName(), storeDetails.storeDescription(), storeDetails.storeRating(), products);
 
         // Store name, description, and rating
@@ -127,6 +132,16 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
 
         // Add to content
         content.add(layout);
+      
+        if(permissionsProfile.getStoreIds().contains(storeId) || permissionsProfile.hasPermission(MarketActions.ALL)){
+            // Manage Store button
+            Button manageStoreButton = new Button("Manage Store");
+            manageStoreButton.addClickListener(event -> {
+                String url = getPath("storemanagement", Pair.of("storeid", storeId));
+                getUI().ifPresent(ui -> ui.navigate(url));
+            });
+            content.add(manageStoreButton);
+        }
     }
 
     private HorizontalLayout createRatingLayout(int rating) {
@@ -187,6 +202,7 @@ public class StoreView extends BaseLayout implements BeforeEnterObserver {
                 row.add(productLayout);
             }
         }
+
 
         return productsLayout;
     }

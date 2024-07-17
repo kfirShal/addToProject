@@ -19,7 +19,7 @@ public class PermissionsService {
     public String getUserPermissions(String json){
         Request request = Request.from(json);
         try{
-            PermissionsProfile profile = proxy.getUserPermissions(request.userId(), request.token());
+            PermissionsProfile profile = proxy.getUserPermissions(request.userId(), request.token(), request.payload());
             return Response.getOk(profile);
         } catch (IllegalArgumentException | AuthenticationFailedException e){
             return Response.getError(e);
@@ -31,6 +31,16 @@ public class PermissionsService {
             Request request = Request.from(json);
             PermissionsProfile profile = proxy.getGuestPermissions(request.userId(), request.token());
             return Response.getOk(profile);
+        } catch (IllegalArgumentException | AuthenticationFailedException e){
+            return Response.getError(e);
+        }
+    }
+
+    public String isAdmin(String json){
+        try{
+            Request request = Request.from(json);
+            boolean isAdmin = proxy.isAdmin(request.userId(), request.token());
+            return Response.getOk(isAdmin);
         } catch (IllegalArgumentException | AuthenticationFailedException e){
             return Response.getError(e);
         }

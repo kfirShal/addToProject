@@ -60,7 +60,7 @@ public class SystemAcceptanceTests {
         shippingController = new ShippingServiceController(storeRepository,transactionRepository);
         marketInitializer = new MarketInitializer(shippingController, paymentController);
         notificationService = new NotificationsService(notificationProxy);
-        creditCard = new CreditCard();
+        creditCard = mock(CreditCard.class);
 
     }
 
@@ -240,7 +240,7 @@ public class SystemAcceptanceTests {
     public void testShippingOrder_Success() {
         // Arrange
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
-        ShipmentRequest request = new ShipmentRequest(transaction.transactionId(), "shippingService1", transaction.storeId());
+        ShipmentRequest request = new ShipmentRequest(transaction.getTransactionId(), "shippingService1", transaction.getStoreId());
         ShippingService shippingService = mock(ShippingService.class);
         shippingController.addShippingService("shippingService1", shippingService);
 
@@ -255,7 +255,7 @@ public class SystemAcceptanceTests {
     public void testShippingOrder_InvalidAddress_Failure() {
         // Arrange
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
-        ShipmentRequest request = new ShipmentRequest(transaction.transactionId(), "shippingService1", transaction.storeId());
+        ShipmentRequest request = new ShipmentRequest(transaction.getTransactionId(), "shippingService1", transaction.getStoreId());
         ShippingService shippingService = mock(ShippingService.class);
         ShippingServiceController shippingController = new ShippingServiceController(storeRepository,transactionRepository);
 
@@ -278,7 +278,7 @@ public class SystemAcceptanceTests {
     public void testShippingOrder_CorrectAddressAfterFailure_Success() {
         // Arrange
         Transaction transaction = new Transaction("tx123", "store1", "user1", LocalDateTime.now(), new HashMap<>());
-        ShipmentRequest request = new ShipmentRequest(transaction.transactionId(), "shippingService1", transaction.storeId());
+        ShipmentRequest request = new ShipmentRequest(transaction.getTransactionId(), "shippingService1", transaction.getStoreId());
         ShippingService shippingService = mock(ShippingService.class);
 
         ShippingServiceController shippingController = new ShippingServiceController(storeRepository,transactionRepository);

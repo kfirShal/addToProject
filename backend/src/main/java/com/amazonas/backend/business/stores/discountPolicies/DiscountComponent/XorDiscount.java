@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores.discountPolicies.DiscountComponent;
 
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.DiscountComponentDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleDiscountDTO;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountDTOs.MultipleDiscountType;
+import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.DiscountDTOs.MultipleDiscountDTO;
+import com.amazonas.common.DiscountDTOs.MultipleDiscountType;
 import com.amazonas.backend.business.stores.discountPolicies.ProductAfterDiscount;
 import com.amazonas.backend.business.stores.discountPolicies.ProductWithQuantitiy;
 import com.amazonas.backend.exceptions.StoreException;
@@ -61,17 +61,17 @@ public class XorDiscount implements DiscountComponent {
             double totalPrice = 0;
             for (ProductAfterDiscount productAfterDiscount : current) {
                 totalPrice += productAfterDiscount.priceAfterDiscount() * productAfterDiscount.quantity();
-                if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
-                    if (totalPrice < value) {
-                        value = totalPrice;
-                        ret = current;
-                    }
+            }
+            if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
+                if (totalPrice < value) {
+                    value = totalPrice;
+                    ret = current;
                 }
-                else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
-                    if (totalPrice > value) {
-                        value = totalPrice;
-                        ret = current;
-                    }
+            }
+            else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
+                if (totalPrice > value) {
+                    value = totalPrice;
+                    ret = current;
                 }
             }
         }
@@ -85,9 +85,9 @@ public class XorDiscount implements DiscountComponent {
             discounts.add(child.generateDTO());
         }
         if (xorDecisionRule == XorDecisionRule.THE_LOWEST_ONE) {
-            return new MultipleDiscountDTO(discounts, MultipleDiscountType.MINIMUM_PRICE);
+            return new MultipleDiscountDTO(MultipleDiscountType.MINIMUM_PRICE, discounts);
         } else if (xorDecisionRule == XorDecisionRule.THE_HIGHEST_ONE) {
-            return new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
+            return new MultipleDiscountDTO(MultipleDiscountType.MAXIMUM_PRICE, discounts);
         }
         else {
             throw new IllegalArgumentException("The xor condition must be one of the list");
