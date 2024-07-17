@@ -1,6 +1,7 @@
 package com.amazonas.frontend.control;
 
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
+import com.amazonas.common.PurchaseRuleDTO.MultiplePurchaseRuleDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.common.dtos.*;
 import com.google.gson.reflect.TypeToken;
@@ -91,7 +92,7 @@ public enum Endpoints {
     GET_DISCOUNT_RULE_DTO("stores/getdtodiscountrule", DiscountComponentDTO.class),
     REMOVE_DISCOUNT_RULE("stores/removediscountrule", Boolean.class),
     ADD_PURCHASE_POLICY("stores/addpuchasepolicy", Void.class),
-    GET_PURCHASE_POLICY("stores/getpurchasepolicy", PurchaseRuleDTO.class),
+    GET_PURCHASE_POLICY("stores/getpurchasepolicy", MultiplePurchaseRuleDTO.class),
     REMOVE_PURCHASE_POLICY("stores/removepuchasepolicy", Boolean.class),
 
     //Permissions Endpoints

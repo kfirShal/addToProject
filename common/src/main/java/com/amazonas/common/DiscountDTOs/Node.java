@@ -1,4 +1,4 @@
-package com.amazonas.backend.business.stores.discountPolicies;
+package com.amazonas.common.DiscountDTOs;
 
 public class Node {
     public boolean isString;
