@@ -1,8 +1,8 @@
 package com.amazonas.backend.business.stores;
 
 import com.amazonas.backend.business.permissions.PermissionsController;
-import com.amazonas.backend.business.stores.discountPolicies.DiscountPolicyException;
 import com.amazonas.backend.business.stores.discountPolicies.Translator;
+import com.amazonas.backend.exceptions.DiscountPolicyException;
 import com.amazonas.common.DiscountDTOs.DiscountComponentDTO;
 import com.amazonas.common.PurchaseRuleDTO.PurchaseRuleDTO;
 import com.amazonas.backend.repository.ProductRepository;
