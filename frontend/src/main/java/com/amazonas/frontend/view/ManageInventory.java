@@ -64,7 +64,6 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
         allP.addAll(products.get(false));
 
         Map<String, Integer> idToQuantity = new HashMap<>();
-        if (permissionsProfile.hasPermission(storeId, StoreActions.GET_PRODUCT_QUANTITY)) {
             allP.forEach(p -> {
                 ProductRequest request = new ProductRequest(storeId, new Product(p.getProductId()));
                 try {
@@ -76,14 +75,11 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
                     openErrorDialog(e.getMessage());
                 }
             });
-        } else {
-            showNoPermissionNotification();
-            return;
-        }
 
         // Configure the columns
         grid.addColumn(Product::getProductId).setHeader("ID");
         grid.addColumn(Product::getProductName).setHeader("Name");
+        grid.addColumn(Product::getPrice).setHeader("Price");
         grid.addColumn(Product::getPrice).setHeader("Price");
         grid.addColumn(Product::getCategory).setHeader("Category");
         grid.addColumn(Product::getDescription).setHeader("Description");
