@@ -25,7 +25,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -93,76 +92,44 @@ public class ManageStoreOfficials extends BaseLayout implements BeforeEnterObser
         managersGrid.addComponentColumn(user -> {
             MultiSelectComboBox<String> permissionsComboBox = new MultiSelectComboBox<>();
             permissionsComboBox.setItems(fetchAvailablePermissions().stream().map(Enum::name).collect(Collectors.toList()));
-
-            // Fetch and set initial permissions
             try {
-                List<PermissionsProfile> permissions = appController.postByEndpoint(Endpoints.GET_USER_PERMISSIONS, user.getUserId());
-                Set<String> initialPermissions = permissions.get(0).getStorePermissions(storeId).stream()
-                        .map(StoreActions::toString).collect(Collectors.toSet());
-                permissionsComboBox.setValue(initialPermissions);
+                List<PermissionsProfile> prmissions = appController.postByEndpoint(Endpoints.GET_USER_PERMISSIONS, user.getUserId());
+                permissionsComboBox.setValue(prmissions.getFirst().getStorePermissions(storeId).stream().map(StoreActions::toString).toList());
             } catch (ApplicationException e) {
                 openErrorDialog(e.getMessage());
             }
-
-            // Add value change listener to update permissions
             permissionsComboBox.addValueChangeListener(event -> {
-                Set<String> addedPermissions = new HashSet<>(event.getValue());
-                Set<String> removedPermissions = new HashSet<>(event.getOldValue());
+                Set<String> addedPermissions = event.getValue();
+                Set<String> removedPermissions = event.getOldValue();
+                removedPermissions.removeAll(addedPermissions);
 
-                // Determine added and removed permissions
-                addedPermissions.removeAll(event.getOldValue());
-                removedPermissions.removeAll(event.getValue());
-
-                boolean updateNeeded = false;
-
-                // Add new permissions
-                for (String permission : addedPermissions) {
+                addedPermissions.forEach(permission -> {
                     if (permissionsProfile.hasPermission(storeId, StoreActions.ADD_PERMISSION_TO_MANAGER)) {
                         try {
                             StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), permission);
                             appController.postByEndpoint(Endpoints.ADD_PERMISSION_TO_MANAGER, permissionRequest);
-                            updateNeeded = true;
                         } catch (ApplicationException e) {
                             openErrorDialog(e.getMessage());
-                            return;
                         }
                     } else {
                         showNotification("You do not have permission to add this permission.");
                     }
-                }
+                });
 
-                // Remove old permissions
-                for (String permission : removedPermissions) {
+                removedPermissions.forEach(permission -> {
                     if (permissionsProfile.hasPermission(storeId, StoreActions.REMOVE_PERMISSION_FROM_MANAGER)) {
                         try {
                             StorePermissionRequest permissionRequest = new StorePermissionRequest(storeId, user.getUserId(), permission);
                             appController.postByEndpoint(Endpoints.REMOVE_PERMISSION_FROM_MANAGER, permissionRequest);
-                            updateNeeded = true;
+                            refreshGrid();
                         } catch (ApplicationException e) {
                             openErrorDialog(e.getMessage());
-                            return;
                         }
                     } else {
                         showNotification("You do not have permission to remove this permission.");
                     }
-                }
-
-                // Refresh permissions to reflect changes
-                if (updateNeeded) {
-                    try {
-                        List<PermissionsProfile> updatedPermissions = appController.postByEndpoint(Endpoints.GET_USER_PERMISSIONS, user.getUserId());
-                        Set<String> updatedPermissionsSet = updatedPermissions.get(0).getStorePermissions(storeId).stream()
-                                .map(StoreActions::toString).collect(Collectors.toSet());
-                        permissionsComboBox.setValue(updatedPermissionsSet);
-                    } catch (ApplicationException e) {
-                        openErrorDialog(e.getMessage());
-                    }
-
-                    // Refresh grid to update UI
-                    refreshGrid();
-                }
+                });
             });
-
             return permissionsComboBox;
         }).setHeader("Permissions");
 
