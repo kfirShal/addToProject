@@ -10,6 +10,9 @@ import com.amazonas.backend.business.shipping.ShippingServiceController;
 import com.amazonas.backend.business.stores.Store;
 import com.amazonas.backend.business.stores.StoresController;
 import com.amazonas.backend.business.userProfiles.UsersController;
+import com.amazonas.backend.service.InitialRunFileExecutor;
+import com.amazonas.common.DiscountDTOs.*;
+import com.amazonas.common.PurchaseRuleDTO.*;
 import com.amazonas.common.dtos.Product;
 import com.amazonas.common.dtos.Transaction;
 import com.amazonas.common.permissions.actions.StoreActions;
@@ -18,7 +21,12 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+
+
 import java.time.LocalDate;
+import java.util.ArrayList;
+
+import java.util.List;
 
 @Component
 public class DataGenerator {
@@ -31,7 +39,7 @@ public class DataGenerator {
     private final ShippingServiceController shippingServiceController;
     private final PaymentServiceController paymentServiceController;
 
-    public DataGenerator(UsersController usersController, AuthenticationController authenticationController, NotificationController notificationController, PermissionsController permissionsController, StoresController storesController, ShippingServiceController shippingServiceController, PaymentServiceController paymentServiceController) {
+    public DataGenerator(UsersController usersController, AuthenticationController authenticationController, NotificationController notificationController, PermissionsController permissionsController, StoresController storesController, ShippingServiceController shippingServiceController, PaymentServiceController paymentServiceController, InitialRunFileExecutor initialRunFileExecutor) {
         this.usersController = usersController;
         this.authenticationController = authenticationController;
         this.notificationController = notificationController;
@@ -44,14 +52,14 @@ public class DataGenerator {
     public void generateData() throws Exception {
         // create users
         usersController.register("user1@email.com","user1","Password12#", LocalDate.now().minusYears(22));
-        usersController.register("user2@email.com","user2","Password22#", LocalDate.now().minusYears(22));
-        usersController.register("user3@email.com","user3","Password32#", LocalDate.now().minusYears(22));
-        usersController.register("user4@email.com","user4","Password42#", LocalDate.now().minusYears(22));
-        usersController.register("user5@email.com","user5","Password52#", LocalDate.now().minusYears(22));
-        usersController.register("user6@email.com","user6","Password62#", LocalDate.now().minusYears(22));
-        usersController.register("user7@email.com","user7","Password72#", LocalDate.now().minusYears(22));
-        usersController.register("user8@email.com","user8","Password82#", LocalDate.now().minusYears(22));
-        usersController.register("user9@email.com","user9","Password92#", LocalDate.now().minusYears(22));
+        usersController.register("user2@email.com","user2","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user3@email.com","user3","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user4@email.com","user4","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user5@email.com","user5","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user6@email.com","user6","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user7@email.com","user7","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user8@email.com","user8","Password12#", LocalDate.now().minusYears(22));
+        usersController.register("user9@email.com","user9","Password12#", LocalDate.now().minusYears(22));
 
         // create stores
         String store1Id = storesController.addStore("user1", "user1Store", "this is user1 store");
@@ -96,6 +104,13 @@ public class DataGenerator {
         storesController.addProduct(store5Id, product10);
         storesController.setProductQuantity(store5Id, product10.getProductId(), 100);
 
+
+        // add key words to products
+        List<Product> products = List.of(product1, product2, product3, product4, product5, product6, product7, product8, product9, product10);
+        for(Product product : products){
+            product.addKeyWords(product.getProductName());
+        }
+        products.getFirst().addKeyWords("Laptop");
         // add shipping services
         shippingServiceController.addShippingService("service1", new ShippingService());
 
@@ -140,6 +155,36 @@ public class DataGenerator {
         usersController.addProductToCart("user5",store5Id, product9.getProductId(),5);
         usersController.addProductToCart("user5",store5Id, product10.getProductId(),5);
 
+
+        // add discount policy
+        // Example discount data creation
+        SimpleDiscountDTO simpleDiscount = new SimpleDiscountDTO(HierarchyLevel.ProductLevel, "Product123", 10);
+        UnaryConditionDTO condition1 = new UnaryConditionDTO(UnaryConditionType.AT_LEAST_NUMBER_OF_SOME_PRODUCT, 3, "Product123");
+        UnaryConditionDTO condition2 = new UnaryConditionDTO(UnaryConditionType.AT_LEAST_SOME_PRICE, 50, "Product123");
+        MultipleConditionDTO orConditions = new MultipleConditionDTO( MultipleConditionType.OR, List.of(condition1, condition2));
+        ComplexDiscountDTO complexDiscount = new ComplexDiscountDTO(orConditions, simpleDiscount);
+        SimpleDiscountDTO simpleDiscount2 = new SimpleDiscountDTO(HierarchyLevel.CategoryLevel, "Category123", 20);
+        List<DiscountComponentDTO> multipleDiscounts = new ArrayList<>();
+        multipleDiscounts.add(complexDiscount);
+        multipleDiscounts.add(simpleDiscount2);
+        MultipleDiscountDTO andDiscount = new MultipleDiscountDTO(MultipleDiscountType.MAXIMUM_PRICE,multipleDiscounts);
+        //storesController.addDiscountRuleByDTO(store1Id,andDiscount);
+
+
+        // add purchase policy
+        // Example rule data creation
+        NumericalPurchaseRuleDTO ageRestrictionRule = new NumericalPurchaseRuleDTO(NumericalPurchaseRuleType.AGE_RESTRICTION, 18);
+        DatePurchaseRuleDTO dayRestrictionRule = new DatePurchaseRuleDTO(DatePurchaseRuleType.DAY_RESTRICTION, LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 7));
+        ConditionLevelDTO conditionLevelDTO = new ConditionLevelDTO(ConditionLevelType.PRODUCT_LEVEL, "Product123", 5);
+        ConditionalPurchaseRuleDTO conditionalPurchaseRule = new ConditionalPurchaseRuleDTO(conditionLevelDTO, ageRestrictionRule);
+
+        List<PurchaseRuleDTO> multipleRules = new ArrayList<>();
+        multipleRules.add(dayRestrictionRule);
+        multipleRules.add(conditionalPurchaseRule);
+        MultiplePurchaseRuleDTO andRule = new MultiplePurchaseRuleDTO(MultiplePurchaseRuleType.AND, multipleRules);
+
+        //storesController.changePurchasePolicy(store1Id,andRule);
+
         System.out.println("Store1 id: "+store1Id);
     }
 
@@ -147,7 +192,7 @@ public class DataGenerator {
     @EventListener
     public void handleApplicationStartedEvent(ApplicationStartedEvent event) {
         try {
-            generateData();
+//            generateData();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

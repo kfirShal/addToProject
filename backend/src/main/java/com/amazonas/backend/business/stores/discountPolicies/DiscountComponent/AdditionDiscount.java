@@ -71,7 +71,7 @@ public class AdditionDiscount implements DiscountComponent{
         for (DiscountComponent child : children) {
             discounts.add(child.generateDTO());
         }
-        return new MultipleDiscountDTO(discounts, MultipleDiscountType.ADDITION);
+        return new MultipleDiscountDTO( MultipleDiscountType.ADDITION, discounts);
     }
 
     @Override

@@ -65,7 +65,7 @@ public class MaxDiscount implements DiscountComponent {
         for (DiscountComponent child : children) {
             discounts.add(child.generateDTO());
         }
-        return new MultipleDiscountDTO(discounts, MultipleDiscountType.MAXIMUM_PRICE);
+        return new MultipleDiscountDTO(MultipleDiscountType.MAXIMUM_PRICE, discounts);
     }
 
     @Override

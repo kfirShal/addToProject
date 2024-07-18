@@ -1,4 +1,8 @@
-package com.amazonas.backend.business.stores.discountPolicies;
+package com.amazonas.common.DiscountDTOs;
+
+
+
+import com.amazonas.common.exceptions.DiscountPolicyException;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -15,16 +19,16 @@ public class Parser {
             throw new DiscountPolicyException("Input is invalid", 0, 0);
         }
         if (input.isEmpty()) {
-            throw new DiscountPolicyException("Excpected discount", offset, 0);
+            throw new DiscountPolicyException("Expected discount", offset, 0);
         }
         for (int i = 0; i < input.length(); i++) {
-            if (input.charAt(i) <= 20) {
+            if (input.charAt(i) <= 32) {
                 continue;
             }
             else {
                 if (input.charAt(i) == '(') {
                     for (int index = i + 1; index < input.length(); index++) {
-                        if (input.charAt(index) <= 20) {
+                        if (input.charAt(index) <= 32) {
                             continue;
                         }
                         if (input.startsWith("minimal-price", index)) {
@@ -40,7 +44,7 @@ public class Parser {
                             return parseWordNumber("global-discount", input.substring(index), offset+index);
                         }
                         else if (input.startsWith("product-discount", index)) {
-                            return parseWordNumberNumber("product-discount", input.substring(index), offset+index);
+                            return parseWordWordNumber("product-discount", input.substring(index), offset+index);
                         }
                         else if (input.startsWith("category-discount", index)) {
                             return parseWordWordNumber("category-discount", input.substring(index), offset+index);
@@ -55,7 +59,7 @@ public class Parser {
 
                 }
                 else {
-                    throw new DiscountPolicyException("Syntax error", offset + i, offset + input.length());
+                    throw new DiscountPolicyException("Syntax error" + input, offset + i, offset + input.length());
                 }
             }
         }
@@ -64,7 +68,7 @@ public class Parser {
 
     private static Node parseMultipleDiscounts(String type, String input, int offset) throws DiscountPolicyException {
         if (!input.startsWith(type)) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error1", 0, 0);
         }
         List<Node> discounts = new ArrayList<Node>();
         discounts.add(new Node(type, offset, offset+type.length()));
@@ -72,7 +76,8 @@ public class Parser {
         discounts.add(firstDiscount);
         int index = firstDiscount.end - offset;
         while (index < input.length()) {
-            if (input.charAt(index) <= 20) {
+            if (input.charAt(index) <= 32) {
+                index++;
                 continue;
             }
             else if (input.startsWith("(", index)) {
@@ -93,13 +98,13 @@ public class Parser {
 
     private static Node parseWordNumber(String type, String input, int offset) throws DiscountPolicyException {
         if (!input.startsWith(type)) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error2", 0, 0);
         }
         List<Node> ret = new LinkedList<>();
-        ret.add(new Node("type", offset, type.length()));
+        ret.add(new Node(type, offset, type.length()));
         ret.add(getNumber(input.substring(type.length()), offset + type.length()));
         for (int index = ret.getLast().end + 1 - offset; index < input.length(); index++) {
-            if (input.charAt(index) <= 20) {
+            if (input.charAt(index) <= 32) {
                 continue;
             }
             else if (input.startsWith(")", index)) {
@@ -116,14 +121,14 @@ public class Parser {
 
     private static Node parseWordNumberNumber(String type, String input, int offset) throws DiscountPolicyException {
         if (!input.startsWith(type)) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error3", 0, 0);
         }
         List<Node> ret = new LinkedList<>();
         ret.add(new Node(type, offset, type.length()));
         ret.add(getNumber(input.substring(type.length()), offset + type.length()));
         ret.add(getNumber(input.substring(ret.getLast().end + 1 - offset), ret.getLast().end + 1));
         for (int index = ret.getLast().end + 1 - offset; index < input.length(); index++) {
-            if (input.charAt(index) <= 20) {
+            if (input.charAt(index) <= 32) {
                 continue;
             }
             else if (input.startsWith(")", index)) {
@@ -140,13 +145,13 @@ public class Parser {
 
     private static Node parseWordWordNumber(String type, String input, int offset) throws DiscountPolicyException {
         if (!input.startsWith(type)) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error4", 0, 0);
         }
         List<Node> ret = new LinkedList<>();
         ret.add(new Node(type, offset, offset + type.length()));
         int first = -1;
         for (int index = ret.getLast().end + 1 - offset; index < input.length(); index++) {
-            if (input.charAt(index) <= 20) {
+            if (input.charAt(index) <= 32) {
                 if (first != -1) {
                     ret.add(new Node(input.substring(first, index), offset + first, offset + index - 1));
                     break;
@@ -165,7 +170,7 @@ public class Parser {
         }
         ret.add(getNumber(input.substring(ret.getLast().end + 1 - offset), ret.getLast().end + 1));
         for (int index = ret.getLast().end + 1 - offset; index < input.length(); index++) {
-            if (input.charAt(index) <= 20) {
+            if (input.charAt(index) <= 32) {
                 continue;
             }
             else if (input.startsWith(")", index)) {
@@ -182,28 +187,29 @@ public class Parser {
 
     private static Node parseIfThen(String input, int offset) throws DiscountPolicyException {
         if (!input.startsWith("if-then")) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error5", 0, 0);
         }
-        Node[] ret = new Node[2];
-        ret[0] = parseCondition(input.substring(7), offset + 7);
-        ret [1] = parse(input.substring(ret[0].end + 1), ret[0].end + 1);
-        return new Node(ret, offset, ret[1].end);
+        Node[] ret = new Node[3];
+        ret[0] = new Node("if-then", offset, offset+7);
+        ret[1] = parseCondition(input.substring(7), offset + 7);
+        ret [2] = parse(input.substring(ret[1].end - offset), ret[1].end);
+        return new Node(ret, offset, ret[2].end);
     }
 
     private static Node parseCondition(String input, int offset) throws DiscountPolicyException {
         for (int i = 0; i < input.length(); i++) {
-            if (input.charAt(i) <= 20) {
+            if (input.charAt(i) <= 32) {
                 continue;
             } else {
                 if (input.charAt(i) == '(') {
                     for (int index = i + 1; index < input.length(); index++) {
-                        if (input.charAt(index) <= 20) {
+                        if (input.charAt(index) <= 32) {
                             continue;
                         }
                         if (input.startsWith("price-over", index)) {
                             return parseWordNumber("price-over", input.substring(index), offset + index);
                         } else if (input.startsWith("product-quantity-more-than", index)) {
-                            return parseWordNumberNumber("product-quantity-more-than", input.substring(index), offset + index);
+                            return parseWordWordNumber("product-quantity-more-than", input.substring(index), offset + index);
                         } else if (input.startsWith("category-quantity-more-than", index)) {
                             return parseWordWordNumber("category-quantity-more-than", input.substring(index), offset + index);
                         } else if (input.startsWith("&", index)) {
@@ -227,7 +233,7 @@ public class Parser {
 
     private static Node parseMultipleConditions(String type, String input, int offset) throws DiscountPolicyException {
         if (!input.startsWith(type)) {
-            throw new DiscountPolicyException("Unexpected error", 0, 0);
+            throw new DiscountPolicyException("Unexpected error6", 0, 0);
         }
         List<Node> discounts = new ArrayList<Node>();
         discounts.add(new Node(type, offset, offset+type.length()));
@@ -235,7 +241,8 @@ public class Parser {
         discounts.add(firstDiscount);
         int index = firstDiscount.end - offset;
         while (index < input.length()) {
-            if (input.charAt(index) <= 20) {
+            if (input.charAt(index) <= 32) {
+                index++;
                 continue;
             }
             else if (input.startsWith("(", index)) {
@@ -258,7 +265,7 @@ public class Parser {
         int first = -1;
         boolean found = false;
         for (int i = 0; i < input.length(); i++) {
-            if (input.charAt(i) <= 20) {
+            if (input.charAt(i) <= 32 || input.charAt(i) == ')') {
                 if (found) {
                     return new Node(input.substring(first, i), offset + first, offset + i - 1);
                 }
