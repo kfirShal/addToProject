@@ -80,7 +80,6 @@ public class ManageInventory extends BaseLayout implements BeforeEnterObserver {
         grid.addColumn(Product::getProductId).setHeader("ID");
         grid.addColumn(Product::getProductName).setHeader("Name");
         grid.addColumn(Product::getPrice).setHeader("Price");
-        grid.addColumn(Product::getPrice).setHeader("Price");
         grid.addColumn(Product::getCategory).setHeader("Category");
         grid.addColumn(Product::getDescription).setHeader("Description");
         grid.addColumn(Product::getRating).setHeader("Rating");
