@@ -3,8 +3,10 @@ package com.amazonas.backend.service;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.permissions.proxies.ExternalServicesProxy;
 import com.amazonas.backend.business.permissions.proxies.MarketProxy;
+import com.amazonas.backend.business.permissions.proxies.StoreProxy;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
+import com.amazonas.backend.exceptions.StoreException;
 import com.amazonas.common.utils.JsonUtils;
 import com.amazonas.common.utils.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +24,7 @@ class InitialRunFileExecutorTest {
     MarketProxy marketProxy;
     MarketService marketService;
     NotificationsService notificationsService;
+    StoreProxy storeProxy;
     StoresService storesService;
     UserProfilesService userProfilesService;
     PermissionsService permissionsService;
@@ -42,7 +45,8 @@ class InitialRunFileExecutorTest {
         marketProxy = mock(MarketProxy.class);
         marketService = new MarketService(marketProxy);
         notificationsService = mock(NotificationsService.class);
-        storesService = mock(StoresService.class);
+        storeProxy = mock(StoreProxy.class);
+        storesService = new StoresService(storeProxy);
         userProfilesService = mock(UserProfilesService.class);
         permissionsService = mock(PermissionsService.class);
         executor = new InitialRunFileExecutor(authenticationService,
@@ -70,6 +74,12 @@ class InitialRunFileExecutorTest {
     void checkStartMarket() throws AuthenticationFailedException, NoPermissionException {
         doNothing().when(marketProxy).start( null, null);
         assertTrue(((Response)(JsonUtils.deserialize(executor.executeOperation(executor.parser("startMarket( );").getFirst()), Response.class))).success());
+    }
+
+    @Test
+    void checkOpenStore() throws AuthenticationFailedException, NoPermissionException, StoreException {
+        when(storeProxy.openStore(storeName, null, null)).thenReturn(true);
+        assertTrue(((Response)(JsonUtils.deserialize(executor.executeOperation(executor.parser("openStore( s1);").getFirst()), Response.class))).success());
     }
 
 
