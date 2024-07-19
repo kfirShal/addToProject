@@ -289,7 +289,7 @@ public abstract class BaseLayout extends AppLayout {
         submitButton.addClickShortcut(Key.ENTER);
         Button cancelButton = new Button("Cancel", event -> dialog.close());
 
-        formLayout.add(headlineLayout,emailField, usernameField, passwordField, confirmPasswordField, submitButton, cancelButton);
+        formLayout.add(headlineLayout,emailField, usernameField, passwordField, confirmPasswordField,datePicker, submitButton, cancelButton);
         formLayout.setWidth("80%");
         formLayout.getStyle().setAlignSelf(Style.AlignSelf.CENTER);
         layout.add(formLayout);

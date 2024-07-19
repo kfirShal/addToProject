@@ -32,7 +32,7 @@
     </root>
 
     <!-- Specific package logging configuration -->
-    <logger name="com.arealcompany" level="DEBUG"/>
+    <logger name="com.amazonas" level="ALL"/>
 
     <!-- Vaadin logging configuration -->
     <logger name="com.vaadin" level="ERROR"/>

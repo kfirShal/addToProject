@@ -160,4 +160,7 @@ public class Product implements Cloneable {
         }
     }
 
+    public boolean matchesKeyword(String keyword) {
+        return keyWords.stream().anyMatch(k -> k.contains(keyword));
+    }
 }

@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class InitialRunFileExecutorTest {
-    InitialRunFileExecutor executor;
+    InitialRunFileExecutor2 executor;
     AuthenticationService authenticationService;
     AuthenticationController authenticationController;
     ExternalServicesProxy externalServicesProxy;
@@ -49,7 +49,7 @@ class InitialRunFileExecutorTest {
         storesService = new StoresService(storeProxy);
         userProfilesService = mock(UserProfilesService.class);
         permissionsService = mock(PermissionsService.class);
-        executor = new InitialRunFileExecutor(authenticationService,
+        executor = new InitialRunFileExecutor2(authenticationService,
                                               externalServicesService,
                                               marketService,
                                               notificationsService,
