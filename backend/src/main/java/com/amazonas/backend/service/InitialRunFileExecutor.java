@@ -132,7 +132,8 @@ public class InitialRunFileExecutor {
             }
             String guestId = (String)guestResponse.payload(String.class).getFirst();
             AuthenticationRequest request = new AuthenticationRequest(guestId, null);
-            Response guestAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(JsonUtils.serialize(request)), Response.class);
+            String req = RequestBuilder.create().withPayload(request).build().toJson();
+            Response guestAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(req), Response.class);
             if (!guestAuthResponse.success()) {
                 return guestAuthResponse;
             }
@@ -180,7 +181,7 @@ public class InitialRunFileExecutor {
             //====================================================================== |
 
             case "register" -> {
-                numOfArgumentsChecker(operation, 3);
+                numOfArgumentsChecker(operation, 4);
                 /*
                 boolean res = appController.register(operation[1],
                                                     operation[2],
