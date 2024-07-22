@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.userProfiles;
 
+import com.amazonas.backend.ConfigurationValues;
 import com.amazonas.backend.business.authentication.AuthenticationController;
 import com.amazonas.backend.business.authentication.UserCredentials;
 import com.amazonas.backend.business.notifications.NotificationController;
@@ -83,12 +84,12 @@ public class UsersController {
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         try {
-            //String adminId = ConfigurationValues.getProperty("ADMIN_ID");
-            String adminId = "admin";
-            //String adminEmail = ConfigurationValues.getProperty("ADMIN_EMAIL");
-            String adminEmail = "admin@amazonas.com";
-            //String adminPassword = ConfigurationValues.getProperty("ADMIN_PASSWORD");
-            String adminPassword = generatePassword();
+            String adminId = ConfigurationValues.getProperty("ADMIN_ID");
+            //String adminId = "admin";
+            String adminEmail = ConfigurationValues.getProperty("ADMIN_EMAIL");
+            //String adminEmail = "admin@amazonas.com";
+            String adminPassword = ConfigurationValues.getProperty("ADMIN_PASSWORD");
+            //String adminPassword = generatePassword();
             System.out.println("Admin password: " + adminPassword);
             register(adminEmail, adminId, adminPassword, LocalDate.now().minusYears(22));
             permissionsController.registerAdmin(adminId);
