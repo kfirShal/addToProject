@@ -7,15 +7,15 @@ public class ConfigurationValues {
     public static String getProperty(String property) {
         Properties properties = new Properties();
 
-        try (FileInputStream input = new FileInputStream("config.properties")) {
+        try (FileInputStream input = new FileInputStream(BackendApplication.getFolderPath()+"config.properties")) {
             // Load the properties file
             properties.load(input);
 
             // Accessing properties
-            return properties.getProperty("PAYMENT_SERVICE_URL");
+            return properties.getProperty(property);
 
         } catch (Exception e) {
-            throw new ClassCastException("couldn't find property " + property);
+            throw new ClassCastException("couldn't find property " + property + " in configuration file - " + e.getMessage());
         }
     }
 }

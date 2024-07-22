@@ -1,5 +1,7 @@
 package com.amazonas.backend.service;
 
+import com.amazonas.backend.BackendApplication;
+import com.amazonas.backend.ConfigurationValues;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.shipping.ShippingService;
 import com.amazonas.backend.service.requests.payment.PaymentServiceManagementRequest;
@@ -26,6 +28,7 @@ import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.Response;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.sun.tools.javac.Main;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -50,20 +53,26 @@ public class InitialRunFileExecutor {
     private final StoresService storesService;
     private final UserProfilesService userProfilesService;
     private final PermissionsService permissionsService;
-    private final AppController appController;
+    //private final AppController appController;
     private final Map<String, String> productsIDs;
+    private final Map<String, String> storesIDs;
+    private boolean guestLoggedIn;
+    private boolean userLoggedIn;
+    private String currentUserId;
+    private String token;
 
     @EventListener
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         String initialRunCode;
         try {
-            File file = new File("C:\\Users\\yuval\\git\\sadna\\backend\\src\\main\\resources\\InitialRunFile.txt");
+            File file = new File(BackendApplication.getFolderPath()+"InitialRunFile.txt");
             try(BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file))){
                 initialRunCode = new String(stream.readAllBytes());
             }
         }
         catch (Exception e) {
             System.out.println("Cannot find the initial run file");
+            System.exit(1);
             return;
         }
         try{
@@ -99,8 +108,13 @@ public class InitialRunFileExecutor {
         this.storesService = storesService;
         this.userProfilesService = userProfilesService;
         this.permissionsService = permissionsService;
-        this.appController = new AppController();
+        this.storesIDs = new ConcurrentHashMap<>();
+        //this.appController = new AppController();
         this.productsIDs = new ConcurrentHashMap<>();
+        this.guestLoggedIn = false;
+        this.userLoggedIn = false;
+        this.currentUserId = null;
+        this.token = null;
     }
 
     public Response runCode(String code){
@@ -111,7 +125,28 @@ public class InitialRunFileExecutor {
         catch (Exception e) {
             return new Response(e.getMessage(), false, "");
         }
-        appController.enterAsGuest();
+        try {
+            Response guestResponse = JsonUtils.deserialize(userProfilesService.enterAsGuest(), Response.class);
+            if (!guestResponse.success()) {
+                return guestResponse;
+            }
+            String guestId = (String)guestResponse.payload(String.class).getFirst();
+            AuthenticationRequest request = new AuthenticationRequest(guestId, null);
+            String req = RequestBuilder.create().withPayload(request).build().toJson();
+            Response guestAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(req), Response.class);
+            if (!guestAuthResponse.success()) {
+                return guestAuthResponse;
+            }
+            String tokenId = (String)guestAuthResponse.payload(String.class).getFirst();
+            this.guestLoggedIn = true;
+            this.currentUserId = guestId;
+            this.token = tokenId;
+
+        }
+        catch (Exception e ) {
+            return new Response("Cannot boot the system because of " + e.getMessage(), false, "");
+        }
+
         for (String[] operation : operations) {
             try {
                 String result= executeOperation(operation);
@@ -125,7 +160,11 @@ public class InitialRunFileExecutor {
                 }
             }
             catch (Exception e) {
-                return new Response(e.getMessage(), false, "");
+                return new Response("The operation: \"" +
+                                        operationToString(operation) +
+                                        "\" failed with the error: \"" +
+                                        e.getMessage() + "\"",
+                                        false, "");
             }
         }
         return new Response(true);
@@ -143,6 +182,7 @@ public class InitialRunFileExecutor {
 
             case "register" -> {
                 numOfArgumentsChecker(operation, 4);
+                /*
                 boolean res = appController.register(operation[1],
                                                     operation[2],
                                                     operation[3],
@@ -156,9 +196,23 @@ public class InitialRunFileExecutor {
                 else {
                     return Response.getError("Can't execute the registration");
                 }
+
+                 */
+                if (userLoggedIn) {
+                    return Response.getError("There is a user is already logged in");
+                }
+                return userProfilesService.register(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                                        this.token,
+                                                                                                        JsonUtils.serialize(new RegisterRequest(operation[1],
+                                                                                                                                                operation[2],
+                                                                                                                                                operation[3],
+                                                                                                                                                getDate("register",
+                                                                                                                                                        operation[4],
+                                                                                                                                                        4))))));
             }
             case "login" -> {
-                numOfArgumentsChecker(operation, 4);
+                numOfArgumentsChecker(operation, 2);
+                /*
                 boolean res = appController.login(operation[1],
                                                   operation[2]);
                 if(res) {
@@ -167,15 +221,97 @@ public class InitialRunFileExecutor {
                 else {
                     return Response.getError("Can't execute the logging in");
                 }
+
+                 */
+                if (userLoggedIn) {
+                    return Response.getError("There is a user is already logged in");
+                }
+                if (!guestLoggedIn) {
+                    return Response.getError("There is no guest logged in");
+                }
+                try {
+                    operation[1] = operation[1].toLowerCase();
+                    AuthenticationRequest request = new AuthenticationRequest(operation[1], operation[2]);
+                    Response userAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(JsonUtils.serialize(request)), Response.class);
+                    if (!userAuthResponse.success()) {
+                        return userAuthResponse.toJson();
+                    }
+                    String tokened = (String)userAuthResponse.payload(String.class).getFirst();
+                    String res = userProfilesService.loginToRegistered(JsonUtils.serialize(new Request(currentUserId,
+                                                                                            tokened,
+                                                                                            JsonUtils.serialize(new LoginRequest(this.currentUserId,
+                                                                                                                                 operation[1])))));
+                    if (((Response)JsonUtils.deserialize(res, Response.class)).success()) {
+                        this.currentUserId = operation[1];
+                        this.token = tokened;
+                        this.userLoggedIn = true;
+                        this.guestLoggedIn = false;
+                    }
+                    return res;
+                }
+                catch (Exception e ) {
+                    return new Response("Cannot login because of " + e.getMessage(), false, "").toJson();
+                }
+
             }
             case "logout" -> {
-                numOfArgumentsChecker(operation, 4);
+                numOfArgumentsChecker(operation, 0);
+                /*
                 boolean res = appController.logout();
                 if(res) {
                     return Response.getOk();
                 }
                 else {
                     return Response.getError("Can't execute the logging in");
+                }
+
+                 */
+                if (userLoggedIn) {
+                    String res = userProfilesService.logout(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                            this.token,
+                                                                                            "")));
+                    if(!((Response)JsonUtils.deserialize(res, Response.class)).success()) {
+                        return res;
+                    }
+                    this.currentUserId = null;
+                    this.token = null;
+                    this.userLoggedIn = false;
+                    this.guestLoggedIn = false;
+                }
+                else if (guestLoggedIn) {
+                    String res = userProfilesService.logoutAsGuest(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                                   this.token,
+                                                                                                   "")));
+                    if(!((Response)JsonUtils.deserialize(res, Response.class)).success()) {
+                        return res;
+                    }
+                    this.currentUserId = null;
+                    this.token = null;
+                    this.userLoggedIn = false;
+                    this.guestLoggedIn = false;
+                }
+                else {
+                    return new Response("there is not user or guest who already logged in", false, "").toJson();
+                }
+                try {
+                    Response guestResponse = JsonUtils.deserialize(userProfilesService.enterAsGuest(), Response.class);
+                    if (!guestResponse.success()) {
+                        return Response.getError("cannot enter as guest again because " + guestResponse.message());
+                    }
+                    String guestId = (String)guestResponse.payload(String.class).getFirst();
+                    AuthenticationRequest request = new AuthenticationRequest(guestId, null);
+                    Response guestAuthResponse = JsonUtils.deserialize(authenticationService.authenticateGuest(JsonUtils.serialize(request)), Response.class);
+                    if (!guestAuthResponse.success()) {
+                        return Response.getError("cannot authenticate as guest again because " + guestAuthResponse.message());
+                    }
+                    String tokenId = (String)guestAuthResponse.payload(String.class).getFirst();
+                    this.guestLoggedIn = true;
+                    this.currentUserId = guestId;
+                    this.token = tokenId;
+                    return Response.getOk();
+                }
+                catch (Exception e ) {
+                    return new Response("Cannot boot the system because of " + e.getMessage(), false, "").toJson();
                 }
             }
 
@@ -185,25 +321,27 @@ public class InitialRunFileExecutor {
 
             case "sendShipment" -> {
                 numOfArgumentsChecker(operation, 3);
-                return externalServicesService.sendShipment(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                                                                                            appController.getToken(),
+                return externalServicesService.sendShipment(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                            this.token,
                                                                                             JsonUtils.serialize(new ShipmentRequest(operation[1],
                                                                                                                                     operation[2],
-                                                                                                                                    operation[3])))));
+                                                                                                                                    storesIDs.get(operation[3]))))));
+
+
             }
             case "addShippingService" -> {
                 numOfArgumentsChecker(operation, 1);
-                return externalServicesService.addShippingService(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                                                                                                  appController.getToken(),
+                return externalServicesService.addShippingService(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                                  this.token,
                                                                                                   JsonUtils.serialize(new ShippingServiceManagementRequest(operation[1],
                                                                                                                                                     new ShippingService())))));
             }
             case "removeShippingService" -> {
                 numOfArgumentsChecker(operation, 1);
-                return externalServicesService.removeShippingService(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                                                                                                     appController.getToken(),
+                return externalServicesService.removeShippingService(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                                     this.token,
                                                                                                      JsonUtils.serialize(new ShippingServiceManagementRequest(operation[1],
-                                                                                                                                                       new ShippingService())))));
+                                                                                                                                                       null)))));
             }
             /*
             case "updateShippingService" -> {
@@ -216,15 +354,15 @@ public class InitialRunFileExecutor {
              */
             case "addPaymentService" -> {
                 numOfArgumentsChecker(operation, 1);
-                return externalServicesService.addPaymentService(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return externalServicesService.addPaymentService(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                                                  JsonUtils.serialize(new PaymentServiceManagementRequest(operation[1],
                                                                                                                                                   new PaymentService())))));
             }
             case "removePaymentService" -> {
                 numOfArgumentsChecker(operation, 1);
-                return externalServicesService.removePaymentService(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return externalServicesService.removePaymentService(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                                                     JsonUtils.serialize(new PaymentServiceManagementRequest(operation[1],
                                                                                                                                                      new PaymentService())))));
             }
@@ -244,14 +382,14 @@ public class InitialRunFileExecutor {
 
             case "startMarket" -> {
                 numOfArgumentsChecker(operation, 0);
-                return marketService.startMarket(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return marketService.startMarket(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                                  "")));
             }
             case "shutdown" -> {
                 numOfArgumentsChecker(operation, 0);
-                return marketService.shutdown(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return marketService.shutdown(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                               "")));
             }
 
@@ -261,8 +399,8 @@ public class InitialRunFileExecutor {
 
             case "sendNotification" -> {
                 numOfArgumentsChecker(operation, 4);
-                return notificationsService.sendNotification(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return notificationsService.sendNotification(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                                              JsonUtils.serialize(new NotificationRequest(operation[1],
                                                                                                                                          operation[2],
                                                                                                                                          operation[3],
@@ -271,15 +409,15 @@ public class InitialRunFileExecutor {
             case "setReadValue" -> {
                 numOfArgumentsChecker(operation, 2);
                 boolean readValue = getBoolean("setReadValue", operation[2], 2);
-                return notificationsService.setReadValue(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return notificationsService.setReadValue(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                                          JsonUtils.serialize(new NotificationRequest(operation[1],
                                                                                                                                      readValue)))));
             }
             case "deleteNotification" -> {
                 numOfArgumentsChecker(operation, 1);
-                return notificationsService.deleteNotification(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                return notificationsService.deleteNotification(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
                                                                                                JsonUtils.serialize(new NotificationRequest(operation[1],
                                                                                                                                            false)))));
             }
@@ -290,48 +428,60 @@ public class InitialRunFileExecutor {
 
             case "addStore" -> {
                 numOfArgumentsChecker(operation, 3);
-                return storesService.addStore(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
+                String res = storesService.addStore(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                    this.token,
                                                                               JsonUtils.serialize(new StoreCreationRequest(operation[2],
                                                                                                                            operation[3],
                                                                                                                            operation[1])))));
+                Response response = (Response) JsonUtils.deserialize(res, Response.class);
+                if (response.success()) {
+                    if (storesIDs.containsKey(operation[2])) {
+                        throw new IllegalArgumentException("The store name \"" + operation[2] + "\" already exists");
+                    }
+                    storesIDs.put(operation[2], (String)response.payload(String.class).getFirst());
+                }
+                return res;
+
             }
             case "openStore" -> {
                 numOfArgumentsChecker(operation, 1);
-                return storesService.openStore(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                               operation[1])));
+                return storesService.openStore(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                               storesIDs.get(operation[1]))));
             }
             case "closeStore" -> {
                 numOfArgumentsChecker(operation, 1);
-                return storesService.closeStore(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                operation[1])));
+                return storesService.closeStore(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                storesIDs.get(operation[1]))));
             }
             case "addProduct" -> {
                 numOfArgumentsChecker(operation, 7);
                 double price = getDouble("addProduct", operation[4], 4);
                 Rating rating = getRating("addProduct", operation[7], 7);
-                String response = storesService.addProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new ProductRequest(operation[1],
+                String response = storesService.addProduct(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new ProductRequest(storesIDs.get(operation[1]),
                                                                                                                        new Product(operation[2],
                                                                                                                                    operation[3],
                                                                                                                                    price,
                                                                                                                                    operation[5],
                                                                                                                                    operation[6],
                                                                                                                                    rating))))));
-                productsIDs.put(operation[2], ((Response) (JsonUtils.deserialize(response, Response.class))).message());
+                if (productsIDs.containsKey(operation[2])) {
+                    throw new IllegalArgumentException("The product id \"" + operation[2] + "\" already exists");
+                }
+                productsIDs.put(operation[2], (String) ((Response) (JsonUtils.deserialize(response, Response.class))).payload(String.class).getFirst());
                 return response;
             }
             case "updateProduct" -> {
                 numOfArgumentsChecker(operation, 7);
                 double price = getDouble("updateProduct", operation[4], 4);
                 Rating rating = getRating("updateProduct", operation[7], 7);
-                return storesService.updateProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new ProductRequest(operation[1],
-                                                                                                                       new Product(operation[2],
+                return storesService.updateProduct(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new ProductRequest(storesIDs.get(operation[1]),
+                                                                                                                       new Product(productsIDs.get(operation[2]),
                                                                                                                                    operation[3],
                                                                                                                                    price,
                                                                                                                                    operation[5],
@@ -340,94 +490,94 @@ public class InitialRunFileExecutor {
             }
             case "removeProduct" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.removeProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new ProductRequest(operation[1],
-                                                                                                                       new Product(operation[2]))))));
+                return storesService.removeProduct(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new ProductRequest(storesIDs.get(operation[1]),
+                                                                                                                       new Product(productsIDs.get(operation[2])))))));
             }
             case "disableProduct" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.disableProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new ProductRequest(operation[1],
-                                                                                                                       new Product(operation[2]))))));
+                return storesService.disableProduct(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new ProductRequest(storesIDs.get(operation[1]),
+                                                                                                                       new Product(productsIDs.get(operation[2])))))));
             }
             case "enableProduct" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.enableProduct(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new ProductRequest(operation[1],
-                                                                                                                       new Product(operation[2]))))));
+                return storesService.enableProduct(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new ProductRequest(storesIDs.get(operation[1]),
+                                                                                                                       new Product(productsIDs.get(operation[2])))))));
             }
             case "setProductQuantity" -> {
                 numOfArgumentsChecker(operation, 3);
                 int quantity = getInteger("setProductQuantity", operation[3], 3);
-                return storesService.setProductQuantity(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new ProductRequest(operation[1],
+                return storesService.setProductQuantity(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new ProductRequest(storesIDs.get(operation[1]),
                                                                                                                        new Product(productsIDs.get(operation[2])),
                                                                                                                        quantity)))));
             }
             case "addOwner" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.addOwner(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new StoreStaffRequest(operation[1],
-                                                                                        appController.getCurrentUserId(),
+                return storesService.addOwner(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new StoreStaffRequest(storesIDs.get(operation[1]),
+                                                                                        this.currentUserId,
                                                                                                                           operation[2])))));
             }
             case "removeOwner" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.removeOwner(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new StoreStaffRequest(operation[1],
-                                                                                        appController.getCurrentUserId(),
+                return storesService.removeOwner(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new StoreStaffRequest(storesIDs.get(operation[1]),
+                                                                                        this.currentUserId,
                                                                                                                           operation[2])))));
             }
             case "addManager" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.addManager(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new StoreStaffRequest(operation[1],
-                                                                                        appController.getCurrentUserId(),
+                return storesService.addManager(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new StoreStaffRequest(storesIDs.get(operation[1]),
+                                                                                        this.currentUserId,
                                                                                                                           operation[2])))));
             }
             case "removeManager" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.removeManager(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new StoreStaffRequest(operation[1],
-                                                                                        appController.getCurrentUserId(),
+                return storesService.removeManager(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new StoreStaffRequest(storesIDs.get(operation[1]),
+                                                                                        this.currentUserId,
                                                                                                                           operation[2])))));
             }
             case "addPermissionToManager" -> {
                 numOfArgumentsChecker(operation, 3);
-                return storesService.addPermissionToManager(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new StorePermissionRequest(operation[1],
+                return storesService.addPermissionToManager(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new StorePermissionRequest(storesIDs.get(operation[1]),
                                                                                                                                operation[2],
                                                                                                                                operation[3])))));
             }
             case "removePermissionFromManager" -> {
                 numOfArgumentsChecker(operation, 3);
-                return storesService.removePermissionFromManager(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new StorePermissionRequest(operation[1],
+                return storesService.removePermissionFromManager(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new StorePermissionRequest(storesIDs.get(operation[1]),
                                                                                                                                operation[2],
                                                                                                                                operation[3])))));
             }
             case "addDiscountRuleByCFG" -> {
                 numOfArgumentsChecker(operation, 2);
-                return storesService.addDiscountRuleByCFG(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new DiscountCFGRequest(operation[1],
+                return storesService.addDiscountRuleByCFG(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new DiscountCFGRequest(storesIDs.get(operation[1]),
                                                                                                                            operation[2])))));
             }
             case "deleteAllDiscounts" -> {
                 numOfArgumentsChecker(operation, 1);
-                return storesService.deleteAllDiscounts(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new DiscountCFGRequest(operation[1],
+                return storesService.deleteAllDiscounts(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new DiscountCFGRequest(storesIDs.get(operation[1]),
                                                                                                                            "")))));
             }
 
@@ -438,27 +588,27 @@ public class InitialRunFileExecutor {
             case "addProductToCart" -> {
                 numOfArgumentsChecker(operation, 3);
                 int quantity = getInteger("addProductToCart", operation[3], 3);
-                return userProfilesService.addProductToCart(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new CartRequest(operation[1],
-                                                                                                                    operation[2],
+                return userProfilesService.addProductToCart(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new CartRequest(storesIDs.get(operation[1]),
+                                                                                                                    productsIDs.get(operation[2]),
                                                                                                                     quantity)))));
             }
             case "removeProductFromCart" -> {
                 numOfArgumentsChecker(operation, 2);
-                return userProfilesService.removeProductFromCart(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new CartRequest(operation[1],
-                                                                                                                    operation[2],
+                return userProfilesService.removeProductFromCart(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new CartRequest(storesIDs.get(operation[1]),
+                                                                                                                    productsIDs.get(operation[2]),
                                                                                                                     0)))));
             }
             case "changeProductQuantityAtCart" -> {
                 numOfArgumentsChecker(operation, 3);
                 int quantity = getInteger("addProductToCart", operation[3], 3);
-                return userProfilesService.changeProductQuantity(JsonUtils.serialize(new Request(appController.getCurrentUserId(),
-                        appController.getToken(),
-                                                                                JsonUtils.serialize(new CartRequest(operation[1],
-                                                                                                                    operation[2],
+                return userProfilesService.changeProductQuantity(JsonUtils.serialize(new Request(this.currentUserId,
+                                                                                this.token,
+                                                                                JsonUtils.serialize(new CartRequest(storesIDs.get(operation[1]),
+                                                                                                                    productsIDs.get(operation[2]),
                                                                                                                     quantity)))));
             }
 

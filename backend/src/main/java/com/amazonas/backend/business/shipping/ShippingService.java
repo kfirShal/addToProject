@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.shipping;
 
+import com.amazonas.backend.ConfigurationValues;
 import com.amazonas.common.dtos.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,8 @@ public class ShippingService {
 
     private static final Logger log = LoggerFactory.getLogger(ShippingService.class);
     private final String serviceId;
-    private final String externalSystemUrl = "https://damp-lynna-wsep-1984852e.koyeb.app/";
-    //private final String externalSystemUrl = ConfigurationValues.getProperty("SHIPPING_SERVICE_URL");
+    //private final String externalSystemUrl = "https://damp-lynna-wsep-1984852e.koyeb.app/";
+    private final String externalSystemUrl = ConfigurationValues.getProperty("SHIPPING_SERVICE_URL");
     private final RestTemplate restTemplate;
 
     public ShippingService() {
