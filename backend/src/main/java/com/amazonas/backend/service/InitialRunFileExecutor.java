@@ -72,6 +72,7 @@ public class InitialRunFileExecutor {
         }
         catch (Exception e) {
             System.out.println("Cannot find the initial run file");
+            System.exit(1);
             return;
         }
         try{
