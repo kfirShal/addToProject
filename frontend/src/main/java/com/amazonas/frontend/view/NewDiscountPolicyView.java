@@ -158,6 +158,18 @@ public class NewDiscountPolicyView extends Dialog {
                     conditions.add(condition);
                 }
             }
+            else if(validateFieldsEmpty(List.of(products,quantity,percent))){
+                if(isNotEmpty(price)){
+                    UnaryConditionDTO condition = new UnaryConditionDTO(UnaryConditionType.AT_LEAST_SOME_PRICE, Integer.parseInt(price.getValue()),categories.getValue());
+                    conditions.add(condition);
+                }
+            }
+            else if(validateFieldsEmpty((List.of(categories,quantity,percent)))){
+                if(isNotEmpty(price)){
+                    UnaryConditionDTO condition = new UnaryConditionDTO(UnaryConditionType.AT_LEAST_SOME_PRICE, Integer.parseInt(price.getValue()),products.getValue());
+                    conditions.add(condition);
+                }
+            }
             else if(validateFieldsEmpty(List.of(products,categories,quantity))){
                 if(isNotEmpty(price) && isNotEmpty(percent)){
                     ComplexDiscountDTO rule = new ComplexDiscountDTO(new UnaryConditionDTO(UnaryConditionType.AT_LEAST_SOME_PRICE, Integer.parseInt(price.getValue()),""),new SimpleDiscountDTO(HierarchyLevel.StoreLevel, "", Integer.parseInt(percent.getValue())));
@@ -176,7 +188,6 @@ public class NewDiscountPolicyView extends Dialog {
                     rules.add(rule);
                 }
             }
-
             else{
                 Notification.show("You fill in too many fields, please fill only the price", 5000, Notification.Position.MIDDLE);
             }
