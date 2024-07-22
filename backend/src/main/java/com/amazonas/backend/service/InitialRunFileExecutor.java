@@ -1,5 +1,6 @@
 package com.amazonas.backend.service;
 
+import com.amazonas.backend.BackendApplication;
 import com.amazonas.backend.ConfigurationValues;
 import com.amazonas.backend.business.payment.PaymentService;
 import com.amazonas.backend.business.shipping.ShippingService;
@@ -27,6 +28,7 @@ import com.amazonas.common.utils.Rating;
 import com.amazonas.common.utils.Response;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.sun.tools.javac.Main;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -63,9 +65,7 @@ public class InitialRunFileExecutor {
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         String initialRunCode;
         try {
-            String file_name = ConfigurationValues.getProperty("INITIAL_RUN_FILE_NAME");
-            String dir = System.getProperty("user.dir");
-            File file = new File(dir + "\\backend\\src\\main\\resources\\" + file_name);
+            File file = new File(BackendApplication.getFolderPath()+"InitialRunFile.txt");
             try(BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file))){
                 initialRunCode = new String(stream.readAllBytes());
             }
