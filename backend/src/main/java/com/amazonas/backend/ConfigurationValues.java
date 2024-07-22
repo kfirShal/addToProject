@@ -15,7 +15,7 @@ public class ConfigurationValues {
             return properties.getProperty("PAYMENT_SERVICE_URL");
 
         } catch (Exception e) {
-            throw new ClassCastException("couldn't find property " + property);
+            throw new ClassCastException("couldn't find property " + property + " in configuration file - " + e.getMessage());
         }
     }
 }
