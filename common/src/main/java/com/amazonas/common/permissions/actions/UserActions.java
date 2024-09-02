@@ -23,4 +23,11 @@ public enum UserActions {
     DELETE_NOTIFICATION,
     READ_NOTIFICATIONS,
     SET_NOTIFICATION_READ,
+
+    // Suspends
+    LIST_SUSPENDS,
+    ADD_SUSPEND,
+    REMOVE_SUSPEND,
+    IS_ID_SUSPEND,
+
 }
