@@ -16,6 +16,7 @@ public class API {
     private final ExternalServicesService externalServicesService;
     private final MarketService marketService;
     private final NotificationsService notificationsService;
+    private final SuspendedService suspendedService;
     private final StoresService storesService;
     private final UserProfilesService userProfilesService;
     private final PermissionsService permissionsService;
@@ -24,12 +25,14 @@ public class API {
                ExternalServicesService externalServicesService,
                MarketService marketService,
                NotificationsService notificationsService,
+               SuspendedService suspendedService,
                StoresService storesService,
                UserProfilesService userProfilesService, PermissionsService permissionsService){
         this.authenticationService = authenticationService;
         this.externalServicesService = externalServicesService;
         this.marketService = marketService;
         this.notificationsService = notificationsService;
+        this.suspendedService = suspendedService;
         this.storesService = storesService;
         this.userProfilesService = userProfilesService;
         this.permissionsService = permissionsService;
@@ -53,6 +56,7 @@ public class API {
                 case "external" -> forwardExternal(endpoint,body);
                 case "market" -> forwardMarket(endpoint,body);
                 case "notifications" -> forwardNotifications(endpoint,body);
+                case "suspends" -> forwardSuspends(endpoint, body);
                 case "stores" -> forwardStores(endpoint,body);
                 case "userprofiles" -> forwardUserProfiles(endpoint,body);
                 case "permissions" -> forwardPermissions(endpoint,body);
@@ -138,6 +142,16 @@ public class API {
             case "getunreadnotifications" -> notificationsService.getUnreadNotifications(body);
             case "getnotifications" -> notificationsService.getNotifications(body);
             case "deletenotification" -> notificationsService.deleteNotification(body);
+            default -> "Invalid endpoint";
+        };
+    }
+
+    private String forwardSuspends(String endpoint, String body) {
+        return switch(endpoint) {
+            case "addsuspend" -> suspendedService.addSuspend(body);
+            case "getsuspendlist" -> suspendedService.getSuspendList(body);
+            case "removesuspend" -> suspendedService.removeSuspend(body);
+            case "isidinlist" -> suspendedService.isIDInList(body);
             default -> "Invalid endpoint";
         };
     }

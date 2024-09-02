@@ -1,9 +1,19 @@
 package com.amazonas.common.requests.suspends;
 
-public final class SuspendedRequest {
-    private final String suspendedID;
+import com.amazonas.common.requests.notifications.NotificationRequest;
+import com.amazonas.common.utils.JsonUtils;
 
-    public SuspendedRequest(String suspendedID) {
-        this.suspendedID = suspendedID;
+public final class SuspendedRequest {
+    private final String suspendId;
+
+    public SuspendedRequest(String suspendId) {
+        this.suspendId = suspendId;
+    }
+
+
+    public String getSuspendId() {return suspendId;}
+
+    public static SuspendedRequest from(String json) {
+        return JsonUtils.deserialize(json, SuspendedRequest.class);
     }
 }

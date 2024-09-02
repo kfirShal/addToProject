@@ -6,9 +6,12 @@ import com.amazonas.backend.business.permissions.PermissionsController;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
 import com.amazonas.common.permissions.actions.UserActions;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+
+@Component("suspendedProxy")
 public class SuspendedProxy extends ControllerProxy{
     private final SuspendedController real;
 
