@@ -7,13 +7,20 @@ import java.util.List;
 
 @Component("suspendedController")
 public class SuspendedController {
-    private static List<String> suspendList = null;
 
-    public SuspendedController() {
-        if(suspendList == null){
-            suspendList = new ArrayList<>();
+    private static SuspendedController instance;
+
+    private final List<String> suspendList;
+
+    private SuspendedController(){
+        this.suspendList = new ArrayList<>();
+    }
+
+    public static synchronized  SuspendedController getInstance() {
+        if (instance == null){
+            instance = new SuspendedController();
         }
-
+        return instance;
     }
 
     public List<String> getSuspendList() {
