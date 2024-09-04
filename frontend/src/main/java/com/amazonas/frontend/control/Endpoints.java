@@ -61,6 +61,12 @@ public enum Endpoints {
     GET_NOTIFICATIONS("notifications/getnotifications", Notification.class),
     DELETE_NOTIFICATION("notifications/deletenotification", Void.class),
 
+    // Suspends Endpoints
+    ADD_SUSPEND("suspends/addsuspend", Void.class),
+    SUSPENDS_LIST("suspends/getsuspendlist", String.class), //change to Suspend object
+    REMOVE_SUSPEND("suspends/removesuspend", Boolean.class),
+
+
     // Stores Endpoints
 
     SEARCH_PRODUCTS_GLOBALLY("stores/searchproductsglobally", Product.class),

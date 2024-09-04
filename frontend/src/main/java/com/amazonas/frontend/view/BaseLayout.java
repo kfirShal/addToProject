@@ -136,13 +136,19 @@ public abstract class BaseLayout extends AppLayout {
             });
             notificationsButton.getStyle().set("margin-right", "10px");
 
+            Button suspendsButton = new Button(new Icon(VaadinIcon.EXCLAMATION_CIRCLE));
+            suspendsButton.addClickListener(event -> {
+                UI.getCurrent().navigate("suspends");
+            });
+            suspendsButton.getStyle().set("margin-right", "10px");
+
             Button previousOrdersButton = new Button(new Icon(VaadinIcon.CLIPBOARD_PULSE));
             previousOrdersButton.addClickListener(event -> {
                 UI.getCurrent().navigate("previous-orders");
             });
             previousOrdersButton.getStyle().set("margin-right", "20px");
 
-            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, previousOrdersButton);
+            HorizontalLayout userActions = new HorizontalLayout(username, notificationsButton, suspendsButton, previousOrdersButton);
             userActions.setAlignItems(FlexComponent.Alignment.CENTER);
             userActions.setSpacing(true); // Adds spacing between components
 

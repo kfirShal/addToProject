@@ -50,6 +50,10 @@ public class AppController {
         return "Notifications";
     }
 
+    public String getSuspendsMessage() {
+        return "Suspends";
+    }
+
     public String getPurchasePolicyMessage() {
         return "Purchase Policy";
     }
