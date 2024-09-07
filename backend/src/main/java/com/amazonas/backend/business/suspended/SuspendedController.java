@@ -1,19 +1,22 @@
 package com.amazonas.backend.business.suspended;
 
+import com.amazonas.common.dtos.Suspend;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component("suspendedController")
 public class SuspendedController {
 
     private static SuspendedController instance;
 
-    private final List<String> suspendList;
+    private final Map<String, Suspend> suspendList;
 
     private SuspendedController(){
-        this.suspendList = new ArrayList<>();
+        this.suspendList = new HashMap<>();
     }
 
     public static synchronized  SuspendedController getInstance() {
@@ -23,20 +26,20 @@ public class SuspendedController {
         return instance;
     }
 
-    public List<String> getSuspendList() {
+    public Map<String, Suspend> getSuspendList() {
         return suspendList;
     }
 
-    public void addSuspend(String id){
-        suspendList.add(id);
+    public void addSuspend(Suspend suspend){
+        suspendList.put(suspend.getSuspendId(), suspend);
     }
 
-    public boolean removeSuspend(String id){
+    public Suspend removeSuspend(String id){
         return suspendList.remove(id);
 
     }
 
     public boolean isIDInList(String id){
-        return suspendList.contains(id);
+        return suspendList.containsKey(id);
     }
 }
