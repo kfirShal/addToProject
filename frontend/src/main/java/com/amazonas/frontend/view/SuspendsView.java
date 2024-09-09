@@ -23,7 +23,7 @@ import java.util.List;
 public class SuspendsView extends BaseLayout {
 
     private final AppController appController;
-    private Grid<Suspend> suspendsGrid; //change to suspends type
+    private Grid<Suspend> suspendsGrid;
     private List<Suspend> suspends;
 
     public SuspendsView(AppController appController) {
@@ -39,17 +39,20 @@ public class SuspendsView extends BaseLayout {
         suspends = new ArrayList<>();
 
         // Get suspends from the backend
-        SuspendedRequest request = new SuspendedRequest(AppController.getCurrentUserId());
+        SuspendedRequest request = new SuspendedRequest();
 
 
         try {
-            suspends = appController.postByEndpoint(Endpoints.SUSPENDS_LIST, request);
+            suspends = appController.postByEndpoint(Endpoints.SUSPENDS_LIST, null);
         } catch (ApplicationException e) {
             openErrorDialog(e.getMessage());
         }
 
         suspendsGrid = new Grid<>(Suspend.class, false);
         suspendsGrid.addColumn(Suspend::getSuspendId).setHeader("Suspend ID");
+        suspendsGrid.addColumn(Suspend::getBeginDate).setHeader("Begin Date");
+        suspendsGrid.addColumn(Suspend::getFinishDate).setHeader("Finish Date");
+        suspendsGrid.addColumn(Suspend::getDuration).setHeader("Duration");
 
         if (suspends == null || suspends.isEmpty()) {
             VerticalLayout noSuspendsLayout = new VerticalLayout();

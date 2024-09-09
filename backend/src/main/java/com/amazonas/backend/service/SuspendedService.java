@@ -3,6 +3,7 @@ package com.amazonas.backend.service;
 import com.amazonas.backend.business.permissions.proxies.SuspendedProxy;
 import com.amazonas.backend.exceptions.AuthenticationFailedException;
 import com.amazonas.backend.exceptions.NoPermissionException;
+import com.amazonas.common.dtos.Suspend;
 import com.amazonas.common.requests.Request;
 import com.amazonas.common.requests.notifications.NotificationRequest;
 import com.amazonas.common.requests.suspends.SuspendedRequest;
@@ -10,6 +11,7 @@ import com.amazonas.common.utils.Response;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component("suspendedService")
 public class SuspendedService {
@@ -17,51 +19,53 @@ public class SuspendedService {
 
 
     public SuspendedService(SuspendedProxy proxy) {
-       this.proxy = proxy;
+        this.proxy = proxy;
 
     }
 
     public String getSuspendList(String json) {
         Request request = Request.from(json);
         try {
-            List<String> suspendList = proxy.getSuspendList(request.userId(), request.token());
+            List<Suspend> suspendList = proxy.getSuspendList(request.userId(), request.token());
             return Response.getOk(suspendList);
         } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
 
-    public String addSuspend(String json){
+    public String addSuspend(String json) {
         Request request = Request.from(json);
         try {
             SuspendedRequest suspendedRequest = SuspendedRequest.from(request.payload());
-            proxy.addSuspend(suspendedRequest.getSuspendId(), request.userId(), request.token());
+            Suspend suspend = new Suspend(suspendedRequest.getSuspendId(), suspendedRequest.getBeginDate(), suspendedRequest.getFinishDate());
+            proxy.addSuspend(suspend, request.userId(), request.token());
             return Response.getOk();
         } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
 
-    public String removeSuspend(String json){
+    public String removeSuspend(String json) {
         Request request = Request.from(json);
         try {
             SuspendedRequest suspendedRequest = SuspendedRequest.from(request.payload());
-            boolean isRemove  = proxy.removeSuspend(suspendedRequest.getSuspendId(), request.userId(), request.token());
-            return Response.getOk(isRemove);
+            Suspend removeSuspend = proxy.removeSuspend(suspendedRequest.getSuspendId(), request.userId(), request.token());
+            return Response.getOk(removeSuspend);
         } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
 
     }
 
-    public String isIDInList(String json){
+    public String isSuspended(String json) {
         Request request = Request.from(json);
         try {
             SuspendedRequest suspendedRequest = SuspendedRequest.from(request.payload());
-            boolean isSuspend = proxy.isIDInList(suspendedRequest.getSuspendId(), request.userId(), request.token());
+            boolean isSuspend = proxy.isSuspended(suspendedRequest.getSuspendId(), request.userId(), request.token());
             return Response.getOk(isSuspend);
         } catch (NoPermissionException | AuthenticationFailedException e) {
             return Response.getError(e);
         }
     }
+
 }

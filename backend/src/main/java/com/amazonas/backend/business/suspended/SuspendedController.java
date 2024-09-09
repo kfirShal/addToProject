@@ -1,9 +1,11 @@
 package com.amazonas.backend.business.suspended;
 
 import com.amazonas.common.dtos.Suspend;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,31 +17,52 @@ public class SuspendedController {
 
     private final Map<String, Suspend> suspendList;
 
-    private SuspendedController(){
+    private SuspendedController() {
         this.suspendList = new HashMap<>();
+        Suspend suspend1 = new Suspend("1", "09/09/24", "15/09/24");
+        Suspend suspend2 = new Suspend("2", "09/09/24", "always");
+        this.addSuspend(suspend1);
+        this.addSuspend(suspend2);
     }
 
-    public static synchronized  SuspendedController getInstance() {
-        if (instance == null){
+    public static synchronized SuspendedController getInstance() {
+        if (instance == null) {
             instance = new SuspendedController();
         }
         return instance;
     }
 
-    public Map<String, Suspend> getSuspendList() {
-        return suspendList;
+    public List<Suspend> getSuspendList() {
+        return List.copyOf(suspendList.values());
     }
 
-    public void addSuspend(Suspend suspend){
+    public void addSuspend(Suspend suspend) {
         suspendList.put(suspend.getSuspendId(), suspend);
     }
 
-    public Suspend removeSuspend(String id){
+    public Suspend removeSuspend(String id) {
         return suspendList.remove(id);
 
     }
 
-    public boolean isIDInList(String id){
-        return suspendList.containsKey(id);
+    public boolean isSuspended(String id) {
+        Suspend suspend = suspendList.get(id);
+        if (suspend != null) {
+            LocalDate beginDate = stringToLocalDate(suspend.getBeginDate());
+            LocalDate now = LocalDate.now();
+            if (beginDate.isBefore(now)) {
+                if (suspend.getFinishDate().equals("always"))
+                    return true;
+                LocalDate finishDate = stringToLocalDate(suspend.getFinishDate());
+                return finishDate.isAfter(now);
+            }
+        }
+        return false;
+    }
+
+
+    private LocalDate stringToLocalDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+        return LocalDate.parse(date, formatter);
     }
 }

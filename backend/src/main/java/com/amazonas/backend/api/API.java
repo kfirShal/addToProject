@@ -151,7 +151,7 @@ public class API {
             case "addsuspend" -> suspendedService.addSuspend(body);
             case "getsuspendlist" -> suspendedService.getSuspendList(body);
             case "removesuspend" -> suspendedService.removeSuspend(body);
-            case "isidinlist" -> suspendedService.isIDInList(body);
+            case "issuspended" -> suspendedService.isSuspended(body);
             default -> "Invalid endpoint";
         };
     }
