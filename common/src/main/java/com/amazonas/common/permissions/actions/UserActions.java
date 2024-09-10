@@ -28,7 +28,7 @@ public enum UserActions {
     LIST_SUSPENDS,
     ADD_SUSPEND,
     REMOVE_SUSPEND,
-    IS_CONTAINS_ID,
-    DURATION,
+    IS_SUSPEND,
+
 
 }

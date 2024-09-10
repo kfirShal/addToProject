@@ -43,7 +43,7 @@ public class SuspendedProxy extends ControllerProxy{
 
     public boolean isSuspended(String id, String userId, String token)  throws NoPermissionException, AuthenticationFailedException{
         authenticateToken(userId, token);
-        checkPermission(userId, UserActions.IS_CONTAINS_ID);
+        checkPermission(userId, UserActions.IS_SUSPEND);
         return real.isSuspended(id);
     }
 
