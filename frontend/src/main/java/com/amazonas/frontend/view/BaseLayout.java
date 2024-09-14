@@ -128,7 +128,7 @@ public abstract class BaseLayout extends AppLayout {
             }
             nav1.addItem(new SideNavItem("Create Store", CreateStore.class, VaadinIcon.STAR.create()));
             H4 username = new H4("Hello, " + getCurrentUserId() + "  ");
-            username.getStyle().set("margin-left", "25%");
+            username.getStyle().set("margin-left", "15%");
 
             Button notificationsButton = new Button(new Icon(VaadinIcon.ENVELOPE));
             notificationsButton.addClickListener(event -> {
@@ -167,7 +167,7 @@ public abstract class BaseLayout extends AppLayout {
                     showNotification("Logout failed");
                 }
             });
-            userActions.getStyle().set("margin-left", "25%"); // Pushes userActions to the right
+            userActions.getStyle().set("margin-left", "20%"); // Pushes userActions to the right
             logoutButton.getStyle().set("margin-right", "10px");
             addToNavbar(userActions, logoutButton);
 

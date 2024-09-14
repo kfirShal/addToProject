@@ -7,15 +7,28 @@ import com.amazonas.common.requests.suspends.SuspendedRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
 import com.amazonas.frontend.exceptions.ApplicationException;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.virtuallist.VirtualList;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
 
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +66,24 @@ public class SuspendsView extends BaseLayout {
         suspendsGrid.addColumn(Suspend::getBeginDate).setHeader("Begin Date");
         suspendsGrid.addColumn(Suspend::getFinishDate).setHeader("Finish Date");
         suspendsGrid.addColumn(Suspend::getDuration).setHeader("Duration");
+        //from vaadin
+        suspendsGrid.addColumn(
+                new ComponentRenderer<>(Button::new, (button, suspend) -> {
+                    button.addClickListener(e -> {
+
+                        SuspendedRequest removeRequest = new SuspendedRequest(suspend.getSuspendId());
+
+                        try {
+                            appController.postByEndpoint(Endpoints.REMOVE_SUSPEND, removeRequest);
+                            suspends = appController.postByEndpoint(Endpoints.SUSPENDS_LIST, null);
+                            suspendsGrid.setItems(suspends);
+
+                        } catch (ApplicationException error) {
+                            openErrorDialog(error.getMessage());
+                        }
+                    });
+                    button.setIcon(new Icon(VaadinIcon.TRASH));
+                })).setHeader("Remove");
 
         if (suspends == null || suspends.isEmpty()) {
             VerticalLayout noSuspendsLayout = new VerticalLayout();
@@ -67,13 +98,63 @@ public class SuspendsView extends BaseLayout {
 
             noSuspendsLayout.add(noSuspendsMessage);
             content.add(noSuspendsLayout);
-            return;
+        }
+
+        else {
+            suspendsGrid.setItems(suspends);
 
         }
 
-        suspendsGrid.setItems(suspends);
+
         content.add(suspendsGrid);
+
+        TextField idField = new TextField("ID");
+        DatePicker beginDate = new DatePicker("Begin Date");
+        DatePicker finishDate = new DatePicker("Finish Date");
+        Checkbox always = new Checkbox("Always", event -> {
+            boolean value = event.getValue();
+            finishDate.setEnabled(!value);
+        });
+
+
+        Button addSuspend = new Button("Add", event -> {
+            String idValue = idField.getValue();
+            LocalDate begin = beginDate.getValue();
+            LocalDate finish = finishDate.getValue();
+            boolean isAlways = always.getValue();
+
+            if (idValue.isEmpty() || begin == null || (!isAlways && (finish == null || finish.isBefore(begin)))) {
+                openErrorDialog("Form is not valid");
+                return;
+            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+            SuspendedRequest addRequest = new SuspendedRequest(idValue, begin.format(formatter), isAlways ? "always" : finish.format(formatter));
+
+            try {
+                appController.postByEndpoint(Endpoints.ADD_SUSPEND, addRequest);
+                suspends = appController.postByEndpoint(Endpoints.SUSPENDS_LIST, null);
+                suspendsGrid.setItems(suspends);
+
+            } catch (ApplicationException e) {
+                openErrorDialog(e.getMessage());
+            }
+
+
+
+
+        });
+        FormLayout formLayout = new FormLayout();
+        formLayout.add(idField, beginDate, finishDate, always, addSuspend);
+        formLayout.setResponsiveSteps(
+                // Use one column by default
+                new FormLayout.ResponsiveStep("0", 1),
+                // Use two columns, if layout's width exceeds 500px
+                new FormLayout.ResponsiveStep("500px", 2),
+                new FormLayout.ResponsiveStep("750px", 3));
+
+        content.add(formLayout);
 
 
     }
+
 }
