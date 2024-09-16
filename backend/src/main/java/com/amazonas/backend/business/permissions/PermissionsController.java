@@ -1,5 +1,6 @@
 package com.amazonas.backend.business.permissions;
 
+import com.amazonas.backend.business.suspended.SuspendedController;
 import com.amazonas.backend.repository.PermissionsProfileRepository;
 import com.amazonas.common.permissions.actions.MarketActions;
 import com.amazonas.common.permissions.actions.StoreActions;
@@ -14,6 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @SuppressWarnings({"LoggingSimilarMessage", "BooleanMethodIsAlwaysInverted"})
 @Component
 public class PermissionsController {
@@ -25,6 +30,10 @@ public class PermissionsController {
     private final AdminPermissionsProfile adminProfile;
     private final ReadWriteLock lock;
     private final PermissionsProfileRepository repository;
+    private final SuspendedController suspendedController;
+    private final List<MarketActions> allowedMarketActions;
+    private final List<StoreActions> allowedStoreActions;
+    private final List<UserActions> allowedUserActions;
 
     public PermissionsController(DefaultPermissionsProfile defaultRegisteredUserPermissionsProfile,
                                  DefaultPermissionsProfile guestPermissionsProfile,
@@ -35,6 +44,11 @@ public class PermissionsController {
         this.adminProfile = adminPermissionsProfile;
         this.repository = permissionsProfileRepository;
         lock = new ReadWriteLock();
+        this.suspendedController = SuspendedController.getInstance();
+        allowedMarketActions = new ArrayList<>(Arrays.asList(MarketActions.ALL, MarketActions.VIEW_PRODUCTS, MarketActions.VIEW_STORES, MarketActions.SEARCH_PRODUCTS, MarketActions.SEARCH_STORES));
+        allowedStoreActions = new ArrayList<>(Arrays.asList(StoreActions.ALL, StoreActions.GET_PRODUCT_QUANTITY, StoreActions.VIEW_STORE_TRANSACTIONS, StoreActions.VIEW_ROLES_INFORMATION));
+        allowedUserActions = new ArrayList<>(Arrays.asList(UserActions.ALL, UserActions.VIEW_SHOPPING_CART, UserActions.VIEW_USER_TRANSACTIONS));
+
     }
 
     //TODO: fix this when we have a database
@@ -42,15 +56,15 @@ public class PermissionsController {
         log.debug("Checking if user {} is admin", userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile instanceof AdminPermissionsProfile;
-        log.debug("User is {}", result? "admin" : "not admin");
+        log.debug("User is {}", result ? "admin" : "not admin");
         return result;
     }
-    
+
     public boolean addPermission(String userId, UserActions action) {
         log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addUserActionPermission(action);
-        log.debug("action was {}", result? "added" : "not added");
+        log.debug("action was {}", result ? "added" : "not added");
         return result;
     }
 
@@ -58,7 +72,7 @@ public class PermissionsController {
         log.debug("Removing action {} from user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeUserActionPermission(action);
-        log.debug("action was {}", result? "removed" : "not removed");
+        log.debug("action was {}", result ? "removed" : "not removed");
         return result;
     }
 
@@ -66,7 +80,7 @@ public class PermissionsController {
         log.debug("Adding action {} to user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addStorePermission(storeId, action);
-        log.debug("action was {}", result? "added" : "not added");
+        log.debug("action was {}", result ? "added" : "not added");
         return result;
     }
 
@@ -74,7 +88,7 @@ public class PermissionsController {
         log.debug("Removing action {} from user {} for store {}", action, userId, storeId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.removeStorePermission(storeId, action);
-        log.debug("action was {}", result? "removed" : "not removed");
+        log.debug("action was {}", result ? "removed" : "not removed");
         return result;
     }
 
@@ -82,32 +96,50 @@ public class PermissionsController {
         log.debug("Adding action {} to user {}", action, userId);
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.addMarketActionPermission(action);
-        log.debug("action was {}", result? "added" : "not added");
+        log.debug("action was {}", result ? "added" : "not added");
         return result;
     }
 
     public boolean checkPermission(String userId, UserActions action) {
         log.debug("Checking action {} for user {}", action, userId);
+        if (isUserSuspended(userId) && !allowedUserActions.contains(action)) {
+            log.debug("deny action {} for suspendedUser {}", action, userId);
+            return false;
+        }
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(action);
-        log.debug("action is {}", result? "granted" : "denied");
+        log.debug("action is {}", result ? "granted" : "denied");
         return result;
     }
 
     public boolean checkPermission(String userId, String storeId, StoreActions action) {
         log.debug("Checking action {} for user {} for store {}", action, userId, storeId);
+        if (isUserSuspended(userId) && !allowedStoreActions.contains(action)) {
+            log.debug("deny action {} for suspendedUser {}", action, userId);
+
+            return false;
+        }
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(storeId, action);
-        log.debug("action is {}", result? "granted" : "denied");
+        log.debug("action is {}", result ? "granted" : "denied");
         return result;
     }
 
     public boolean checkPermission(String userId, MarketActions action) {
         log.debug("Checking action {} for user {}", action, userId);
+        if (isUserSuspended(userId) && !allowedMarketActions.contains(action)) {
+            log.debug("deny action {} for suspendedUser {}", action, userId);
+
+            return false;
+        }
         PermissionsProfile profile = getPermissionsProfile(userId);
         boolean result = profile.hasPermission(action);
-        log.debug("action is {}", result? "granted" : "denied");
+        log.debug("action is {}", result ? "granted" : "denied");
         return result;
+    }
+
+    private boolean isUserSuspended(String userId) {
+        return suspendedController.isSuspended(userId);
     }
 
     public void registerUser(String userId) {
@@ -118,7 +150,7 @@ public class PermissionsController {
 
     public void registerGuest(String userId) {
         log.debug("Registering guest {}", userId);
-        registerUser(userId,guestProfile, "Guest already registered");
+        registerUser(userId, guestProfile, "Guest already registered");
     }
 
     public void registerAdmin(String userId) {
@@ -144,21 +176,21 @@ public class PermissionsController {
         log.debug("Admin removed successfully");
     }
 
-    private void registerUser(String userId, PermissionsProfile profile , String failMessage) {
-        try{
+    private void registerUser(String userId, PermissionsProfile profile, String failMessage) {
+        try {
             lock.acquireWrite();
             repository.addUser(userId, profile);
-        } finally{
+        } finally {
             lock.releaseWrite();
         }
     }
 
     private void removeUser(String userId, String failMessage) {
-        try{
+        try {
             lock.acquireWrite();
             var removed = repository.removeUser(userId);
 
-            if(removed == null) {
+            if (removed == null) {
                 log.error(failMessage);
                 throw new IllegalArgumentException(failMessage);
             }
@@ -173,7 +205,7 @@ public class PermissionsController {
         lock.acquireRead();
         PermissionsProfile profile = repository.getPermissionsProfile(userId);
         lock.releaseRead();
-        if(profile == null) {
+        if (profile == null) {
             log.error("User not registered");
             throw new IllegalArgumentException("User not registered");
         }

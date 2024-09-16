@@ -21,8 +21,10 @@ public class SuspendedController {
         this.suspendList = new HashMap<>();
         Suspend suspend1 = new Suspend("1", "09/09/24", "15/09/24");
         Suspend suspend2 = new Suspend("2", "09/09/24", "always");
+        Suspend suspendU2 = new Suspend("u2", "08/09/24", "always");
         this.addSuspend(suspend1);
         this.addSuspend(suspend2);
+        this.addSuspend(suspendU2);
     }
 
     public static synchronized SuspendedController getInstance() {

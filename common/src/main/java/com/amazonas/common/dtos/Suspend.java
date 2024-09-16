@@ -35,7 +35,7 @@ public class Suspend {
             return "always";
         LocalDate finish = stringToLocalDate(this.finishDate);
         Period duration = Period.between(begin, finish);
-        return "Duration is: " + duration.getYears() + " years, " + duration.getMonths() + " months, " + duration.getDays() + " days. ";
+        return " " + duration.getYears() + " years, " + duration.getMonths() + " months, " + duration.getDays() + " days. ";
     }
 
     private LocalDate stringToLocalDate(String date) {
