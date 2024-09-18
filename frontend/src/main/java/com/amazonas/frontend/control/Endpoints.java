@@ -64,7 +64,7 @@ public enum Endpoints {
     // Suspends Endpoints
     ADD_SUSPEND("suspends/addsuspend", Void.class),
     SUSPENDS_LIST("suspends/getsuspendlist", Suspend.class),
-    REMOVE_SUSPEND("suspends/removesuspend", Boolean.class),
+    REMOVE_SUSPEND("suspends/removesuspend", Suspend.class),
 
 
     // Stores Endpoints

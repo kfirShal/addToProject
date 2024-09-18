@@ -44,9 +44,9 @@ public class SuspendedController {
 
     public Suspend removeSuspend(String id) {
         return suspendList.remove(id);
-
     }
 
+    //The user is suspended iff date of now is between begin and finish
     public boolean isSuspended(String id) {
         Suspend suspend = suspendList.get(id);
         if (suspend != null) {
@@ -62,7 +62,7 @@ public class SuspendedController {
         return false;
     }
 
-
+    //Auxiliary function for convert the field of time String to Local date
     private LocalDate stringToLocalDate(String date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
         return LocalDate.parse(date, formatter);

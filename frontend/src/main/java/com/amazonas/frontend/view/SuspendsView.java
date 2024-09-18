@@ -1,8 +1,6 @@
 package com.amazonas.frontend.view;
 
-import com.amazonas.common.dtos.Notification;
 import com.amazonas.common.dtos.Suspend;
-import com.amazonas.common.requests.notifications.NotificationRequest;
 import com.amazonas.common.requests.suspends.SuspendedRequest;
 import com.amazonas.frontend.control.AppController;
 import com.amazonas.frontend.control.Endpoints;
@@ -52,8 +50,7 @@ public class SuspendsView extends BaseLayout {
         suspends = new ArrayList<>();
 
         // Get suspends from the backend
-        SuspendedRequest request = new SuspendedRequest();
-
+        //SuspendedRequest request = new SuspendedRequest();
 
         try {
             suspends = appController.postByEndpoint(Endpoints.SUSPENDS_LIST, null);
@@ -61,12 +58,13 @@ public class SuspendsView extends BaseLayout {
             openErrorDialog(e.getMessage());
         }
 
+        //From vaadin - Grid
         suspendsGrid = new Grid<>(Suspend.class, false);
         suspendsGrid.addColumn(Suspend::getSuspendId).setHeader("Suspend ID");
         suspendsGrid.addColumn(Suspend::getBeginDate).setHeader("Begin Date");
         suspendsGrid.addColumn(Suspend::getFinishDate).setHeader("Finish Date");
         suspendsGrid.addColumn(Suspend::getDuration).setHeader("Duration");
-        //from vaadin
+        //from vaadin Grid button of remove
         suspendsGrid.addColumn(
                 new ComponentRenderer<>(Button::new, (button, suspend) -> {
                     button.addClickListener(e -> {
@@ -84,7 +82,7 @@ public class SuspendsView extends BaseLayout {
                     });
                     button.setIcon(new Icon(VaadinIcon.TRASH));
                 })).setHeader("Remove");
-
+        //Empty state
         if (suspends == null || suspends.isEmpty()) {
             VerticalLayout noSuspendsLayout = new VerticalLayout();
             noSuspendsLayout.setWidthFull();
@@ -99,15 +97,13 @@ public class SuspendsView extends BaseLayout {
             noSuspendsLayout.add(noSuspendsMessage);
             content.add(noSuspendsLayout);
         }
-
+        //from vaadin Grid, in case it is not empty state
         else {
             suspendsGrid.setItems(suspends);
-
         }
 
-
         content.add(suspendsGrid);
-
+        //from vaadin Form and Date Picker
         TextField idField = new TextField("ID");
         DatePicker beginDate = new DatePicker("Begin Date");
         DatePicker finishDate = new DatePicker("Finish Date");
@@ -139,9 +135,6 @@ public class SuspendsView extends BaseLayout {
                 openErrorDialog(e.getMessage());
             }
 
-
-
-
         });
         FormLayout formLayout = new FormLayout();
         formLayout.add(idField, beginDate, finishDate, always, addSuspend);
@@ -154,7 +147,5 @@ public class SuspendsView extends BaseLayout {
 
         content.add(formLayout);
 
-
     }
-
 }

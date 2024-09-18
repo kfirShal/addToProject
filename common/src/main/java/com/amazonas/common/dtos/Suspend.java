@@ -10,7 +10,7 @@ public class Suspend {
     private final String beginDate;
     private final String finishDate;
 
-    public Suspend(String suspendId, String beginDate, String finishDate){
+    public Suspend(String suspendId, String beginDate, String finishDate) {
         this.suspendId = suspendId;
         this.beginDate = beginDate;
         this.finishDate = finishDate;
@@ -28,7 +28,7 @@ public class Suspend {
         return finishDate;
     }
 
-
+   //Use in begin and finish date to calc the duration
     public String getDuration() {
         LocalDate begin = stringToLocalDate(this.beginDate);
         if (this.finishDate.equals("always"))
@@ -43,6 +43,7 @@ public class Suspend {
         return LocalDate.parse(date, formatter);
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
