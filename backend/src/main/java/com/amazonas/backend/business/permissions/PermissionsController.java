@@ -12,6 +12,7 @@ import com.amazonas.common.permissions.profiles.UserPermissionsProfile;
 import com.amazonas.common.utils.ReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -38,13 +39,13 @@ public class PermissionsController {
     public PermissionsController(DefaultPermissionsProfile defaultRegisteredUserPermissionsProfile,
                                  DefaultPermissionsProfile guestPermissionsProfile,
                                  AdminPermissionsProfile adminPermissionsProfile,
-                                 PermissionsProfileRepository permissionsProfileRepository) {
+                                 PermissionsProfileRepository permissionsProfileRepository, SuspendedController suspendedController) {
         defaultProfile = defaultRegisteredUserPermissionsProfile;
         guestProfile = guestPermissionsProfile;
         this.adminProfile = adminPermissionsProfile;
         this.repository = permissionsProfileRepository;
+        this.suspendedController = suspendedController;
         lock = new ReadWriteLock();
-        this.suspendedController = SuspendedController.getInstance();
         allowedMarketActions = new ArrayList<>(Arrays.asList(MarketActions.ALL, MarketActions.VIEW_PRODUCTS, MarketActions.VIEW_STORES, MarketActions.SEARCH_PRODUCTS, MarketActions.SEARCH_STORES));
         allowedStoreActions = new ArrayList<>(Arrays.asList(StoreActions.ALL, StoreActions.GET_PRODUCT_QUANTITY, StoreActions.VIEW_STORE_TRANSACTIONS, StoreActions.VIEW_ROLES_INFORMATION));
         allowedUserActions = new ArrayList<>(Arrays.asList(UserActions.ALL, UserActions.VIEW_SHOPPING_CART, UserActions.VIEW_USER_TRANSACTIONS));

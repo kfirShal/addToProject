@@ -17,7 +17,7 @@ public class SuspendedController {
 
     private final Map<String, Suspend> suspendList;
 
-    private SuspendedController() {
+    public SuspendedController() {
         this.suspendList = new HashMap<>();
         Suspend suspend1 = new Suspend("1", "09/09/24", "15/09/24");
         Suspend suspend2 = new Suspend("2", "09/09/24", "always");
@@ -27,12 +27,6 @@ public class SuspendedController {
         this.addSuspend(suspendU2);
     }
 
-    public static synchronized SuspendedController getInstance() {
-        if (instance == null) {
-            instance = new SuspendedController();
-        }
-        return instance;
-    }
 
     public List<Suspend> getSuspendList() {
         return List.copyOf(suspendList.values());

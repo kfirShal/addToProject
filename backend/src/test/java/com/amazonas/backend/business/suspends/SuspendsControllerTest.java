@@ -14,8 +14,8 @@ public class SuspendsControllerTest {
 
     @BeforeEach
     public void setUp(){
-        suspendedController = SuspendedController.getInstance();
-        suspend = new Suspend("5", "14/09/24", "26/09/24");
+        suspendedController = new SuspendedController();
+        suspend = new Suspend("5", "14/09/24", "28/10/26");
     }
 
     @Test
